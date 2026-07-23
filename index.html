@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seven7 — Investimentos Quantificados</title>
+<meta name="description" content="Seven7 — investimentos quantificados. Sinais sistemáticos em ações dos EUA e do Brasil, com 10 anos de resultados reais e auditáveis.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ░░ NAV ░░ -->
+<header class="nav">
+  <a class="brand" href="#top">
+    <span class="brand-mark">7</span>
+    <span class="brand-wrap"><span class="brand-name">SEVEN7</span><span class="brand-tag">INVESTIMENTOS QUANTIFICADOS</span></span>
+  </a>
+  <nav class="nav-links">
+    <a href="#track">Desempenho</a>
+    <a href="#quant">Métricas</a>
+    <a href="#radar">Sinais</a>
+    <a href="#replay">Replay</a>
+    <a href="#pricing">Planos</a>
+  </nav>
+  <div class="nav-cta">
+    <button class="theme-toggle" id="themeToggle" title="Alternar tema" aria-label="Alternar tema">◐</button>
+    <a class="btn btn-ghost" href="#pricing">Entrar</a>
+    <a class="btn btn-primary" href="#pricing">Teste grátis</a>
+  </div>
+</header>
+
+<!-- ░░ TICKER ░░ -->
+<div class="ticker" id="ticker" aria-hidden="true"><div class="ticker-track" id="tickerTrack"></div></div>
+
+<!-- ░░ HERO ░░ -->
+<section class="hero" id="top">
+  <div class="hero-inner">
+    <div class="eyebrow">INVESTIMENTOS QUANTIFICADOS · AÇÕES EUA + BRASIL</div>
+    <h1>Menos promessa.<br>Mais <span class="accent">prova.</span></h1>
+    <p class="lede">
+      Um motor sistemático gera os sinais — sem opinião, sem palpite, sem herói pós-fato.
+      E, diferente de todo mundo, você julga pelos números:
+      <strong>10 anos de desempenho real e auditável</strong>, atualizado todo dia.
+    </p>
+    <div class="hero-actions">
+      <a class="btn btn-primary btn-lg" href="#pricing">Começar teste de 7 dias</a>
+      <a class="btn btn-ghost btn-lg" href="#quant">Ver os números →</a>
+    </div>
+    <div class="hero-stats" id="heroStats"></div>
+    <div class="updated" id="updated"></div>
+  </div>
+</section>
+
+<!-- ░░ TRACK RECORD ░░ -->
+<section class="section" id="track">
+  <div class="section-head">
+    <div class="kicker">TRACK RECORD</div>
+    <h2>Números que não têm sentimento.</h2>
+    <p class="sub">Backtest event-driven sobre 10 anos de dados diários reais, com custos. Escolha o livro:</p>
+  </div>
+
+  <div class="book-tabs" id="bookTabs"></div>
+
+  <div class="stat-row" id="statRow"></div>
+
+  <div class="chart-card">
+    <div class="chart-head">
+      <div>
+        <div class="chart-title">Evolução do capital — 10 anos</div>
+        <div class="chart-sub" id="equitySub"></div>
+      </div>
+      <div class="legend" id="equityLegend"></div>
+    </div>
+    <div class="chart-body" id="equityChart"></div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-head">
+      <div class="chart-title">Drawdown submerso</div>
+      <div class="chart-sub" id="ddSub"></div>
+    </div>
+    <div class="chart-body" id="ddChart"></div>
+  </div>
+</section>
+
+<!-- ░░ QUANT TRANSPARENCY ░░ -->
+<section class="section section-alt" id="quant">
+  <div class="section-head">
+    <div class="kicker">MÉTRICAS · O DIFERENCIAL</div>
+    <h2>A prova, não a promessa.</h2>
+    <p class="sub">
+      Desempenho medido sobre <em>10 anos de dados reais</em>, com custos — as métricas
+      que importam para julgar um sistema. Mostramos os anos bons e os ruins.
+    </p>
+  </div>
+
+  <div class="quant-grid" id="quantGrid"></div>
+
+  <div class="chart-card">
+    <div class="chart-head">
+      <div class="chart-title">Retornos mensais (%)</div>
+      <div class="chart-sub">Verde = mês positivo · vermelho = negativo. Coluna YTD à direita.</div>
+    </div>
+    <div class="chart-body heatmap-body" id="monthlyHeatmap"></div>
+  </div>
+</section>
+
+<!-- ░░ HEDGE ░░ -->
+<section class="section" id="hedge">
+  <div class="section-head">
+    <div class="kicker">PROTEÇÃO · HEDGE DE CAUDA · ELITE</div>
+    <h2>Um seguro que se paga.</h2>
+    <p class="sub">Em estresse de mercado, a carteira eleva automaticamente a proteção em
+      um <em>ativo descorrelacionado</em>. Menos drawdown, quase sem abrir mão do retorno.
+      Qual é o ativo? Exclusivo de quem é Elite.</p>
+  </div>
+  <div id="hedgeHost"></div>
+</section>
+
+<!-- ░░ SIGNAL RADAR ░░ -->
+<section class="section" id="radar">
+  <div class="section-head">
+    <div class="kicker">SIGNAL RADAR</div>
+    <h2>O que o sistema está vendo agora.</h2>
+    <p class="sub">Sinais ao vivo por ativo. <span class="muted-note" id="radarAsOf"></span></p>
+  </div>
+  <div class="book-tabs" id="radarTabs"></div>
+  <div id="radarHost"></div>
+</section>
+
+<!-- ░░ REPLAY ░░ -->
+<section class="section section-alt" id="replay">
+  <div class="section-head">
+    <div class="kicker">LIVE REPLAY</div>
+    <h2>Resultados concluídos, mês a mês.</h2>
+    <p class="sub">Desempenho médio das operações fechadas em cada mês — atividade, acerto e resultado.</p>
+  </div>
+  <div class="book-tabs" id="replayTabs"></div>
+  <div class="table-wrap" id="replayHost"></div>
+</section>
+
+<!-- ░░ WHY TRUST ░░ -->
+<section class="section" id="trust">
+  <div class="section-head">
+    <div class="kicker">POR QUE CONFIAR</div>
+    <h2>Você não acredita. Você confere.</h2>
+    <p class="sub">Investimentos quantificados: cada decisão vem de um modelo, cada resultado fica registrado.</p>
+  </div>
+  <div class="rules" id="trustGrid"></div>
+  <p class="proprietary">O modelo por trás dos sinais é proprietário e confidencial — é o nosso edge.
+    Não pedimos sua fé: pedimos que você olhe os <a href="#quant">números de 10 anos</a> e decida.</p>
+</section>
+
+<!-- ░░ PRICING ░░ -->
+<section class="section section-alt" id="pricing">
+  <div class="section-head">
+    <div class="kicker">PLANOS</div>
+    <h2>Três níveis. Um modelo.</h2>
+    <p class="sub">Preço de lançamento. Comece com 7 dias grátis — sem cartão.</p>
+  </div>
+  <div class="billing-toggle" id="billingToggle">
+    <button class="bt-opt on" data-cycle="monthly">Mensal</button>
+    <button class="bt-opt" data-cycle="annual">Anual <span class="bt-save">economize até 20%</span></button>
+  </div>
+  <div class="pricing-grid" id="pricingGrid"></div>
+</section>
+
+<!-- ░░ FOOTER ░░ -->
+<footer class="footer">
+  <div class="footer-top">
+    <div class="brand"><span class="brand-mark">7</span><span class="brand-name">SEVEN7</span></div>
+    <div class="footer-links">
+      <a href="#quant">Métricas</a><a href="#track">Desempenho</a><a href="#pricing">Planos</a>
+    </div>
+  </div>
+  <p class="disclaimer" id="disclaimer"></p>
+  <p class="copy">© 2026 Seven7 · Investimentos Quantificados. Todos os direitos reservados.</p>
+</footer>
+
+<div class="tooltip" id="tooltip" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>
