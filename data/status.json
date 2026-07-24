@@ -1,25 +1,24 @@
 {
-  "last_run": "2026-07-23T18:37:56+00:00",
+  "last_run": "2026-07-24T12:06:55+00:00",
   "success": true,
   "data_through": "2026-07-23",
   "steps": [
     {
-      "step": "update_data",
-      "ok": true,
-      "returncode": 0,
-      "seconds": 27.0
-    },
-    {
       "step": "build_metrics",
       "ok": true,
       "returncode": 0,
-      "seconds": 8.0
+      "seconds": 15.0
     },
     {
       "step": "build_artifact",
       "ok": true,
       "returncode": 0,
       "seconds": 0.0
+    },
+    {
+      "step": "deploy",
+      "ok": true,
+      "skipped": "no-remote"
     }
   ]
 }
