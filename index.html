@@ -7,177 +7,43 @@
 <meta name="description" content="Seven7 — quantified investing. Systematic stock signals for the US and Brazil, with 10 years of real, auditable results.">
 <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body data-page="home">
+<div id="nav-root"></div>
 
-<!-- ░░ NAV ░░ -->
-<header class="nav">
-  <a class="brand" href="#top">
-    <span class="brand-mark">7</span>
-    <span class="brand-wrap"><span class="brand-name">SEVEN7</span><span class="brand-tag" data-i18n="brand.tag">QUANTIFIED INVESTING</span></span>
-  </a>
-  <nav class="nav-links">
-    <a href="#track" data-i18n="nav.perf">Performance</a>
-    <a href="#quant" data-i18n="nav.metrics">Metrics</a>
-    <a href="#radar" data-i18n="nav.signals">Signals</a>
-    <a href="#replay" data-i18n="nav.replay">Replay</a>
-    <a href="#pricing" data-i18n="nav.plans">Plans</a>
-  </nav>
-  <div class="nav-cta">
-    <div class="lang-toggle" id="langToggle">
-      <button class="lang-opt on" data-lang="en">EN</button>
-      <button class="lang-opt" data-lang="pt">PT</button>
-    </div>
-    <button class="theme-toggle" id="themeToggle" title="Theme" aria-label="Theme">◐</button>
-    <a class="btn btn-ghost" href="#pricing" data-i18n="nav.login">Log in</a>
-    <a class="btn btn-primary" href="#pricing" data-i18n="nav.trial">Free trial</a>
-  </div>
-</header>
-
-<!-- ░░ TICKER ░░ -->
 <div class="ticker" id="ticker" aria-hidden="true"><div class="ticker-track" id="tickerTrack"></div></div>
 
-<!-- ░░ HERO ░░ -->
 <section class="hero" id="top">
   <div class="hero-inner">
-    <div class="eyebrow" data-i18n="hero.eyebrow">QUANTIFIED INVESTING · US + BRAZIL STOCKS</div>
-    <h1 data-i18n-html="hero.h1">Less promise.<br>More <span class="accent">proof.</span></h1>
-    <p class="lede" data-i18n-html="hero.lede">
-      A systematic engine generates the signals — no opinions, no guesses, no after-the-fact heroes.
-      And, unlike everyone else, you judge by the numbers:
-      <strong>10 years of real, auditable performance</strong>, updated every day.
-    </p>
+    <div class="eyebrow" data-i18n="hero.eyebrow"></div>
+    <h1 data-i18n-html="hero.h1"></h1>
+    <p class="lede" data-i18n-html="hero.lede"></p>
     <div class="hero-actions">
-      <a class="btn btn-primary btn-lg" href="#pricing" data-i18n="hero.cta1">Start 7-day free trial</a>
-      <a class="btn btn-ghost btn-lg" href="#quant" data-i18n="hero.cta2">See the numbers →</a>
+      <a class="btn btn-primary btn-lg" href="register.html" data-i18n="hero.cta1"></a>
+      <a class="btn btn-ghost btn-lg" href="metrics.html" data-i18n="hero.cta2"></a>
     </div>
     <div class="hero-stats" id="heroStats"></div>
     <div class="updated" id="updated"></div>
   </div>
 </section>
 
-<!-- ░░ TRACK RECORD ░░ -->
-<section class="section" id="track">
+<section class="section">
   <div class="section-head">
-    <div class="kicker" data-i18n="track.kicker">TRACK RECORD</div>
-    <h2 data-i18n="track.h2">Numbers that don't have feelings.</h2>
-    <p class="sub" data-i18n="track.sub">Event-driven backtest over 10 years of real daily data, with costs. Pick a book:</p>
+    <div class="kicker" data-i18n="home.explore"></div>
+    <h2 data-i18n="home.exploreH"></h2>
   </div>
-
-  <div class="book-tabs" id="bookTabs"></div>
-  <div class="stat-row" id="statRow"></div>
-
-  <div class="chart-card">
-    <div class="chart-head">
-      <div>
-        <div class="chart-title" data-i18n="chart.equity.title">Equity curve — 10 years</div>
-        <div class="chart-sub" id="equitySub"></div>
-      </div>
-      <div class="legend" id="equityLegend"></div>
-    </div>
-    <div class="chart-body" id="equityChart"></div>
-  </div>
-
-  <div class="chart-card">
-    <div class="chart-head">
-      <div class="chart-title" data-i18n="chart.dd.title">Underwater drawdown</div>
-      <div class="chart-sub" id="ddSub"></div>
-    </div>
-    <div class="chart-body" id="ddChart"></div>
-  </div>
+  <div class="home-cards" id="homeCards"></div>
 </section>
 
-<!-- ░░ METRICS ░░ -->
-<section class="section section-alt" id="quant">
-  <div class="section-head">
-    <div class="kicker" data-i18n="metrics.kicker">METRICS · THE DIFFERENCE</div>
-    <h2 data-i18n="metrics.h2">Proof, not promise.</h2>
-    <p class="sub" data-i18n-html="metrics.sub">Performance measured over <em>10 years of real data</em>, with costs — the metrics that matter to judge a system. We show the good years and the bad ones.</p>
-  </div>
-
-  <div class="quant-grid" id="quantGrid"></div>
-
-  <div class="chart-card">
-    <div class="chart-head">
-      <div class="chart-title" data-i18n="heatmap.title">Monthly returns (%)</div>
-      <div class="chart-sub" data-i18n="heatmap.sub">Green = positive month · red = negative. YTD column on the right.</div>
-    </div>
-    <div class="chart-body heatmap-body" id="monthlyHeatmap"></div>
-  </div>
-</section>
-
-<!-- ░░ HEDGE ░░ -->
-<section class="section" id="hedge">
-  <div class="section-head">
-    <div class="kicker" data-i18n="hedge.kicker">PROTECTION · TAIL HEDGE · ELITE</div>
-    <h2 data-i18n="hedge.h2">Insurance that pays for itself.</h2>
-    <p class="sub" data-i18n-html="hedge.sub">Under market stress, the portfolio automatically raises protection in an
-      <em>uncorrelated asset</em>. Less drawdown, with almost no give-up in return.
-      Which asset? Exclusive to Elite members.</p>
-  </div>
-  <div id="hedgeHost"></div>
-</section>
-
-<!-- ░░ SIGNAL RADAR ░░ -->
-<section class="section section-alt" id="radar">
-  <div class="section-head">
-    <div class="kicker" data-i18n="radar.kicker">SIGNAL RADAR</div>
-    <h2 data-i18n="radar.h2">What the system sees right now.</h2>
-    <p class="sub"><span data-i18n="radar.subA">Live signals per asset.</span> <span class="muted-note" id="radarAsOf"></span></p>
-  </div>
-  <div class="book-tabs" id="radarTabs"></div>
-  <div id="radarHost"></div>
-</section>
-
-<!-- ░░ REPLAY ░░ -->
-<section class="section" id="replay">
-  <div class="section-head">
-    <div class="kicker" data-i18n="replay.kicker">LIVE REPLAY</div>
-    <h2 data-i18n="replay.h2">Closed results, month by month.</h2>
-    <p class="sub" data-i18n="replay.sub">Average performance of the trades closed each month — activity, win rate, and result.</p>
-  </div>
-  <div class="book-tabs" id="replayTabs"></div>
-  <div class="table-wrap" id="replayHost"></div>
-</section>
-
-<!-- ░░ WHY TRUST ░░ -->
 <section class="section section-alt" id="trust">
   <div class="section-head">
-    <div class="kicker" data-i18n="trust.kicker">WHY TRUST US</div>
-    <h2 data-i18n="trust.h2">You don't believe. You check.</h2>
-    <p class="sub" data-i18n="trust.sub">Quantified investing: every decision comes from a model, every result is on the record.</p>
+    <div class="kicker" data-i18n="trust.kicker"></div>
+    <h2 data-i18n="trust.h2"></h2>
+    <p class="sub" data-i18n="trust.sub"></p>
   </div>
   <div class="rules" id="trustGrid"></div>
-  <p class="proprietary" data-i18n-html="trust.proprietary">The model behind the signals is proprietary and confidential — it's our edge.
-    We don't ask for your faith: we ask you to look at the <a href="#quant">10-year numbers</a> and decide.</p>
 </section>
 
-<!-- ░░ PRICING ░░ -->
-<section class="section" id="pricing">
-  <div class="section-head">
-    <div class="kicker" data-i18n="pricing.kicker">PLANS</div>
-    <h2 data-i18n="pricing.h2">Three tiers. One model.</h2>
-    <p class="sub" data-i18n="pricing.sub">Launch pricing. Start with a 7-day free trial — no card.</p>
-  </div>
-  <div class="billing-toggle" id="billingToggle">
-    <button class="bt-opt on" data-cycle="monthly" data-i18n="billing.monthly">Monthly</button>
-    <button class="bt-opt" data-cycle="annual"><span data-i18n="billing.annual">Annual</span> <span class="bt-save" data-i18n="billing.save">save up to 20%</span></button>
-  </div>
-  <div class="pricing-grid" id="pricingGrid"></div>
-</section>
-
-<!-- ░░ FOOTER ░░ -->
-<footer class="footer">
-  <div class="footer-top">
-    <div class="brand"><span class="brand-mark">7</span><span class="brand-name">SEVEN7</span></div>
-    <div class="footer-links">
-      <a href="#quant" data-i18n="nav.metrics">Metrics</a><a href="#track" data-i18n="nav.perf">Performance</a><a href="#pricing" data-i18n="nav.plans">Plans</a>
-    </div>
-  </div>
-  <p class="disclaimer" id="disclaimer"></p>
-  <p class="copy" id="copy"></p>
-</footer>
-
-<div class="tooltip" id="tooltip" hidden></div>
+<div id="footer-root"></div>
 <script src="app.js"></script>
 </body>
 </html>

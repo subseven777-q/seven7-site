@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Performance — Seven7</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="performance">
+<div id="nav-root"></div>
+
+<div class="page-hero">
+  <div class="kicker" data-i18n="track.kicker"></div>
+  <h1 data-i18n="track.h2"></h1>
+  <p class="sub" data-i18n="track.sub"></p>
+</div>
+
+<section class="section">
+  <div class="book-tabs" id="bookTabs"></div>
+  <div class="stat-row" id="statRow"></div>
+
+  <div class="chart-card">
+    <div class="chart-head">
+      <div>
+        <div class="chart-title" data-i18n="chart.equity.title"></div>
+        <div class="chart-sub" id="equitySub"></div>
+      </div>
+      <div class="legend" id="equityLegend"></div>
+    </div>
+    <div class="chart-body" id="equityChart"></div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-head">
+      <div class="chart-title" data-i18n="chart.dd.title"></div>
+      <div class="chart-sub" id="ddSub"></div>
+    </div>
+    <div class="chart-body" id="ddChart"></div>
+  </div>
+</section>
+
+<div id="footer-root"></div>
+<div class="tooltip" id="tooltip" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plans — Seven7</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="plans">
+<div id="nav-root"></div>
+
+<div class="page-hero">
+  <div class="kicker" data-i18n="pricing.kicker"></div>
+  <h1 data-i18n="pricing.h2"></h1>
+  <p class="sub" data-i18n="pricing.sub"></p>
+</div>
+
+<section class="section">
+  <div class="billing-toggle" id="billingToggle">
+    <button class="bt-opt on" data-cycle="monthly" data-i18n="billing.monthly"></button>
+    <button class="bt-opt" data-cycle="annual"><span data-i18n="billing.annual"></span> <span class="bt-save" data-i18n="billing.save"></span></button>
+  </div>
+  <div class="pricing-grid" id="pricingGrid"></div>
+  <p class="stat-note" style="margin-top:22px" data-i18n="page.plans.trial"></p>
+</section>
+
+<div id="footer-root"></div>
+<script src="app.js"></script>
+</body>
+</html>

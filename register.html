@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Create account — Seven7</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="register">
+<div id="nav-root"></div>
+
+<div class="auth-page">
+  <div class="auth-card">
+    <h1 data-i18n="auth.register.title"></h1>
+    <p class="auth-sub" data-i18n="auth.register.sub"></p>
+    <form class="auth-form" novalidate>
+      <div class="field">
+        <label for="rg-name" data-i18n="auth.name"></label>
+        <input id="rg-name" type="text" autocomplete="name" required>
+      </div>
+      <div class="field">
+        <label for="rg-email" data-i18n="auth.email"></label>
+        <input id="rg-email" type="email" autocomplete="email" required>
+      </div>
+      <div class="field">
+        <label for="rg-pass" data-i18n="auth.password"></label>
+        <input id="rg-pass" type="password" autocomplete="new-password" required>
+      </div>
+      <p class="auth-msg"></p>
+      <button class="btn btn-primary btn-block" type="submit" data-i18n="auth.register.submit"></button>
+    </form>
+    <p class="auth-alt"><span data-i18n="auth.register.have"></span> <a href="login.html" data-i18n="auth.register.login"></a></p>
+    <p class="auth-legal" data-i18n="disclaimer"></p>
+  </div>
+</div>
+
+<div id="footer-root"></div>
+<script src="app.js"></script>
+</body>
+</html>

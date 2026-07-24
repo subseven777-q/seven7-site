@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Metrics — Seven7</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="metrics">
+<div id="nav-root"></div>
+
+<div class="page-hero">
+  <div class="kicker" data-i18n="metrics.kicker"></div>
+  <h1 data-i18n="metrics.h2"></h1>
+  <p class="sub" data-i18n-html="metrics.sub"></p>
+</div>
+
+<section class="section">
+  <div class="section-head" id="quantHost"></div>
+  <div class="quant-grid" id="quantGrid"></div>
+
+  <div class="chart-card">
+    <div class="chart-head">
+      <div class="chart-title" data-i18n="heatmap.title"></div>
+      <div class="chart-sub" data-i18n="heatmap.sub"></div>
+    </div>
+    <div class="chart-body heatmap-body" id="monthlyHeatmap"></div>
+  </div>
+</section>
+
+<section class="section section-alt" id="hedge">
+  <div class="section-head">
+    <div class="kicker" data-i18n="hedge.kicker"></div>
+    <h2 data-i18n="hedge.h2"></h2>
+    <p class="sub" data-i18n-html="hedge.sub"></p>
+  </div>
+  <div id="hedgeHost"></div>
+</section>
+
+<div id="footer-root"></div>
+<script src="app.js"></script>
+</body>
+</html>

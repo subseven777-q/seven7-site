@@ -1,9 +1,11 @@
-/* ============ Seven7 — public renderer (bilingual EN/PT) ============ */
-/* Consome APENAS o payload público (metrics.json). Sem níveis de sinal,
-   preços de entrada/saída, nem detalhes de método. */
+/* ============ Seven7 — multi-page app (bilingual EN/PT) ============ */
+/* Static multi-page site. Shared nav/footer are injected here so they live in
+   ONE place. Each page renders only the sections whose containers exist.
+   Public data only (metrics.json): no signal levels, no method, no ETF name. */
 (function () {
   "use strict";
   const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const elh = (tag, c, h) => { const e = document.createElement(tag); if (c) e.className = c; if (h != null) e.innerHTML = h; return e; };
 
   let LANG = localStorage.getItem("seven7-lang") || "en";
@@ -14,6 +16,14 @@
   const fmtNum = v => (v == null ? "—" : new Intl.NumberFormat(locale()).format(v));
   const interp = (s, o) => s.replace(/\{(\w+)\}/g, (_, k) => (o[k] != null ? o[k] : ""));
   const t = k => (T[k] && T[k][LANG] != null ? T[k][LANG] : k);
+
+  /* Preencha quando o Stripe estiver pronto: links de checkout hospedado.
+     Ex.: STRIPE_LINKS.PRO.monthly = "https://buy.stripe.com/xxxx". Vazio => vai ao registro. */
+  const STRIPE_LINKS = {
+    BEGINNER: { monthly: "", annual: "" },
+    PRO: { monthly: "", annual: "" },
+    ELITE: { monthly: "", annual: "" },
+  };
 
   /* ---------------- i18n dictionary ---------------- */
   const T = {
@@ -33,6 +43,13 @@
     },
     "hero.cta1": { en: "Start 7-day free trial", pt: "Começar teste de 7 dias" },
     "hero.cta2": { en: "See the numbers →", pt: "Ver os números →" },
+    "home.explore": { en: "EXPLORE", pt: "EXPLORE" },
+    "home.exploreH": { en: "Everything, on the record.", pt: "Tudo, registrado." },
+    "card.perf.d": { en: "10-year equity curve, win rate and drawdown — with the tail hedge applied.", pt: "Curva de 10 anos, win rate e drawdown — já com o hedge de cauda aplicado." },
+    "card.metrics.d": { en: "Sharpe, Sortino, monthly returns and the checks that unmask a pretty backtest.", pt: "Sharpe, Sortino, retornos mensais e os testes que desmascaram um backtest bonito." },
+    "card.signals.d": { en: "What the system sees right now — live signals across US + BR.", pt: "O que o sistema vê agora — sinais ao vivo em US + BR." },
+    "card.replay.d": { en: "Closed results month by month — wins and losses, no filter.", pt: "Resultados fechados mês a mês — ganhos e perdas, sem filtro." },
+    "card.open": { en: "Open →", pt: "Abrir →" },
     "track.kicker": { en: "TRACK RECORD", pt: "TRACK RECORD" },
     "track.h2": { en: "Numbers that don't have feelings.", pt: "Números que não têm sentimento." },
     "track.sub": { en: "Event-driven backtest over 10 years of real daily data, with costs. Pick a book:", pt: "Backtest event-driven sobre 10 anos de dados diários reais, com custos. Escolha o livro:" },
@@ -40,13 +57,13 @@
     "chart.dd.title": { en: "Underwater drawdown", pt: "Drawdown submerso" },
     "metrics.kicker": { en: "METRICS · THE DIFFERENCE", pt: "MÉTRICAS · O DIFERENCIAL" },
     "metrics.h2": { en: "Proof, not promise.", pt: "A prova, não a promessa." },
-    "metrics.sub": { en: "Performance measured over <em>10 years of real data</em>, with costs — the metrics that matter to judge a system. We show the good years and the bad ones.", pt: "Desempenho medido sobre <em>10 anos de dados reais</em>, com custos — as métricas que importam para julgar um sistema. Mostramos os anos bons e os ruins." },
+    "metrics.sub": { en: "Performance measured over <em>10 years of real data</em>, with costs — the metrics that matter to judge a system.", pt: "Desempenho medido sobre <em>10 anos de dados reais</em>, com custos — as métricas que importam para julgar um sistema." },
     "heatmap.title": { en: "Monthly returns (%)", pt: "Retornos mensais (%)" },
     "heatmap.sub": { en: "Green = positive month · red = negative. YTD column on the right.", pt: "Verde = mês positivo · vermelho = negativo. Coluna do ano à direita." },
     "heatmap.year": { en: "Year", pt: "Ano" },
     "hedge.kicker": { en: "PROTECTION · TAIL HEDGE · ELITE", pt: "PROTEÇÃO · HEDGE DE CAUDA · ELITE" },
     "hedge.h2": { en: "Insurance that pays for itself.", pt: "Um seguro que se paga." },
-    "hedge.sub": { en: "Under market stress, the portfolio automatically raises protection in an <em>uncorrelated asset</em>. Less drawdown, with almost no give-up in return. Which asset? Exclusive to Elite members.", pt: "Em estresse de mercado, a carteira eleva automaticamente a proteção em um <em>ativo descorrelacionado</em>. Menos drawdown, quase sem abrir mão do retorno. Qual é o ativo? Exclusivo de quem é Elite." },
+    "hedge.sub": { en: "Under market stress, the portfolio automatically raises protection in an <em>uncorrelated asset</em>. Which asset? Exclusive to Elite members.", pt: "Em estresse de mercado, a carteira eleva a proteção em um <em>ativo descorrelacionado</em>. Qual é o ativo? Exclusivo de quem é Elite." },
     "radar.kicker": { en: "SIGNAL RADAR", pt: "SIGNAL RADAR" },
     "radar.h2": { en: "What the system sees right now.", pt: "O que o sistema está vendo agora." },
     "radar.subA": { en: "Live signals per asset.", pt: "Sinais ao vivo por ativo." },
@@ -56,7 +73,6 @@
     "trust.kicker": { en: "WHY TRUST US", pt: "POR QUE CONFIAR" },
     "trust.h2": { en: "You don't believe. You check.", pt: "Você não acredita. Você confere." },
     "trust.sub": { en: "Quantified investing: every decision comes from a model, every result is on the record.", pt: "Investimentos quantificados: cada decisão vem de um modelo, cada resultado fica registrado." },
-    "trust.proprietary": { en: 'The model behind the signals is proprietary and confidential — it\'s our edge. We don\'t ask for your faith: we ask you to look at the <a href="#quant">10-year numbers</a> and decide.', pt: 'O modelo por trás dos sinais é proprietário e confidencial — é o nosso edge. Não pedimos sua fé: pedimos que você olhe os <a href="#quant">números de 10 anos</a> e decida.' },
     "trust.b1": { en: "10 years of real data, with costs — not a marketing curve.", pt: "10 anos de dados reais, com custos — não é curva de marketing." },
     "trust.b2": { en: "100% fixed rules: no discretion, no guessing, no after-the-fact heroes.", pt: "Regras 100% fixas: zero discricionário, zero palpite, zero herói pós-fato." },
     "trust.b3": { en: "Every trade recorded and marked to market — numbers, not narrative.", pt: "Toda operação registrada e marcada a mercado — números, não narrativa." },
@@ -71,14 +87,12 @@
     "price.billed": { en: "billed", pt: "cobrado" },
     "price.year": { en: "yr", pt: "ano" },
     "price.perMonth": { en: "/ mo", pt: "/ mês" },
-    // hero stats
     "hs.sharpe": { en: "Sharpe (US, 10y)", pt: "Sharpe (US, 10a)" },
     "hs.cagr": { en: "Annual CAGR (US)", pt: "CAGR anual (US)" },
     "hs.win": { en: "win rate (US)", pt: "win rate (US)" },
     "hs.assets": { en: "monitored assets", pt: "ativos monitorados" },
     "hs.years": { en: "of real data", pt: "de dados reais" },
     "updated": { en: "Data updated through", pt: "Dados atualizados até" },
-    // stat row
     "stat.win": { en: "Win rate", pt: "Win rate" },
     "stat.trades": { en: "Trades (10y)", pt: "Trades (10a)" },
     "stat.cumret": { en: "Cumulative return", pt: "Retorno acumulado" },
@@ -87,13 +101,11 @@
     "stat.sharpe": { en: "Sharpe", pt: "Sharpe" },
     "stat.maxdd": { en: "Max drawdown", pt: "Max drawdown" },
     "stat.vol": { en: "Annual vol", pt: "Vol anual" },
-    // equity/dd
     "legend.stratBench": { en: "index (buy & hold)", pt: "índice (buy & hold)" },
     "legend.stratBenchBR": { en: "BR index (buy & hold)", pt: "índice BR (buy & hold)" },
     "m.totalRet": { en: "Total return", pt: "Retorno total" },
     "m.maxDD": { en: "MaxDD", pt: "MaxDD" },
     "dd.worst": { en: "Worst peak-to-trough:", pt: "Pior queda de pico a vale:" },
-    // metrics tiles
     "mt.cagr.l": { en: "CAGR (10 years)", pt: "CAGR (10 anos)" },
     "mt.cagr.d": { en: "Total return {x} over the period.", pt: "Retorno total {x} no período." },
     "mt.sharpe.l": { en: "Annualized Sharpe", pt: "Sharpe anualizado" },
@@ -113,7 +125,6 @@
     "mt.pct.d": { en: "Better than {y}% of random strategies — not luck.", pt: "Melhor que {y}% de estratégias aleatórias — não é sorte." },
     "mt.adv.l": { en: "Adverse scenario (p95)", pt: "Cenário adverso (p95)" },
     "mt.adv.d": { en: "Max expected loss in the worst 5% of simulations.", pt: "Perda máxima esperada no pior 5% das simulações." },
-    // radar
     "radar.asof": { en: "Close of", pt: "Fechamento de" },
     "radar.on": { en: "System operating.", pt: "Sistema operando." },
     "radar.off": { en: "System in defensive mode (cash) right now.", pt: "Sistema em modo defensivo (caixa) neste momento." },
@@ -129,13 +140,11 @@
     "radar.lockT": { en: "Entry, stop and target levels are for subscribers only.", pt: "Os níveis de entrada, stop e alvo são exclusivos para assinantes." },
     "radar.lockS": { en: "See where to enter, protect and take profit — across {n} assets, updated daily.", pt: "Veja onde entrar, proteger e realizar — em {n} ativos, atualizado todo dia." },
     "radar.lockCta": { en: "Subscribe and see the signals", pt: "Assinar e ver os sinais" },
-    // replay
     "rep.month": { en: "Month", pt: "Mês" },
     "rep.trades": { en: "Trades", pt: "Operações" },
     "rep.win": { en: "Win rate", pt: "Acerto" },
     "rep.avg": { en: "Avg result", pt: "Resultado médio" },
     "rep.trend": { en: "Trend", pt: "Tendência" },
-    // hedge
     "hg.ddRed": { en: "max drawdown reduction", pt: "redução do drawdown máximo" },
     "hg.worst": { en: "worst year (12 months)", pt: "pior ano (12 meses)" },
     "hg.sharpe": { en: "Sharpe (risk × return)", pt: "Sharpe (risco × retorno)" },
@@ -149,10 +158,9 @@
     "hg.rVol": { en: "Annual volatility", pt: "Volatilidade anual" },
     "hg.rCagr": { en: "CAGR", pt: "CAGR" },
     "hg.eliteT": { en: "The asset is Elite-exclusive", pt: "O ativo é exclusivo do Elite" },
-    "hg.eliteS": { en: "{base}% of capital in protection at all times, raised to {stress}% under market stress. Elite members get which asset it is and the signal to switch.", pt: "{base}% do capital em proteção sempre, elevado a {stress}% em estresse de mercado. Membros Elite recebem qual é o ativo e o sinal de quando alternar." },
+    "hg.eliteS": { en: "{base}% of capital in protection at all times, raised to {stress}% under stress. Elite members get which asset it is and the signal to switch.", pt: "{base}% do capital em proteção sempre, elevado a {stress}% em estresse. Membros Elite recebem qual é o ativo e o sinal de quando alternar." },
     "hg.eliteCta": { en: "Subscribe to Elite", pt: "Assinar Elite" },
-    "hg.note": { en: "Measured over {years} years — a window that includes the 2022 stress. Correlation to the portfolio: {corr} (real protection, not more of the same).", pt: "Avaliado ao longo de {years} anos — janela que inclui o estresse de 2022. Correlação com a carteira: {corr} (proteção real, não mais do mesmo)." },
-    // replay/misc
+    "hg.note": { en: "Measured over {years} years — a window that includes the 2022 stress. Correlation to the portfolio: {corr}.", pt: "Avaliado ao longo de {years} anos — janela que inclui o estresse de 2022. Correlação com a carteira: {corr}." },
     "tick.buy": { en: "BUY", pt: "COMPRA" },
     "tick.live": { en: "LIVE", pt: "AO VIVO" },
     "book.us": { en: "🇺🇸 US · S&P 100", pt: "🇺🇸 EUA · S&P 100" },
@@ -160,6 +168,23 @@
     "book.global": { en: "🌐 Global 50/50", pt: "🌐 Global 50/50" },
     "disclaimer": { en: "Backtest results over 10 years of real data. A mostly-bull-market window; the Sharpe is optimistic. Software and market information — not investment advice. Past performance does not guarantee future results.", pt: "Resultados de backtest sobre 10 anos de dados reais. Janela majoritariamente de bull market; o Sharpe é otimista. Software e informação de mercado — não é recomendação de investimento. Rentabilidade passada não garante resultado futuro." },
     "footer.copy": { en: "© 2026 Seven7 · Quantified Investing. All rights reserved.", pt: "© 2026 Seven7 · Investimentos Quantificados. Todos os direitos reservados." },
+    // auth
+    "auth.login.title": { en: "Log in", pt: "Entrar" },
+    "auth.login.sub": { en: "Access your signals and dashboard.", pt: "Acesse seus sinais e painel." },
+    "auth.email": { en: "Email", pt: "E-mail" },
+    "auth.password": { en: "Password", pt: "Senha" },
+    "auth.login.submit": { en: "Log in", pt: "Entrar" },
+    "auth.login.no": { en: "Don't have an account?", pt: "Não tem conta?" },
+    "auth.login.signup": { en: "Create one", pt: "Criar conta" },
+    "auth.register.title": { en: "Create your account", pt: "Crie sua conta" },
+    "auth.register.sub": { en: "Start your 7-day free trial. No card required.", pt: "Comece seu teste de 7 dias. Sem cartão." },
+    "auth.name": { en: "Full name", pt: "Nome completo" },
+    "auth.register.submit": { en: "Create account", pt: "Criar conta" },
+    "auth.register.have": { en: "Already have an account?", pt: "Já tem conta?" },
+    "auth.register.login": { en: "Log in", pt: "Entrar" },
+    "auth.soon": { en: "Accounts are launching soon — we saved your interest. We'll email you the moment sign-ups open.", pt: "As contas estão sendo lançadas — registramos seu interesse. Avisaremos por e-mail assim que abrir." },
+    "auth.orTrial": { en: "or start a free trial", pt: "ou comece um teste grátis" },
+    "page.plans.trial": { en: "Includes a 7-day free trial · cancel anytime", pt: "Inclui teste grátis de 7 dias · cancele quando quiser" },
   };
 
   /* ---------------- plans (USD) ---------------- */
@@ -198,7 +223,7 @@
       feats: [
         [true, { en: "Everything in Pro", pt: "Tudo do Pro" }],
         [true, { en: "Automated MT5 robot — trades the signals for you (bonus)", pt: "Robô automatizado em MT5 — opera os sinais sozinho (bônus)" }],
-        [true, { en: "Exclusive Hedge — 15%→30% in an uncorrelated protection asset, triggered under stress", pt: "Sinal de Hedge exclusivo — 15%→30% em ativo de proteção descorrelacionado, acionado em estresse de mercado" }],
+        [true, { en: "Exclusive Hedge — 15%→30% in an uncorrelated protection asset", pt: "Sinal de Hedge exclusivo — 15%→30% em ativo de proteção descorrelacionado" }],
         [true, { en: "Community: weekly market videos, outlook and reads", pt: "Comunidade: vídeos semanais de mercado, expectativas e leitura" }],
         [true, { en: "Export history (CSV) + API access", pt: "Exportar histórico (CSV) + acesso à API" }],
         [true, { en: "Priority support", pt: "Suporte prioritário" }],
@@ -207,27 +232,76 @@
     },
   ];
 
+  /* ---------------- shared chrome ---------------- */
+  const NAV_HTML = `
+    <header class="nav">
+      <a class="brand" href="index.html">
+        <span class="brand-mark">7</span>
+        <span class="brand-wrap"><span class="brand-name">SEVEN7</span><span class="brand-tag" data-i18n="brand.tag"></span></span>
+      </a>
+      <nav class="nav-links">
+        <a href="performance.html" data-page="performance" data-i18n="nav.perf"></a>
+        <a href="metrics.html" data-page="metrics" data-i18n="nav.metrics"></a>
+        <a href="signals.html" data-page="signals" data-i18n="nav.signals"></a>
+        <a href="replay.html" data-page="replay" data-i18n="nav.replay"></a>
+        <a href="plans.html" data-page="plans" data-i18n="nav.plans"></a>
+      </nav>
+      <div class="nav-cta">
+        <div class="lang-toggle" id="langToggle">
+          <button class="lang-opt" data-lang="en">EN</button>
+          <button class="lang-opt" data-lang="pt">PT</button>
+        </div>
+        <button class="theme-toggle" id="themeToggle" title="Theme" aria-label="Theme">◐</button>
+        <a class="btn btn-ghost" href="login.html" data-i18n="nav.login"></a>
+        <a class="btn btn-primary" href="register.html" data-i18n="nav.trial"></a>
+      </div>
+    </header>`;
+  const FOOTER_HTML = `
+    <footer class="footer">
+      <div class="footer-top">
+        <div class="brand"><span class="brand-mark">7</span><span class="brand-name">SEVEN7</span></div>
+        <div class="footer-links">
+          <a href="metrics.html" data-i18n="nav.metrics"></a><a href="performance.html" data-i18n="nav.perf"></a><a href="plans.html" data-i18n="nav.plans"></a>
+        </div>
+      </div>
+      <p class="disclaimer" id="disclaimer"></p>
+      <p class="copy" id="copy"></p>
+    </footer>`;
+
   let DATA = null;
   const boot = window.__DATA__ ? Promise.resolve(window.__DATA__) : fetch("data/metrics.json").then(r => r.json());
-  boot.then(d => { DATA = d; render(); })
-    .catch(e => { $("#heroStats").innerHTML = '<div class="hstat"><div class="v">—</div><div class="l">no data</div></div>'; console.error(e); });
+  boot.then(d => { DATA = d; render(); }).catch(e => { render(); console.error(e); });
 
   function render() {
+    injectChrome();
     applyStatic();
-    buildTicker(); buildHero(); buildTrust();
-    $("#disclaimer").textContent = t("disclaimer");
-    $("#copy").textContent = t("footer.copy");
-    initSection(["US", "BR", "GLOBAL"], "#bookTabs", renderTrack);
-    initSection(["US", "BR"], "#quantTabsHost", renderMetrics, "#quant .section-head");
-    renderHedge();
-    initSection(["US", "BR"], "#radarTabs", renderRadar);
-    initSection(["US", "BR"], "#replayTabs", renderReplay);
-    renderPricing(); initBilling(); initTheme(); initLang();
+    initToggles();
+    if (DATA) {
+      buildTicker(); buildHero();
+      const dc = $("#disclaimer"); if (dc) dc.textContent = t("disclaimer");
+      guard("#bookTabs", () => initSection(["US", "BR", "GLOBAL"], "#bookTabs", renderTrack));
+      guard("#quantHost", () => initSection(["US", "BR"], "#quantTabsHost", renderMetrics, "#quantHost"));
+      guard("#hedgeHost", renderHedge);
+      guard("#radarTabs", () => initSection(["US", "BR"], "#radarTabs", renderRadar));
+      guard("#replayTabs", () => initSection(["US", "BR"], "#replayTabs", renderReplay));
+      guard("#trustGrid", buildTrust);
+      guard("#homeCards", buildHomeCards);
+    }
+    guard("#pricingGrid", () => { renderPricing(); initBilling(); });
+    initAuthForms();
+    const cp = $("#copy"); if (cp) cp.textContent = t("footer.copy");
   }
+  function guard(sel, fn) { if ($(sel)) fn(); }
 
+  function injectChrome() {
+    const n = $("#nav-root"); if (n) n.innerHTML = NAV_HTML;
+    const f = $("#footer-root"); if (f) f.innerHTML = FOOTER_HTML;
+    const page = document.body.dataset.page;
+    $$(".nav-links a[data-page]").forEach(a => a.classList.toggle("active", a.dataset.page === page));
+  }
   function applyStatic() {
-    document.querySelectorAll("[data-i18n]").forEach(el => { const v = t(el.getAttribute("data-i18n")); if (v != null) el.textContent = v; });
-    document.querySelectorAll("[data-i18n-html]").forEach(el => { const v = t(el.getAttribute("data-i18n-html")); if (v != null) el.innerHTML = v; });
+    $$("[data-i18n]").forEach(el => { const v = t(el.getAttribute("data-i18n")); if (v != null) el.textContent = v; });
+    $$("[data-i18n-html]").forEach(el => { const v = t(el.getAttribute("data-i18n-html")); if (v != null) el.innerHTML = v; });
     document.documentElement.lang = LANG;
   }
 
@@ -235,6 +309,7 @@
   function initSection(keys, hostSel, fn, insertAfter) {
     let host = $(hostSel);
     if (!host && insertAfter) { host = elh("div", "book-tabs"); host.id = hostSel.slice(1); $(insertAfter).after(host); }
+    if (!host) return;
     host.innerHTML = "";
     keys.forEach((k, i) => {
       const b = elh("button", "book-tab" + (i === 0 ? " on" : ""), labelOf(k));
@@ -244,17 +319,15 @@
     fn(keys[0]);
   }
 
-  /* ---- ticker ---- */
   function buildTicker() {
+    const host = $("#tickerTrack"); if (!host) return;
     const names = [];
     ["US", "BR"].forEach(r => (DATA.books[r]?.signals_summary?.sample || []).forEach(tk => names.push(tk)));
-    const one = () => names.map(tk =>
-      `<span class="tick"><span class="tk">${tk}</span><span class="badge buy">${t("tick.buy")}</span><span class="badge active">${t("tick.live")}</span></span>`).join("");
-    $("#tickerTrack").innerHTML = one() + one();
+    const one = () => names.map(tk => `<span class="tick"><span class="tk">${tk}</span><span class="badge buy">${t("tick.buy")}</span><span class="badge active">${t("tick.live")}</span></span>`).join("");
+    host.innerHTML = one() + one();
   }
-
-  /* ---- hero ---- */
   function buildHero() {
+    const host = $("#heroStats"); if (!host) return;
     const us = DATA.books.US;
     const nSym = Object.values(DATA.books).reduce((a, b) => a + b.n_symbols_traded, 0);
     const stats = [
@@ -264,11 +337,21 @@
       { v: fmtNum(nSym), l: t("hs.assets") },
       { v: "10", l: t("hs.years") },
     ];
-    $("#heroStats").innerHTML = stats.map(s => `<div class="hstat"><div class="v">${s.v}</div><div class="l">${s.l}</div></div>`).join("");
-    $("#updated").innerHTML = `<span class="dot"></span> ${t("updated")} <b style="color:var(--ink-2);margin-left:4px">${DATA.data_through}</b>`;
+    host.innerHTML = stats.map(s => `<div class="hstat"><div class="v">${s.v}</div><div class="l">${s.l}</div></div>`).join("");
+    const up = $("#updated"); if (up) up.innerHTML = `<span class="dot"></span> ${t("updated")} <b style="color:var(--ink-2);margin-left:4px">${DATA.data_through}</b>`;
+  }
+  function buildHomeCards() {
+    const cards = [
+      { p: "performance.html", k: "nav.perf", d: "card.perf.d" },
+      { p: "metrics.html", k: "nav.metrics", d: "card.metrics.d" },
+      { p: "signals.html", k: "nav.signals", d: "card.signals.d" },
+      { p: "replay.html", k: "nav.replay", d: "card.replay.d" },
+    ];
+    $("#homeCards").innerHTML = cards.map(c => `<a class="home-card" href="${c.p}">
+      <div class="hc-title">${t(c.k)}</div><div class="hc-desc">${t(c.d)}</div>
+      <div class="hc-open">${t("card.open")}</div></a>`).join("");
   }
 
-  /* ---- track ---- */
   function bookOrCombined(k) {
     if (k === "GLOBAL") return { headline: DATA.combined.headline, equity_curve: DATA.combined.equity_curve, combined: true };
     return DATA.books[k];
@@ -284,20 +367,15 @@
       [t("stat.cumret"), fmtPct(tr.total_pnl_pct), tr.total_pnl_pct >= 0 ? "pos" : "neg"], [t("stat.pf"), tr.profit_factor ?? "—", ""]];
     }
     $("#statRow").innerHTML = cards.map(c => `<div class="stat"><div class="v ${c[2]}">${c[1]}</div><div class="l">${c[0]}</div></div>`).join("");
-
     const benchName = b.combined ? null : (k === "US" ? t("legend.stratBench") : t("legend.stratBenchBR"));
     $("#equitySub").textContent = `${h.total_return != null ? t("m.totalRet") + " " + fmtPct(h.total_return) + " · " : ""}CAGR ${fmtPct(h.cagr)} · Sharpe ${h.sharpe} · ${t("m.maxDD")} -${nf(Math.abs(h.max_dd))}%`;
-    $("#equityLegend").innerHTML = `<span class="lg"><span class="sw" style="background:var(--series)"></span>Seven7</span>` +
-      (benchName ? `<span class="lg"><span class="sw dash"></span>${benchName}</span>` : "");
+    $("#equityLegend").innerHTML = `<span class="lg"><span class="sw" style="background:var(--series)"></span>Seven7</span>` + (benchName ? `<span class="lg"><span class="sw dash"></span>${benchName}</span>` : "");
     lineChart($("#equityChart"), b.equity_curve, { keys: benchName ? ["e", "b"] : ["e"], colors: ["var(--series)", "var(--bench)"], labels: ["Seven7", benchName || ""], dash: [false, true], asPctGrowth: true });
-
     let dd = b.drawdown_curve;
     if (!dd) { let pk = -Infinity; dd = b.equity_curve.map(p => { pk = Math.max(pk, p.e); return { d: p.d, e: p.e / pk - 1 }; }); }
     $("#ddSub").textContent = `${t("dd.worst")} ${nf(Math.min(...dd.map(p => p.e)) * 100)}%`;
     areaChart($("#ddChart"), dd, { color: "var(--neg)" });
   }
-
-  /* ---- metrics ---- */
   function renderMetrics(k) {
     const b = DATA.books[k], h = b.headline, vp = b.validation_public, tr = b.track_record;
     const tiles = [
@@ -311,13 +389,10 @@
       { v: "-" + nf(vp.mc_p95_dd) + "%", l: t("mt.adv.l"), d: t("mt.adv.d") },
     ];
     $("#quantGrid").innerHTML = tiles.map(x => `<div class="qcard"><div class="qv">${x.v}</div><div class="ql">${x.l}</div><div class="qd">${x.d}</div></div>`).join("");
-    heatmap($("#monthlyHeatmap"), b.monthly_returns);
+    guard("#monthlyHeatmap", () => heatmap($("#monthlyHeatmap"), b.monthly_returns));
   }
-
-  /* ---- hedge ---- */
   function renderHedge() {
-    const h = DATA.hedge;
-    if (!h) { const s = document.getElementById("hedge"); if (s) s.style.display = "none"; return; }
+    const h = DATA.hedge; if (!h) { $("#hedgeHost").closest("section")?.style && ($("#hedgeHost").closest("section").style.display = "none"); return; }
     const u = h.unhedged, hh = h.hedged;
     const hero = [
       { v: `−${nf(h.dd_reduction)}pp`, l: t("hg.ddRed"), good: true },
@@ -340,23 +415,18 @@
           <thead><tr><th>${t("hg.metric")} (${nf(h.period.years)} ${t("hg.years")})</th><th>${t("hg.without")}</th><th>${t("hg.with")}</th></tr></thead>
           <tbody>${body}</tbody></table></div>
         <div class="hedge-elite">
-          <div class="he-lock">🔒</div>
-          <div class="he-t">${t("hg.eliteT")}</div>
+          <div class="he-lock">🔒</div><div class="he-t">${t("hg.eliteT")}</div>
           <div class="he-s">${interp(t("hg.eliteS"), { base: h.base_weight, stress: h.stress_weight })}</div>
-          <a class="btn btn-primary" href="#pricing">${t("hg.eliteCta")}</a>
+          <a class="btn btn-primary" href="plans.html">${t("hg.eliteCta")}</a>
         </div>
       </div>
       <p class="hedge-note">${interp(t("hg.note"), { years: nf(h.period.years), corr: h.corr_to_equity })}</p>`;
   }
-
-  /* ---- radar ---- */
   function renderRadar(k) {
     const b = DATA.books[k], s = b.signals_summary;
     $("#radarAsOf").textContent = `${t("radar.asof")} ${DATA.data_through}. ${b.regime_on ? t("radar.on") : t("radar.off")}`;
-    const rows = s.sample.slice(0, 8).map(tk =>
-      `<tr><td class="tk-cell">${tk}</td><td><span class="dir-buy">${t("radar.buy")}</span></td>
-       <td class="num"><span class="lockval">000.00</span></td><td class="num"><span class="lockval">000.00</span></td>
-       <td class="num"><span class="lockval">000.00</span></td></tr>`).join("");
+    const rows = s.sample.slice(0, 8).map(tk => `<tr><td class="tk-cell">${tk}</td><td><span class="dir-buy">${t("radar.buy")}</span></td>
+       <td class="num"><span class="lockval">000.00</span></td><td class="num"><span class="lockval">000.00</span></td><td class="num"><span class="lockval">000.00</span></td></tr>`).join("");
     $("#radarHost").innerHTML = `
       <div class="radar-summary">
         <div class="rs-pill"><div class="v pos">${s.active}</div><div class="l">${t("radar.active")}</div></div>
@@ -368,24 +438,18 @@
           <thead><tr><th>${t("radar.hAsset")}</th><th>${t("radar.hDir")}</th><th class="num">${t("radar.hEntry")}</th><th class="num">${t("radar.hStop")}</th><th class="num">${t("radar.hTarget")}</th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
-        <div class="locked-cta">
-          <div class="lk">🔒</div>
-          <div class="lt">${t("radar.lockT")}</div>
+        <div class="locked-cta"><div class="lk">🔒</div><div class="lt">${t("radar.lockT")}</div>
           <div class="ls">${interp(t("radar.lockS"), { n: s.total })}</div>
-          <a class="btn btn-primary" href="#pricing">${t("radar.lockCta")}</a>
-        </div>
+          <a class="btn btn-primary" href="plans.html">${t("radar.lockCta")}</a></div>
       </div>`;
   }
-
-  /* ---- replay (monthly) ---- */
   function moLabel(ym) { const [y, m] = ym.split("-"); return `${MONTHS[LANG][+m - 1]}/${y.slice(2)}`; }
   function renderReplay(k) {
     const rows = (DATA.books[k].monthly_results || []).slice().reverse();
     const maxAbs = Math.max(0.01, ...rows.map(r => Math.abs(r.avg_r)));
     const body = rows.map(r => {
       const pos = r.avg_r >= 0, w = Math.round(Math.abs(r.avg_r) / maxAbs * 90) + 6;
-      return `<tr><td class="mr-mo">${moLabel(r.month)}</td><td class="num">${r.n_trades}</td>
-        <td class="num">${nf(r.win_rate, 0)}%</td>
+      return `<tr><td class="mr-mo">${moLabel(r.month)}</td><td class="num">${r.n_trades}</td><td class="num">${nf(r.win_rate, 0)}%</td>
         <td class="num"><span class="mr-r ${pos ? "pos" : "neg"}">${pos ? "+" : ""}${nf(r.avg_r, 2)}R</span></td>
         <td><span class="mr-bar" style="width:${w}px;background:${pos ? "var(--pos)" : "var(--neg)"}"></span></td></tr>`;
     }).join("");
@@ -393,22 +457,18 @@
       <thead><tr><th>${t("rep.month")}</th><th class="num">${t("rep.trades")}</th><th class="num">${t("rep.win")}</th><th class="num">${t("rep.avg")}</th><th>${t("rep.trend")}</th></tr></thead>
       <tbody>${body}</tbody></table>`;
   }
-
-  /* ---- trust ---- */
   function buildTrust() {
-    $("#trustGrid").innerHTML = ["trust.b1", "trust.b2", "trust.b3", "trust.b4"]
-      .map(k => `<div class="rule"><div class="n">✓</div><p>${t(k)}</p></div>`).join("");
+    $("#trustGrid").innerHTML = ["trust.b1", "trust.b2", "trust.b3", "trust.b4"].map(k => `<div class="rule"><div class="n">✓</div><p>${t(k)}</p></div>`).join("");
   }
 
-  /* ---- pricing (USD) ---- */
+  /* ---- pricing (USD, Stripe-ready) ---- */
   let CYCLE = "monthly";
+  function subscribeHref(tier) { const l = STRIPE_LINKS[tier] && STRIPE_LINKS[tier][CYCLE]; return l ? l : `register.html?plan=${tier.toLowerCase()}&cycle=${CYCLE}`; }
   function renderPricing() {
     $("#pricingGrid").innerHTML = PLANS.map(p => {
       const annualMo = Math.round(p.monthly * (1 - p.disc));
       const price = CYCLE === "annual" ? annualMo : p.monthly;
-      const sub = CYCLE === "annual"
-        ? `<span class="price-strike">$${p.monthly}</span> ${t("price.billed")} $${annualMo * 12}/${t("price.year")}`
-        : t("price.cancel");
+      const sub = CYCLE === "annual" ? `<span class="price-strike">$${p.monthly}</span> ${t("price.billed")} $${annualMo * 12}/${t("price.year")}` : t("price.cancel");
       const save = CYCLE === "annual" ? `<div class="price-save">−${Math.round(p.disc * 100)}%</div>` : "";
       let featList = p.feats.slice();
       if (p.cycleFeat) featList = [featList[0], p.cycleFeat[CYCLE], ...featList.slice(1)];
@@ -419,22 +479,37 @@
         <div class="price-amt">$${price} <span>${t("price.perMonth")}</span></div>
         <div class="price-sub">${sub}</div>
         <ul class="price-feats">${feats}</ul>
-        <a class="btn ${p.featured ? "btn-primary" : "btn-ghost"} btn-block" href="#">${p.cta[LANG]}</a>
+        <a class="btn ${p.featured ? "btn-primary" : "btn-ghost"} btn-block" href="${subscribeHref(p.tier)}">${p.cta[LANG]}</a>
       </div>`;
     }).join("");
   }
   function initBilling() {
     const tg = $("#billingToggle"); if (!tg) return;
     tg.querySelectorAll(".bt-opt").forEach(b => b.onclick = () => {
-      tg.querySelectorAll(".bt-opt").forEach(x => x.classList.remove("on"));
-      b.classList.add("on"); CYCLE = b.dataset.cycle; renderPricing();
+      tg.querySelectorAll(".bt-opt").forEach(x => x.classList.remove("on")); b.classList.add("on"); CYCLE = b.dataset.cycle; renderPricing();
     });
   }
 
-  /* ---- language ---- */
-  function initLang() {
-    const tg = $("#langToggle"); if (!tg) return;
-    tg.querySelectorAll(".lang-opt").forEach(b => {
+  /* ---- auth forms (UI stub — no backend yet) ---- */
+  function initAuthForms() {
+    $$(".auth-form").forEach(f => f.onsubmit = ev => {
+      ev.preventDefault();
+      const msg = f.querySelector(".auth-msg");
+      if (msg) { msg.textContent = t("auth.soon"); msg.classList.add("show"); }
+      f.querySelectorAll("input").forEach(i => { if (i.type === "password") i.value = ""; });
+    });
+  }
+
+  /* ---- toggles (theme + language) ---- */
+  function initToggles() {
+    const th = $("#themeToggle");
+    if (th) th.onclick = () => {
+      const cur = document.documentElement.getAttribute("data-theme");
+      document.documentElement.setAttribute("data-theme", cur === "dark" ? "light" : "dark");
+      $$(".book-tabs").forEach(h => { const on = h.querySelector(".on"); if (on) on.click(); });
+    };
+    const lt = $("#langToggle");
+    if (lt) lt.querySelectorAll(".lang-opt").forEach(b => {
       b.classList.toggle("on", b.dataset.lang === LANG);
       b.onclick = () => { if (b.dataset.lang === LANG) return; LANG = b.dataset.lang; localStorage.setItem("seven7-lang", LANG); CYCLE = "monthly"; render(); };
     });
@@ -478,10 +553,9 @@
       dot0.setAttribute("cx", x(i)); dot0.setAttribute("cy", y(p[keys[0]])); dot0.setAttribute("opacity", 1);
       let rows = `<div class="tt-d">${p.d}</div>`;
       keys.forEach((k, ki) => { if (p[k] == null) return; rows += `<div class="tt-row"><span class="k">${opt.labels[ki]}</span><span class="val" style="color:${opt.colors[ki]}">${fmtPct((p[k] - 1) * 100)}</span></div>`; });
-      tip.innerHTML = rows; tip.hidden = false;
-      tip.style.left = Math.min(ev.clientX + 14, window.innerWidth - 160) + "px"; tip.style.top = (ev.clientY - 10) + "px";
+      if (tip) { tip.innerHTML = rows; tip.hidden = false; tip.style.left = Math.min(ev.clientX + 14, window.innerWidth - 160) + "px"; tip.style.top = (ev.clientY - 10) + "px"; }
     });
-    hit.addEventListener("pointerleave", () => { tip.hidden = true; cross.setAttribute("opacity", 0); dot0.setAttribute("opacity", 0); });
+    hit.addEventListener("pointerleave", () => { if (tip) tip.hidden = true; cross.setAttribute("opacity", 0); dot0.setAttribute("opacity", 0); });
     host.appendChild(svg);
   }
   function areaChart(host, pts, opt) {
@@ -513,14 +587,5 @@
       rows += `<tr>${tds}</tr>`;
     });
     table.innerHTML = head + rows; host.appendChild(table);
-  }
-
-  /* ---- theme ---- */
-  function initTheme() {
-    $("#themeToggle").onclick = () => {
-      const cur = document.documentElement.getAttribute("data-theme");
-      document.documentElement.setAttribute("data-theme", cur === "dark" ? "light" : "dark");
-      document.querySelectorAll(".book-tabs").forEach(h => { const on = h.querySelector(".on"); if (on) on.click(); });
-    };
   }
 })();
