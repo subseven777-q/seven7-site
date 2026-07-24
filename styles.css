@@ -54,6 +54,10 @@ h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.02em;font-weight:680}
 .theme-toggle{background:none;border:1px solid var(--border);color:var(--ink-2);width:34px;height:34px;
   border-radius:8px;cursor:pointer;font-size:15px}
 .theme-toggle:hover{color:var(--ink);border-color:var(--border-2)}
+.lang-toggle{display:inline-flex;gap:2px;padding:3px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px}
+.lang-opt{padding:5px 9px;border-radius:6px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;border:none;background:none;letter-spacing:.03em}
+.lang-opt.on{background:var(--raised);color:var(--ink)}
+.lang-opt:hover:not(.on){color:var(--ink)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:14px;
   padding:9px 16px;border-radius:9px;cursor:pointer;border:1px solid transparent;transition:.15s;white-space:nowrap}
 .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:var(--accent-ink);
