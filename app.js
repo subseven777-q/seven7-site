@@ -270,7 +270,7 @@
     </footer>`;
 
   let DATA = null;
-  const boot = window.__DATA__ ? Promise.resolve(window.__DATA__) : fetch("data/metrics.json").then(r => r.json());
+  const boot = window.__DATA__ ? Promise.resolve(window.__DATA__) : fetch("data/metrics.json?d=" + new Date().toISOString().slice(0, 10)).then(r => r.json());
   boot.then(d => { DATA = d; render(); }).catch(e => { render(); console.error(e); });
 
   function render() {
@@ -447,11 +447,12 @@
   function moLabel(ym) { const [y, m] = ym.split("-"); return `${MONTHS[LANG][+m - 1]}/${y.slice(2)}`; }
   function renderReplay(k) {
     const rows = (DATA.books[k].monthly_results || []).slice().reverse();
-    const maxAbs = Math.max(0.01, ...rows.map(r => Math.abs(r.avg_r)));
+    const val = r => (r.ret_pct != null ? r.ret_pct : 0);
+    const maxAbs = Math.max(0.01, ...rows.map(r => Math.abs(val(r))));
     const body = rows.map(r => {
-      const pos = r.avg_r >= 0, w = Math.round(Math.abs(r.avg_r) / maxAbs * 90) + 6;
+      const v = val(r), pos = v >= 0, w = Math.round(Math.abs(v) / maxAbs * 90) + 6;
       return `<tr><td class="mr-mo">${moLabel(r.month)}</td><td class="num">${r.n_trades}</td><td class="num">${nf(r.win_rate, 0)}%</td>
-        <td class="num"><span class="mr-r ${pos ? "pos" : "neg"}">${pos ? "+" : ""}${nf(r.avg_r, 2)}R</span></td>
+        <td class="num"><span class="mr-r ${pos ? "pos" : "neg"}">${pos ? "+" : ""}${nf(v, 1)}%</span></td>
         <td><span class="mr-bar" style="width:${w}px;background:${pos ? "var(--pos)" : "var(--neg)"}"></span></td></tr>`;
     }).join("");
     $("#replayHost").innerHTML = `<table class="mr-table">
