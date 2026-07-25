@@ -233,11 +233,12 @@
   ];
 
   /* ---------------- shared chrome ---------------- */
+  const MARK_SVG = `<svg viewBox="0 0 44 44" aria-hidden="true"><defs><linearGradient id="s7g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#43d8f6"/><stop offset="1" stop-color="#12a6cf"/></linearGradient></defs><path d="M7 7 H37 V15 H20 V21 H12 V15 H7 Z" fill="url(#s7g)"/><path d="M25 17 H37 L20 40 H9 Z" fill="url(#s7g)"/><path d="M7 7 L20 21 M37 7 L12 21 M25 17 L9 40 M37 17 L20 40" stroke="#06131d" stroke-width="0.9" opacity=".35" fill="none"/><g fill="#8fecfb"><circle cx="7" cy="7" r="1.7"/><circle cx="37" cy="7" r="1.7"/><circle cx="12" cy="21" r="1.7"/><circle cx="25" cy="17" r="1.7"/><circle cx="9" cy="40" r="1.7"/><circle cx="20" cy="40" r="1.7"/></g></svg>`;
   const NAV_HTML = `
     <header class="nav">
       <a class="brand" href="index.html">
-        <span class="brand-mark">7</span>
-        <span class="brand-wrap"><span class="brand-name">SEVEN7</span><span class="brand-tag" data-i18n="brand.tag"></span></span>
+        <span class="brand-mark">${MARK_SVG}</span>
+        <span class="brand-wrap"><span class="brand-name">Seven7</span><span class="brand-tag" data-i18n="brand.tag"></span></span>
       </a>
       <nav class="nav-links">
         <a href="performance.html" data-page="performance" data-i18n="nav.perf"></a>
@@ -259,7 +260,7 @@
   const FOOTER_HTML = `
     <footer class="footer">
       <div class="footer-top">
-        <div class="brand"><span class="brand-mark">7</span><span class="brand-name">SEVEN7</span></div>
+        <div class="brand"><span class="brand-mark">${MARK_SVG}</span><span class="brand-name">Seven7</span></div>
         <div class="footer-links">
           <a href="metrics.html" data-i18n="nav.metrics"></a><a href="performance.html" data-i18n="nav.perf"></a><a href="plans.html" data-i18n="nav.plans"></a>
         </div>

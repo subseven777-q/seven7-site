@@ -1,27 +1,27 @@
 /* ============ Seven7 — site styles ============ */
-/* Seven7 — identidade "Ink & Signal": grafite-azul + acento cobalto/azure.
+/* Seven7 — identidade "Grid & Signal": grafite-navy + acento CIANO da marca.
    Verde/vermelho reservados só para P&L (semântica), nunca para a marca. */
 :root,:root[data-theme="dark"]{
-  --plane:#080b12; --surface:#0f1421; --surface-2:#141b2b; --raised:#1a2334;
+  --plane:#080d16; --surface:#0e1522; --surface-2:#131c2c; --raised:#182338;
   --border:rgba(255,255,255,.08); --border-2:rgba(255,255,255,.15);
-  --ink:#eef2f9; --ink-2:#9aa6bd; --muted:#606c84;
-  --accent:#4b86ff; --accent-2:#2b63e6; --accent-ink:#ffffff;
+  --ink:#eef4fa; --ink-2:#97a6bd; --muted:#5e6c85;
+  --accent:#1fc6ea; --accent-2:#12a3cc; --accent-ink:#04141c;
   --pos:#2ccf83; --neg:#ff5d6c; --warn:#f2b23b;
-  --grid:rgba(255,255,255,.06); --axis:#2c3650;
-  --series:#4b86ff; --bench:#6c7891;
-  --heat-pos:#17a06a; --heat-neg:#dd4f5b; --heat-mid:#141b2b;
+  --grid:rgba(255,255,255,.06); --axis:#2b3650;
+  --series:#1fc6ea; --bench:#6c7891;
+  --heat-pos:#17a06a; --heat-neg:#dd4f5b; --heat-mid:#131c2c;
   --shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 14px 44px -14px rgba(0,0,0,.7);
 }
 :root[data-theme="light"]{
-  --plane:#eef1f7; --surface:#ffffff; --surface-2:#f5f7fc; --raised:#ffffff;
-  --border:rgba(9,14,26,.10); --border-2:rgba(9,14,26,.17);
-  --ink:#0a0f1a; --ink-2:#47526a; --muted:#78829a;
-  --accent:#2563eb; --accent-2:#1d4ed8; --accent-ink:#ffffff;
+  --plane:#eef2f7; --surface:#ffffff; --surface-2:#f4f8fb; --raised:#ffffff;
+  --border:rgba(9,16,26,.10); --border-2:rgba(9,16,26,.17);
+  --ink:#08131c; --ink-2:#45566a; --muted:#78859a;
+  --accent:#0a9ec6; --accent-2:#0883a6; --accent-ink:#ffffff;
   --pos:#0a9b5f; --neg:#d43b45; --warn:#c98500;
-  --grid:rgba(9,14,26,.07); --axis:#c3cbdb;
-  --series:#2563eb; --bench:#94a0b5;
+  --grid:rgba(9,16,26,.07); --axis:#c3cddb;
+  --series:#0a9ec6; --bench:#94a0b5;
   --heat-pos:#0f8f63; --heat-neg:#d8484f; --heat-mid:#eef2f9;
-  --shadow:0 1px 2px rgba(9,14,26,.05), 0 16px 44px -22px rgba(9,14,26,.2);
+  --shadow:0 1px 2px rgba(9,16,26,.05), 0 16px 44px -22px rgba(9,16,26,.2);
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -41,12 +41,10 @@ h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.02em;font-weight:680}
   padding:14px clamp(16px,4vw,48px);background:color-mix(in srgb,var(--plane) 82%,transparent);
   backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
 .brand{display:flex;align-items:center;gap:11px;font-weight:750}
-.brand-mark{display:grid;place-items:center;width:32px;height:32px;border-radius:9px;
-  background:linear-gradient(140deg,var(--accent),var(--accent-2));color:var(--accent-ink);
-  font-weight:800;font-size:17px;font-style:italic;letter-spacing:-.04em;
-  box-shadow:0 4px 14px -4px var(--accent)}
+.brand-mark{display:grid;place-items:center;width:34px;height:34px}
+.brand-mark svg{width:34px;height:34px;display:block;filter:drop-shadow(0 3px 10px color-mix(in srgb,var(--accent) 45%,transparent))}
 .brand-wrap{display:flex;flex-direction:column;line-height:1}
-.brand-name{font-size:15px;letter-spacing:.16em}
+.brand-name{font-size:19px;letter-spacing:-.01em;font-weight:750}
 .brand-tag{font-size:8px;letter-spacing:.2em;color:var(--muted);margin-top:4px}
 .nav-links{display:flex;gap:22px;margin-left:8px;font-size:14px;color:var(--ink-2)}
 .nav-links a:hover{color:var(--ink)}
@@ -87,7 +85,11 @@ h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.02em;font-weight:680}
 
 /* ---- hero ---- */
 .hero{padding:clamp(56px,9vw,120px) clamp(16px,4vw,48px) clamp(40px,6vw,80px);
-  background:radial-gradient(1200px 500px at 70% -10%,color-mix(in srgb,var(--accent) 10%,transparent),transparent 60%)}
+  background:
+    linear-gradient(var(--grid) 1px,transparent 1px) 0 -1px / 68px 68px,
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px) -1px 0 / 68px 68px,
+    radial-gradient(1100px 480px at 72% -8%,color-mix(in srgb,var(--accent) 13%,transparent),transparent 60%);
+  -webkit-mask-image:linear-gradient(180deg,#000,#000);position:relative}
 .hero-inner{max-width:1080px;margin:0 auto}
 .eyebrow{font-size:12px;letter-spacing:.24em;color:var(--accent);font-weight:700;margin-bottom:22px}
 .hero h1{font-size:clamp(38px,6.6vw,76px);font-weight:720}
