@@ -113,6 +113,21 @@ h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.02em;font-weight:680}
 .page-hero .sub{color:var(--ink-2);margin-top:14px;max-width:640px;font-size:16px}
 .page-hero .sub em{color:var(--ink);font-style:normal;font-weight:600}
 
+/* ---- home cherry teaser ---- */
+.cherry-teaser{display:flex;align-items:center;gap:22px;flex-wrap:wrap;
+  background:linear-gradient(120deg,color-mix(in srgb,var(--accent) 14%,var(--surface)),var(--surface));
+  border:1px solid color-mix(in srgb,var(--accent) 32%,var(--border));border-radius:18px;
+  padding:24px 28px;box-shadow:var(--shadow)}
+.cherry-teaser .ct-emoji{font-size:40px;line-height:1;filter:drop-shadow(0 4px 10px rgba(0,0,0,.3))}
+.cherry-teaser .ct-body{flex:1;min-width:220px}
+.cherry-teaser .ct-h{font-size:22px;font-weight:750;letter-spacing:-.01em}
+.cherry-teaser .ct-sub{font-size:14px;color:var(--ink-2);margin-top:6px;max-width:60ch}
+.cherry-teaser .ct-chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.cherry-teaser .ct-chip{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);
+  background:var(--surface-2);border:1px solid var(--border);border-radius:20px;padding:5px 12px}
+.cherry-teaser .ct-chip b{font-family:ui-monospace,monospace;font-size:14px;color:var(--pos);font-weight:750}
+.cherry-teaser .btn{white-space:nowrap}
+
 /* ---- home explore cards ---- */
 .home-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
 .home-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px 24px 20px;

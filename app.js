@@ -161,25 +161,29 @@
     "hg.eliteS": { en: "{base}% of capital in protection at all times, raised to {stress}% under stress. Elite members get which asset it is and the signal to switch.", pt: "{base}% do capital em proteção sempre, elevado a {stress}% em estresse. Membros Elite recebem qual é o ativo e o sinal de quando alternar." },
     "hg.eliteCta": { en: "Subscribe to Elite", pt: "Assinar Elite" },
     "hg.note": { en: "Measured over {years} years — a window that includes the 2022 stress. Correlation to the portfolio: {corr}.", pt: "Avaliado ao longo de {years} anos — janela que inclui o estresse de 2022. Correlação com a carteira: {corr}." },
-    // covered call
-    "cc.kicker": { en: "COVERED CALL · INCOME OVERLAY · ELITE", pt: "COVERED CALL · RENDA · ELITE" },
+    // cherry on top (mistério — mecanismo oculto, só métricas)
+    "cc.kicker": { en: "THE CHERRY ON TOP · ELITE", pt: "A CEREJA DO BOLO · ELITE" },
     "cc.h2": { en: "The cherry on top.", pt: "A cereja do bolo." },
-    "cc.sub": { en: "Every trade already has a fixed take-profit. Selling a call at that exact strike harvests premium on upside the position was going to give up anyway — income on every position, and a cushion on every loss. Elite only.", pt: "Toda operação já tem um take-profit fixo. Vender uma call nesse strike exato colhe prêmio sobre a alta que a posição já ia entregar — renda em cada posição e um colchão em cada perda. Exclusivo Elite." },
+    "cc.sub": { en: "An exclusive Elite layer lifts every metric that matters — more return, better risk-adjusted — on the very same trades, with no extra risk. What it is stays behind the Elite door. The numbers don't.", pt: "Uma camada exclusiva do Elite eleva cada métrica que importa — mais retorno, melhor risco-retorno — nas mesmas operações, sem risco a mais. O que é fica atrás da porta do Elite. Os números, não." },
     "cc.hCagr": { en: "extra CAGR / year", pt: "CAGR extra / ano" },
     "cc.hSharpe": { en: "Sharpe (risk × return)", pt: "Sharpe (risco × retorno)" },
     "cc.hSortino": { en: "Sortino (downside risk)", pt: "Sortino (risco de queda)" },
-    "cc.hPrem": { en: "premium per trade", pt: "prêmio por operação" },
+    "cc.hPrem": { en: "extra return / trade", pt: "retorno extra / operação" },
     "cc.metric": { en: "Metric (10 years)", pt: "Métrica (10 anos)" },
     "cc.stocks": { en: "Stocks only", pt: "Só ações" },
-    "cc.withcc": { en: "+ Covered Call", pt: "+ Covered Call" },
+    "cc.withcc": { en: "+ The cherry", pt: "+ A cereja" },
     "cc.rCagr": { en: "CAGR", pt: "CAGR" },
     "cc.rSharpe": { en: "Sharpe", pt: "Sharpe" },
     "cc.rSortino": { en: "Sortino", pt: "Sortino" },
     "cc.rMaxdd": { en: "Max drawdown", pt: "Max drawdown" },
-    "cc.eliteT": { en: "Covered-call income is Elite-exclusive", pt: "A renda com covered call é exclusiva do Elite" },
-    "cc.eliteS": { en: "Premium is collected on {cap}% of trades that never gap past target — the call only caps you where you were exiting anyway. Elite members get the strike and timing on every position.", pt: "O prêmio é colhido nos {cap}% de operações que não passam do alvo — a call só te limita onde você já ia sair. Membros Elite recebem o strike e o timing em cada posição." },
+    "cc.eliteT": { en: "The cherry is Elite-exclusive", pt: "A cereja é exclusiva do Elite" },
+    "cc.eliteS": { en: "Same trades, no extra risk taken — just a bigger result. Elite members get the full recipe and the live signal.", pt: "As mesmas operações, sem risco a mais — só um resultado maior. Membros Elite recebem a receita completa e o sinal ao vivo." },
     "cc.eliteCta": { en: "Subscribe to Elite", pt: "Assinar Elite" },
-    "cc.note": { en: "Option premium is modeled (Black-Scholes on realized volatility, conservative haircut) over 10 years of real prices — to be re-validated on live option chains.", pt: "O prêmio das opções é modelado (Black-Scholes sobre a volatilidade realizada, haircut conservador) em 10 anos de preços reais — a revalidar em cadeias de opções ao vivo." },
+    "cc.note": { en: "These figures are modeled and conservative, over 10 years of real prices — to be validated live. The recipe is revealed to Elite members.", pt: "Números modelados e conservadores, sobre 10 anos de preços reais — a validar ao vivo. A receita é revelada aos membros Elite." },
+    // home teaser
+    "cherry.teaserH": { en: "There's a cherry on top.", pt: "Tem uma cereja no bolo." },
+    "cherry.teaserSub": { en: "An Elite-only layer that lifts every number — on the same trades, no extra risk. See the difference.", pt: "Uma camada só do Elite que eleva cada número — nas mesmas operações, sem risco a mais. Veja a diferença." },
+    "cherry.teaserCta": { en: "See the cherry →", pt: "Ver a cereja →" },
     "tick.buy": { en: "BUY", pt: "COMPRA" },
     "tick.live": { en: "LIVE", pt: "AO VIVO" },
     "book.us": { en: "🇺🇸 US · S&P 100", pt: "🇺🇸 EUA · S&P 100" },
@@ -241,7 +245,7 @@
       },
       feats: [
         [true, { en: "Everything in Pro", pt: "Tudo do Pro" }],
-        [true, { en: "Covered-call income — premium harvested at every take-profit", pt: "Renda com covered call — prêmio colhido em cada take-profit" }, "hot"],
+        [true, { en: "🍒 The cherry on top — an exclusive layer that lifts every metric", pt: "🍒 A cereja do bolo — camada exclusiva que eleva cada métrica" }, "hot"],
         [true, { en: "Automated MT5 robot — trades the signals for you (bonus)", pt: "Robô automatizado em MT5 — opera os sinais sozinho (bônus)" }],
         [true, { en: "Exclusive Hedge — 15%→30% in an uncorrelated protection asset", pt: "Sinal de Hedge exclusivo — 15%→30% em ativo de proteção descorrelacionado" }],
         [true, { en: "Community: weekly market videos, outlook and reads", pt: "Comunidade: vídeos semanais de mercado, expectativas e leitura" }],
@@ -302,7 +306,8 @@
       const dc = $("#disclaimer"); if (dc) dc.textContent = t("disclaimer");
       guard("#bookTabs", () => initSection(["US", "BR", "GLOBAL"], "#bookTabs", renderTrack));
       guard("#quantHost", () => initSection(["US", "BR"], "#quantTabsHost", renderMetrics, "#quantHost"));
-      guard("#ccHost", renderCoveredCall);
+      guard("#cherryHost", renderCherry);
+      guard("#cherryTeaser", buildCherryTeaser);
       guard("#hedgeHost", renderHedge);
       guard("#radarTabs", () => initSection(["US", "BR"], "#radarTabs", renderRadar));
       guard("#replayTabs", () => initSection(["US", "BR"], "#replayTabs", renderReplay));
@@ -413,14 +418,14 @@
     $("#quantGrid").innerHTML = tiles.map(x => `<div class="qcard"><div class="qv">${x.v}</div><div class="ql">${x.l}</div><div class="qd">${x.d}</div></div>`).join("");
     guard("#monthlyHeatmap", () => heatmap($("#monthlyHeatmap"), b.monthly_returns));
   }
-  function renderCoveredCall() {
-    const c = DATA.covered_call; if (!c) { const s = $("#ccHost")?.closest("section"); if (s) s.style.display = "none"; return; }
-    const so = c.stocks_only, w = c.with_cc;
+  function renderCherry() {
+    const c = DATA.cherry; if (!c) { const s = $("#cherryHost")?.closest("section"); if (s) s.style.display = "none"; return; }
+    const so = c.stocks_only, w = c.with;
     const hero = [
       { v: `+${nf(w.cagr - so.cagr, 1)}pp`, l: t("cc.hCagr"), good: true },
       { v: `${so.sharpe}<span class="arrow">→</span><b class="pos">${w.sharpe}</b>`, l: t("cc.hSharpe") },
       { v: `${so.sortino}<span class="arrow">→</span><b class="pos">${w.sortino}</b>`, l: t("cc.hSortino") },
-      { v: `${nf(c.premium_lo, 1)}–${nf(c.premium_hi, 1)}%`, l: t("cc.hPrem"), good: true },
+      { v: `${nf(c.extra_lo, 1)}–${nf(c.extra_hi, 1)}%`, l: t("cc.hPrem"), good: true },
     ];
     const pct = v => (v > 0 ? "+" : "") + nf(v) + "%", dd = v => "-" + nf(Math.abs(v)) + "%";
     const rows = [
@@ -430,7 +435,7 @@
       [t("cc.rMaxdd"), dd(so.max_dd), dd(w.max_dd)],
     ];
     const body = rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td class="col-h hc-better">${r[2]}</td></tr>`).join("");
-    $("#ccHost").innerHTML = `
+    $("#cherryHost").innerHTML = `
       <div class="hedge-head">${hero.map(x => `<div class="hedge-hero"><div class="v ${x.good ? "good" : ""}">${x.v}</div><div class="l">${x.l}</div></div>`).join("")}</div>
       <div class="hedge-wrap">
         <div class="hedge-table-card"><table class="hedge-table">
@@ -438,11 +443,30 @@
           <tbody>${body}</tbody></table></div>
         <div class="hedge-elite">
           <div class="he-lock">🍒</div><div class="he-t">${t("cc.eliteT")}</div>
-          <div class="he-s">${interp(t("cc.eliteS"), { cap: nf(100 - c.capped_pct, 1) })}</div>
+          <div class="he-s">${t("cc.eliteS")}</div>
           <a class="btn btn-primary" href="plans.html">${t("cc.eliteCta")}</a>
         </div>
       </div>
       <p class="hedge-note">${t("cc.note")}</p>`;
+  }
+
+  function buildCherryTeaser() {
+    const c = DATA.cherry; const host = $("#cherryTeaser"); if (!c || !host) return;
+    const so = c.stocks_only, w = c.with;
+    const chips = [
+      [`+${nf(w.cagr - so.cagr, 1)}pp`, t("cc.hCagr")],
+      [`${so.sharpe}→${w.sharpe}`, "Sharpe"],
+      [`${so.sortino}→${w.sortino}`, "Sortino"],
+    ];
+    host.innerHTML = `<div class="cherry-teaser">
+      <div class="ct-emoji">🍒</div>
+      <div class="ct-body">
+        <div class="ct-h">${t("cherry.teaserH")}</div>
+        <div class="ct-sub">${t("cherry.teaserSub")}</div>
+        <div class="ct-chips">${chips.map(c => `<span class="ct-chip"><b>${c[0]}</b>${c[1]}</span>`).join("")}</div>
+      </div>
+      <a class="btn btn-primary" href="metrics.html#cherry">${t("cherry.teaserCta")}</a>
+    </div>`;
   }
 
   function renderHedge() {
