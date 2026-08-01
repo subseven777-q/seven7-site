@@ -1,19 +1,19 @@
 {
-  "last_run": "2026-07-29T22:30:54+00:00",
+  "last_run": "2026-07-30T22:30:42+00:00",
   "success": true,
-  "data_through": "2026-07-29",
+  "data_through": "2026-07-30",
   "steps": [
     {
       "step": "update_data",
       "ok": true,
       "returncode": 0,
-      "seconds": 39.0
+      "seconds": 32.0
     },
     {
       "step": "build_metrics",
       "ok": true,
       "returncode": 0,
-      "seconds": 12.0
+      "seconds": 8.0
     },
     {
       "step": "build_artifact",
