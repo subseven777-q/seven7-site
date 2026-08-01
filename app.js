@@ -11,7 +11,8 @@
   // Supabase (chaves PÚBLICAS — seguras no cliente; a segurança vem das regras RLS)
   const SUPABASE_URL = "https://ehqxuveyprrmjfcqmkhs.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocXh1dmV5cHJybWpmY3Fta2hzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1ODcwNDgsImV4cCI6MjEwMTE2MzA0OH0.KB2mXvqiFgc7SgKDLQU4uvplC-UGcFgE9SaauCQDAhU";
-  let sb = null, USER = null;
+  let sb = null, USER = null, PROFILE = null;
+  const isMember = () => PROFILE && PROFILE.status === "active";
 
   let LANG = localStorage.getItem("seven7-lang") || "en";
   const locale = () => (LANG === "en" ? "en-US" : "pt-BR");
@@ -216,6 +217,20 @@
     "auth.err": { en: "Couldn't complete: {msg}", pt: "Não deu certo: {msg}" },
     "auth.logout": { en: "Log out", pt: "Sair" },
     "auth.unavailable": { en: "Sign-in is temporarily unavailable. Please try again shortly.", pt: "O acesso está temporariamente indisponível. Tente novamente em instantes." },
+    "acct.kicker": { en: "ACCOUNT", pt: "CONTA" },
+    "acct.title": { en: "Your account", pt: "Sua conta" },
+    "acct.name": { en: "Name", pt: "Nome" },
+    "acct.email": { en: "Email", pt: "E-mail" },
+    "acct.plan": { en: "Plan", pt: "Plano" },
+    "acct.status": { en: "Status", pt: "Situação" },
+    "acct.free": { en: "Free", pt: "Grátis" },
+    "acct.active": { en: "Active subscriber", pt: "Assinante ativo" },
+    "acct.inactive": { en: "No active subscription", pt: "Sem assinatura ativa" },
+    "acct.upsell": { en: "Unlock the live signal levels, the hedge asset and the cherry recipe.", pt: "Libere os níveis dos sinais ao vivo, o ativo do hedge e a receita da cereja." },
+    "acct.subscribe": { en: "See plans", pt: "Ver planos" },
+    "acct.manage": { en: "Manage subscription", pt: "Gerenciar assinatura" },
+    "acct.needLogin": { en: "You're not logged in", pt: "Você não está logado" },
+    "acct.needLoginSub": { en: "Log in to see your account and subscription.", pt: "Entre para ver sua conta e assinatura." },
     "auth.orTrial": { en: "or start a free trial", pt: "ou comece um teste grátis" },
     "page.plans.trial": { en: "Includes a 7-day free trial · cancel anytime", pt: "Inclui teste grátis de 7 dias · cancele quando quiser" },
   };
@@ -589,16 +604,25 @@
       sb = mod.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       const { data } = await sb.auth.getSession();
       USER = data?.session?.user || null;
-      updateAuthUI();
-      sb.auth.onAuthStateChange((_ev, session) => { USER = session?.user || null; updateAuthUI(); });
-    } catch (e) { console.error("auth init failed", e); }
+      await loadProfile();
+      updateAuthUI(); renderAccount();
+      sb.auth.onAuthStateChange(async (_ev, session) => {
+        USER = session?.user || null; await loadProfile(); updateAuthUI(); renderAccount();
+      });
+    } catch (e) { console.error("auth init failed", e); renderAccount(); }
     wireAuthForms();
+  }
+  async function loadProfile() {
+    PROFILE = null;
+    if (!sb || !USER) return;
+    try { const { data } = await sb.from("profiles").select("*").eq("id", USER.id).single(); PROFILE = data || null; } catch (e) { PROFILE = null; }
   }
   function updateAuthUI() {
     const host = $("#navAuth"); if (!host) return;
     if (USER) {
       const name = USER.user_metadata?.name || USER.email;
-      host.innerHTML = `<span class="nav-user" title="${USER.email}">${name}</span><button class="btn btn-ghost" id="logoutBtn">${t("auth.logout")}</button>`;
+      const badge = isMember() ? `<span class="nav-plan">${(PROFILE.plan || "").toUpperCase()}</span>` : "";
+      host.innerHTML = `<a class="nav-user" href="account.html" title="${USER.email}">${name}${badge}</a><button class="btn btn-ghost" id="logoutBtn">${t("auth.logout")}</button>`;
       const lb = $("#logoutBtn"); if (lb) lb.onclick = async () => { if (sb) await sb.auth.signOut(); location.href = "index.html"; };
     } else {
       host.innerHTML = `<a class="btn btn-ghost" href="login.html">${t("nav.login")}</a><a class="btn btn-primary" href="register.html">${t("nav.trial")}</a>`;
@@ -632,6 +656,33 @@
         show(interp(t("auth.err"), { msg: (e && e.message) || e }), false);
       } finally { if (btn) btn.disabled = false; f.querySelectorAll('input[type="password"]').forEach(i => i.value = ""); }
     };
+  }
+
+  /* ---- account page ---- */
+  function renderAccount() {
+    const host = $("#accountHost"); if (!host) return;
+    if (!USER) {
+      host.innerHTML = `<div class="auth-card" style="margin:0 auto">
+        <h1>${t("acct.needLogin")}</h1><p class="auth-sub">${t("acct.needLoginSub")}</p>
+        <a class="btn btn-primary btn-block" href="login.html">${t("nav.login")}</a></div>`;
+      return;
+    }
+    const p = PROFILE || {}, member = isMember();
+    const planName = member ? (p.plan || "—").toUpperCase() : t("acct.free");
+    host.innerHTML = `
+      <div class="acct-card">
+        <div class="acct-grid">
+          <div class="acct-row"><span class="acct-k">${t("acct.name")}</span><span class="acct-v">${(USER.user_metadata && USER.user_metadata.name) || "—"}</span></div>
+          <div class="acct-row"><span class="acct-k">${t("acct.email")}</span><span class="acct-v">${USER.email}</span></div>
+          <div class="acct-row"><span class="acct-k">${t("acct.plan")}</span><span class="acct-v"><span class="acct-badge ${member ? "on" : ""}">${planName}</span></span></div>
+          <div class="acct-row"><span class="acct-k">${t("acct.status")}</span><span class="acct-v">${member ? t("acct.active") : t("acct.inactive")}</span></div>
+        </div>
+        ${member
+        ? `<a class="btn btn-ghost btn-block" href="#" id="manageBtn">${t("acct.manage")}</a>`
+        : `<div class="acct-upsell"><p>${t("acct.upsell")}</p><a class="btn btn-primary btn-block" href="plans.html">${t("acct.subscribe")}</a></div>`}
+        <button class="btn btn-ghost btn-block" id="acctLogout">${t("auth.logout")}</button>
+      </div>`;
+    const lo = $("#acctLogout"); if (lo) lo.onclick = async () => { if (sb) await sb.auth.signOut(); location.href = "index.html"; };
   }
 
   /* ---- toggles (theme + language) ---- */
