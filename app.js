@@ -8,6 +8,11 @@
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const elh = (tag, c, h) => { const e = document.createElement(tag); if (c) e.className = c; if (h != null) e.innerHTML = h; return e; };
 
+  // Supabase (chaves PÚBLICAS — seguras no cliente; a segurança vem das regras RLS)
+  const SUPABASE_URL = "https://ehqxuveyprrmjfcqmkhs.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocXh1dmV5cHJybWpmY3Fta2hzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1ODcwNDgsImV4cCI6MjEwMTE2MzA0OH0.KB2mXvqiFgc7SgKDLQU4uvplC-UGcFgE9SaauCQDAhU";
+  let sb = null, USER = null;
+
   let LANG = localStorage.getItem("seven7-lang") || "en";
   const locale = () => (LANG === "en" ? "en-US" : "pt-BR");
   const MONTHS = { en: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], pt: ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"] };
@@ -206,6 +211,11 @@
     "auth.register.have": { en: "Already have an account?", pt: "Já tem conta?" },
     "auth.register.login": { en: "Log in", pt: "Entrar" },
     "auth.soon": { en: "Accounts are launching soon — we saved your interest. We'll email you the moment sign-ups open.", pt: "As contas estão sendo lançadas — registramos seu interesse. Avisaremos por e-mail assim que abrir." },
+    "auth.checkEmail": { en: "Account created! Check your inbox to confirm your email — then log in.", pt: "Conta criada! Confira seu e-mail para confirmar o endereço — depois é só entrar." },
+    "auth.loginOk": { en: "Logged in. Welcome back!", pt: "Login feito. Bem-vindo de volta!" },
+    "auth.err": { en: "Couldn't complete: {msg}", pt: "Não deu certo: {msg}" },
+    "auth.logout": { en: "Log out", pt: "Sair" },
+    "auth.unavailable": { en: "Sign-in is temporarily unavailable. Please try again shortly.", pt: "O acesso está temporariamente indisponível. Tente novamente em instantes." },
     "auth.orTrial": { en: "or start a free trial", pt: "ou comece um teste grátis" },
     "page.plans.trial": { en: "Includes a 7-day free trial · cancel anytime", pt: "Inclui teste grátis de 7 dias · cancele quando quiser" },
   };
@@ -277,8 +287,10 @@
           <button class="lang-opt" data-lang="pt">PT</button>
         </div>
         <button class="theme-toggle" id="themeToggle" title="Theme" aria-label="Theme">◐</button>
-        <a class="btn btn-ghost" href="login.html" data-i18n="nav.login"></a>
-        <a class="btn btn-primary" href="register.html" data-i18n="nav.trial"></a>
+        <span class="nav-auth" id="navAuth">
+          <a class="btn btn-ghost" href="login.html" data-i18n="nav.login"></a>
+          <a class="btn btn-primary" href="register.html" data-i18n="nav.trial"></a>
+        </span>
       </div>
     </header>`;
   const FOOTER_HTML = `
@@ -315,7 +327,7 @@
       guard("#homeCards", buildHomeCards);
     }
     guard("#pricingGrid", () => { renderPricing(); initBilling(); });
-    initAuthForms();
+    initAuth();
     const cp = $("#copy"); if (cp) cp.textContent = t("footer.copy");
   }
   function guard(sel, fn) { if ($(sel)) fn(); }
@@ -570,14 +582,56 @@
     });
   }
 
-  /* ---- auth forms (UI stub — no backend yet) ---- */
-  function initAuthForms() {
-    $$(".auth-form").forEach(f => f.onsubmit = ev => {
+  /* ---- auth (Supabase) ---- */
+  async function initAuth() {
+    try {
+      const mod = await import("https://esm.sh/@supabase/supabase-js@2");
+      sb = mod.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const { data } = await sb.auth.getSession();
+      USER = data?.session?.user || null;
+      updateAuthUI();
+      sb.auth.onAuthStateChange((_ev, session) => { USER = session?.user || null; updateAuthUI(); });
+    } catch (e) { console.error("auth init failed", e); }
+    wireAuthForms();
+  }
+  function updateAuthUI() {
+    const host = $("#navAuth"); if (!host) return;
+    if (USER) {
+      const name = USER.user_metadata?.name || USER.email;
+      host.innerHTML = `<span class="nav-user" title="${USER.email}">${name}</span><button class="btn btn-ghost" id="logoutBtn">${t("auth.logout")}</button>`;
+      const lb = $("#logoutBtn"); if (lb) lb.onclick = async () => { if (sb) await sb.auth.signOut(); location.href = "index.html"; };
+    } else {
+      host.innerHTML = `<a class="btn btn-ghost" href="login.html">${t("nav.login")}</a><a class="btn btn-primary" href="register.html">${t("nav.trial")}</a>`;
+    }
+  }
+  function wireAuthForms() {
+    const f = $(".auth-form"); if (!f) return;
+    const page = document.body.dataset.page;
+    const msg = f.querySelector(".auth-msg");
+    const show = (txt, ok) => { if (!msg) return; msg.textContent = txt; msg.classList.add("show"); msg.classList.toggle("err", !ok); };
+    f.onsubmit = async ev => {
       ev.preventDefault();
-      const msg = f.querySelector(".auth-msg");
-      if (msg) { msg.textContent = t("auth.soon"); msg.classList.add("show"); }
-      f.querySelectorAll("input").forEach(i => { if (i.type === "password") i.value = ""; });
-    });
+      if (!sb) { show(t("auth.unavailable"), false); return; }
+      const btn = f.querySelector("button[type=submit]"); if (btn) btn.disabled = true;
+      try {
+        if (page === "register") {
+          const name = ($("#rg-name") || {}).value?.trim() || "";
+          const email = $("#rg-email").value.trim(), pass = $("#rg-pass").value;
+          const { error } = await sb.auth.signUp({ email, password: pass, options: { data: { name }, emailRedirectTo: new URL(".", location.href).href } });
+          if (error) throw error;
+          show(t("auth.checkEmail"), true);
+          f.querySelectorAll("input").forEach(i => i.value = "");
+        } else {
+          const email = $("#li-email").value.trim(), pass = $("#li-pass").value;
+          const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+          if (error) throw error;
+          show(t("auth.loginOk"), true);
+          setTimeout(() => location.href = "index.html", 900);
+        }
+      } catch (e) {
+        show(interp(t("auth.err"), { msg: (e && e.message) || e }), false);
+      } finally { if (btn) btn.disabled = false; f.querySelectorAll('input[type="password"]').forEach(i => i.value = ""); }
+    };
   }
 
   /* ---- toggles (theme + language) ---- */

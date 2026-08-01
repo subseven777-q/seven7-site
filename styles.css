@@ -152,6 +152,9 @@ h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.02em;font-weight:680}
 .auth-msg{display:none;font-size:13px;color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent);
   border:1px solid color-mix(in srgb,var(--accent) 26%,transparent);border-radius:10px;padding:11px 13px;line-height:1.45}
 .auth-msg.show{display:block}
+.auth-msg.err{color:var(--neg);background:color-mix(in srgb,var(--neg) 12%,transparent);border-color:color-mix(in srgb,var(--neg) 26%,transparent)}
+.nav-auth{display:inline-flex;align-items:center;gap:10px}
+.nav-user{font-size:13.5px;font-weight:600;color:var(--ink-2);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .auth-alt{margin-top:20px;font-size:13.5px;color:var(--ink-2);text-align:center}
 .auth-alt a{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:2px}
 .auth-legal{font-size:11.5px;color:var(--muted);margin-top:16px;text-align:center;line-height:1.5}
