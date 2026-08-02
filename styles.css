@@ -59,7 +59,8 @@ h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.02em;font-weight:680}
 .lang-opt.on{background:var(--raised);color:var(--ink)}
 .lang-opt:hover:not(.on){color:var(--ink)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:14px;
-  padding:9px 16px;border-radius:9px;cursor:pointer;border:1px solid transparent;transition:.15s;white-space:nowrap}
+  padding:9px 16px;border-radius:9px;cursor:pointer;border:1px solid transparent;transition:.15s;white-space:nowrap;
+  background:transparent;font-family:inherit;-webkit-appearance:none;appearance:none}
 .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:var(--accent-ink);
   box-shadow:0 6px 20px -8px var(--accent)}
 .btn-primary:hover{filter:brightness(1.06);transform:translateY(-1px)}
