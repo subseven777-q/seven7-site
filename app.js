@@ -38,6 +38,7 @@
     "nav.metrics": { en: "Metrics", pt: "Métricas" },
     "nav.signals": { en: "Signals", pt: "Sinais" },
     "nav.replay": { en: "Replay", pt: "Replay" },
+    "nav.portfolio": { en: "Portfolio", pt: "Portfólio" },
     "nav.plans": { en: "Plans", pt: "Planos" },
     "nav.login": { en: "Log in", pt: "Entrar" },
     "nav.trial": { en: "Free trial", pt: "Teste grátis" },
@@ -166,6 +167,35 @@
     "sig.stMon": { en: "MONITORING", pt: "MONITORANDO" },
     "sig.stFlat": { en: "CASH", pt: "CAIXA" },
     "sig.openTV": { en: "Open in TradingView", pt: "Abrir no TradingView" },
+    "sig.allocLbl": { en: "% of deposit", pt: "% do depósito" },
+    "sig.addBtn": { en: "＋ Portfolio", pt: "＋ Portfólio" },
+    "sig.added": { en: "Added ✓", pt: "Adicionado ✓" },
+    "sig.goPortfolio": { en: "view portfolio →", pt: "ver portfólio →" },
+    "sig.addErr": { en: "Couldn't add.", pt: "Não deu para adicionar." },
+    "pf.needLoginSub": { en: "Log in to build and track your portfolio.", pt: "Entre para montar e acompanhar seu portfólio." },
+    "pf.deposit": { en: "Initial deposit", pt: "Depósito inicial" },
+    "pf.save": { en: "Save", pt: "Salvar" },
+    "pf.saved": { en: "Saved ✓ (metrics update at the next daily run)", pt: "Salvo ✓ (as métricas atualizam no próximo ciclo diário)" },
+    "pf.value": { en: "Portfolio value", pt: "Valor do portfólio" },
+    "pf.return": { en: "Total return", pt: "Retorno total" },
+    "pf.win": { en: "Win rate", pt: "Win rate" },
+    "pf.dd": { en: "Max drawdown", pt: "Max drawdown" },
+    "pf.drag": { en: "Vol drag", pt: "Vol drag" },
+    "pf.open": { en: "Open positions", pt: "Posições abertas" },
+    "pf.you": { en: "You", pt: "Você" },
+    "pf.chart": { en: "You vs Buy & Hold (SPY · BOVA11)", pt: "Você vs Buy & Hold (SPY · BOVA11)" },
+    "pf.added": { en: "Added", pt: "Adicionado" },
+    "pf.alloc": { en: "% deposit", pt: "% depósito" },
+    "pf.current": { en: "Current", pt: "Atual" },
+    "pf.pl": { en: "P&L", pt: "Resultado" },
+    "pf.won": { en: "WON", pt: "GANHOU" },
+    "pf.lost": { en: "LOST", pt: "PERDEU" },
+    "pf.openst": { en: "OPEN", pt: "ABERTA" },
+    "pf.remove": { en: "Remove", pt: "Remover" },
+    "pf.computing": { en: "Full metrics (drawdown, vol drag, benchmark curve) are computed daily — they'll appear after the next update.", pt: "As métricas completas (drawdown, vol drag, curva comparativa) são calculadas diariamente — aparecem após a próxima atualização." },
+    "pf.emptyT": { en: "Your portfolio is empty", pt: "Seu portfólio está vazio" },
+    "pf.emptyS": { en: "Add a signal to your portfolio to track it — deposit, allocation, P&L, drawdown, all vs SPY & BOVA11.", pt: "Adicione um sinal ao portfólio para acompanhar — depósito, alocação, resultado, drawdown, tudo vs SPY e BOVA11." },
+    "pf.emptyCta": { en: "Go to Signals", pt: "Ir para Sinais" },
     "rep.month": { en: "Month", pt: "Mês" },
     "rep.trades": { en: "Trades", pt: "Operações" },
     "rep.win": { en: "Win rate", pt: "Acerto" },
@@ -313,6 +343,7 @@
         <a href="performance.html" data-page="performance" data-i18n="nav.perf"></a>
         <a href="metrics.html" data-page="metrics" data-i18n="nav.metrics"></a>
         <a href="signals.html" data-page="signals" data-i18n="nav.signals"></a>
+        <a href="portfolio.html" data-page="portfolio" data-i18n="nav.portfolio"></a>
         <a href="replay.html" data-page="replay" data-i18n="nav.replay"></a>
         <a href="plans.html" data-page="plans" data-i18n="nav.plans"></a>
       </nav>
@@ -625,9 +656,9 @@
       const { data } = await sb.auth.getSession();
       USER = data?.session?.user || null;
       await loadProfile();
-      updateAuthUI(); renderAccount(); renderMemberSignals();
+      updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio();
       sb.auth.onAuthStateChange(async (_ev, session) => {
-        USER = session?.user || null; await loadProfile(); updateAuthUI(); renderAccount(); renderMemberSignals();
+        USER = session?.user || null; await loadProfile(); updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio();
       });
     } catch (e) { console.error("auth init failed", e); renderAccount(); }
     wireAuthForms();
@@ -705,6 +736,7 @@
         <div class="sig-charthead" id="sigChartHead"></div>
         <div class="tvchart" id="tvChart"></div>
         <div class="sig-levels" id="sigLevels"></div>
+        <div class="sig-add" id="sigAdd"></div>
       </div>
       <div class="sig-tablewrap"><table class="sig-table" id="sigTable"></table></div>`;
     paintSignals();
@@ -760,7 +792,30 @@
       <div class="lvl"><span class="lk">${t("sig.tp")}</span><span class="lv-v pos">${fmtNum(s.tp)}</span></div>
       <div class="lvl"><span class="lk">R:R</span><span class="lv-v">${s.rr != null ? nf(s.rr, 2) : "—"}</span></div>
       ${elite ? `<div class="lvl cc"><span class="lk">🍒 ${t("sig.cc")}</span><span class="lv-v">@${fmtNum(s.cc_strike)} · ${nf(s.cc_premium_pct, 1)}%</span></div>` : ""}`;
+    const add = $("#sigAdd");
+    if (add) {
+      add.innerHTML = `<span class="alloc-lbl">${t("sig.allocLbl")}</span>
+        <input id="allocPct" class="alloc-in" type="number" value="5" min="0.5" max="100" step="0.5"> %
+        <button class="btn btn-primary" id="addPortfolioBtn">${t("sig.addBtn")}</button>
+        <span class="add-msg" id="addMsg"></span>`;
+      $("#addPortfolioBtn").onclick = async () => {
+        const pct = Math.min(100, Math.max(0.5, parseFloat($("#allocPct").value) || 5));
+        const msg = $("#addMsg"), btn = $("#addPortfolioBtn"); btn.disabled = true;
+        const err = await addPosition(s, pct);
+        if (err) { msg.textContent = t("sig.addErr"); msg.className = "add-msg err"; }
+        else { msg.innerHTML = `${t("sig.added")} <a href="portfolio.html">${t("sig.goPortfolio")}</a>`; msg.className = "add-msg ok"; }
+        btn.disabled = false;
+      };
+    }
     showTVChart(s.tv_symbol);
+  }
+  async function addPosition(sig, allocPct) {
+    if (!sb || !USER) return "no-auth";
+    const { error } = await sb.from("portfolio_positions").insert({
+      ticker: sig.ticker, tv_symbol: sig.tv_symbol, market: sig.market,
+      entry: sig.entry, stop: sig.stop, tp: sig.tp, alloc_pct: allocPct,
+    });
+    return error;
   }
 
   function ensureTV() {
@@ -782,6 +837,85 @@
       style: "1", locale: LANG === "pt" ? "br" : "en",
       hide_side_toolbar: true, allow_symbol_change: false, save_image: false,
     });
+  }
+
+  /* ---- portfolio page ---- */
+  async function renderPortfolio() {
+    const host = $("#portfolioHost"); if (!host || document.body.dataset.page !== "portfolio") return;
+    if (!USER) {
+      host.innerHTML = `<div class="auth-card" style="margin:0 auto"><h1>${t("acct.needLogin")}</h1><p class="auth-sub">${t("pf.needLoginSub")}</p><a class="btn btn-primary btn-block" href="login.html">${t("nav.login")}</a></div>`;
+      return;
+    }
+    host.innerHTML = `<p class="muted-note">${t("sig.loading")}</p>`;
+    const [pr, po, st] = await Promise.all([
+      sb.from("profiles").select("portfolio_deposit,portfolio_currency").eq("id", USER.id).maybeSingle(),
+      sb.from("portfolio_positions").select("*").order("added_at", { ascending: false }),
+      sb.from("portfolio_stats").select("data").eq("user_id", USER.id).maybeSingle(),
+    ]);
+    const deposit = (pr.data && pr.data.portfolio_deposit) || 10000;
+    const cur = (pr.data && pr.data.portfolio_currency) || "USD";
+    const positions = po.data || [];
+    const d = (st.data && st.data.data) || null;
+    const sym = cur === "BRL" ? "R$" : "$";
+    const money = v => v == null ? "—" : sym + Number(v).toLocaleString(locale(), { maximumFractionDigits: 0 });
+
+    let html = `<div class="pf-deposit">
+      <label>${t("pf.deposit")}</label>
+      <div class="pf-dep-in"><span>${sym}</span><input id="pfDeposit" type="number" value="${deposit}" min="0" step="100"></div>
+      <button class="btn btn-ghost" id="pfSaveDep">${t("pf.save")}</button>
+      <span class="add-msg" id="pfDepMsg"></span></div>`;
+
+    if (!positions.length) {
+      html += `<div class="pf-empty"><div class="pf-empty-ic">📈</div><div class="pf-empty-t">${t("pf.emptyT")}</div>
+        <div class="pf-empty-s">${t("pf.emptyS")}</div><a class="btn btn-primary" href="signals.html">${t("pf.emptyCta")}</a></div>`;
+    } else {
+      const you = d ? d.total_return : null, spy = d ? d.spy_return : null, bova = d ? d.bova_return : null;
+      html += `<div class="pf-tiles">
+        <div class="stat"><div class="v">${money(d ? d.value : deposit)}</div><div class="l">${t("pf.value")}</div></div>
+        <div class="stat"><div class="v ${you >= 0 ? "pos" : "neg"}">${you == null ? "—" : fmtPct(you)}</div><div class="l">${t("pf.return")}</div></div>
+        <div class="stat"><div class="v">${d && d.win_rate != null ? nf(d.win_rate, 0) + "%" : "—"}</div><div class="l">${t("pf.win")}</div></div>
+        <div class="stat"><div class="v neg">${d ? "-" + nf(d.max_dd, 1) + "%" : "—"}</div><div class="l">${t("pf.dd")}</div></div>
+        <div class="stat"><div class="v">${d ? nf(d.vol_drag, 2) + "%" : "—"}</div><div class="l">${t("pf.drag")}</div></div>
+        <div class="stat"><div class="v">${d ? d.n_open : positions.filter(p => p.status === "open").length}</div><div class="l">${t("pf.open")}</div></div>
+      </div>`;
+      // benchmark headline + chart
+      html += `<div class="pf-vs">
+        <span class="pf-vs-you">${t("pf.you")}: <b class="${you >= 0 ? "pos" : "neg"}">${you == null ? "—" : fmtPct(you)}</b></span>
+        <span>SPY: <b>${spy == null ? "—" : fmtPct(spy)}</b></span>
+        <span>BOVA11: <b>${bova == null ? "—" : fmtPct(bova)}</b></span></div>
+      <div class="chart-card"><div class="chart-head"><div class="chart-title">${t("pf.chart")}</div>
+        <div class="legend"><span class="lg"><span class="sw" style="background:var(--series)"></span>${t("pf.you")}</span><span class="lg"><span class="sw" style="background:var(--bench)"></span>SPY</span><span class="lg"><span class="sw" style="background:var(--warn)"></span>BOVA11</span></div></div>
+        <div class="chart-body" id="pfChart"></div></div>`;
+      // positions table
+      const rows = positions.map(p => {
+        const stc = p.status === "won" ? "pos" : p.status === "lost" ? "neg" : "";
+        const stl = p.status === "won" ? t("pf.won") : p.status === "lost" ? t("pf.lost") : t("pf.openst");
+        return `<tr><td class="tk-cell">${p.ticker} <span class="mkt">${p.market}</span></td>
+          <td>${p.added_at}</td><td class="num">${nf(p.alloc_pct, 1)}%</td>
+          <td class="num">${fmtNum(p.entry)}</td><td class="num">${fmtNum(p.current_price ?? p.entry)}</td>
+          <td><span class="st ${p.status === "open" ? "wait" : p.status === "won" ? "active" : "flat"}">${stl}</span></td>
+          <td class="num ${stc}">${p.ret_pct == null ? "—" : fmtPct(p.ret_pct)}</td>
+          <td><button class="pf-del" data-id="${p.id}" title="${t("pf.remove")}">✕</button></td></tr>`;
+      }).join("");
+      html += `<div class="table-wrap" style="margin-top:18px"><table class="sig-table"><thead><tr>
+        <th>${t("sig.ticker")}</th><th>${t("pf.added")}</th><th class="num">${t("pf.alloc")}</th><th class="num">${t("sig.entry")}</th><th class="num">${t("pf.current")}</th><th>${t("sig.state")}</th><th class="num">${t("pf.pl")}</th><th></th>
+        </tr></thead><tbody>${rows}</tbody></table></div>
+        ${d ? "" : `<p class="hedge-note">${t("pf.computing")}</p>`}`;
+    }
+    host.innerHTML = html;
+
+    const save = $("#pfSaveDep");
+    if (save) save.onclick = async () => {
+      const val = Math.max(0, parseFloat($("#pfDeposit").value) || 0);
+      const { error } = await sb.from("profiles").update({ portfolio_deposit: val }).eq("id", USER.id);
+      const m = $("#pfDepMsg"); m.textContent = error ? t("sig.addErr") : t("pf.saved"); m.className = "add-msg " + (error ? "err" : "ok");
+    };
+    host.querySelectorAll(".pf-del").forEach(b => b.onclick = async () => {
+      await sb.from("portfolio_positions").delete().eq("id", b.dataset.id); renderPortfolio();
+    });
+    if (d && d.curve && d.curve.length > 1) {
+      lineChart($("#pfChart"), d.curve, { keys: ["p", "spy", "bova"], colors: ["var(--series)", "var(--bench)", "var(--warn)"], labels: [t("pf.you"), "SPY", "BOVA11"], dash: [false, true, true], asPctGrowth: true });
+    }
   }
 
   /* ---- account page ---- */

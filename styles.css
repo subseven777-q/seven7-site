@@ -374,6 +374,29 @@ h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.02em;font-weight:680}
 .sig-table tbody tr:hover td{background:var(--surface-2)}
 .sig-table tbody tr.sel td{background:color-mix(in srgb,var(--accent) 12%,var(--surface))}
 .sig-table .mkt{font-size:9.5px;color:var(--muted);border:1px solid var(--border);border-radius:4px;padding:1px 4px;margin-left:4px;vertical-align:middle}
+.sig-add{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.sig-add .alloc-lbl{font-size:12.5px;color:var(--ink-2)}
+.sig-add .alloc-in{width:64px;background:var(--surface-2);border:1px solid var(--border-2);border-radius:8px;padding:7px 9px;color:var(--ink);font-family:ui-monospace,monospace;font-size:14px}
+.add-msg{font-size:12.5px}
+.add-msg.ok{color:var(--pos)} .add-msg.ok a{color:var(--accent);text-decoration:underline}
+.add-msg.err{color:var(--neg)}
+
+/* ---- portfolio page ---- */
+.pf-deposit{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:22px}
+.pf-deposit label{font-size:13px;color:var(--ink-2);font-weight:600}
+.pf-dep-in{display:inline-flex;align-items:center;gap:4px;background:var(--surface-2);border:1px solid var(--border-2);border-radius:10px;padding:8px 12px}
+.pf-dep-in span{color:var(--muted)}
+.pf-dep-in input{width:120px;background:none;border:none;color:var(--ink);font-family:ui-monospace,monospace;font-size:15px;outline:none}
+.pf-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:18px}
+.pf-vs{display:flex;flex-wrap:wrap;gap:22px;font-size:14px;color:var(--ink-2);margin-bottom:16px}
+.pf-vs b{font-family:ui-monospace,monospace}
+.pf-vs .pf-vs-you{font-weight:600;color:var(--ink)}
+.pf-empty{text-align:center;padding:56px 20px;background:var(--surface);border:1px solid var(--border);border-radius:16px}
+.pf-empty-ic{font-size:40px}
+.pf-empty-t{font-size:20px;font-weight:700;margin-top:12px}
+.pf-empty-s{color:var(--ink-2);font-size:14px;margin:8px auto 20px;max-width:46ch}
+.pf-del{background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:12px}
+.pf-del:hover{color:var(--neg);border-color:var(--neg)}
 
 /* ---- proprietary note ---- */
 .proprietary{margin-top:22px;max-width:680px;color:var(--ink-2);font-size:15px;
