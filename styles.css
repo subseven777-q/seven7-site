@@ -341,25 +341,37 @@ h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.02em;font-weight:680}
 .hedge-note{font-size:12px;color:var(--muted);margin-top:14px;line-height:1.5}
 
 /* ---- members signals dashboard ---- */
-.sig-summary{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:18px}
-.sig-layout{display:grid;grid-template-columns:1.05fr .95fr;gap:16px;align-items:start}
-@media(max-width:900px){.sig-layout{grid-template-columns:1fr}}
-.sig-chartcard{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow:var(--shadow);position:sticky;top:76px}
+.sig-viewbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+.sig-vpill{display:flex;flex-direction:column;gap:3px;text-align:left;padding:13px 20px;border-radius:12px;cursor:pointer;
+  background:var(--surface);border:1px solid var(--border);transition:.15s;font-family:inherit}
+.sig-vpill:hover{border-color:var(--border-2)}
+.sig-vpill.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
+.sig-vpill .vn{font-size:24px;font-weight:750;letter-spacing:-.02em}
+.sig-vpill .vn.pos{color:var(--pos)} .sig-vpill .vn.wait{color:var(--warn)}
+.sig-vpill .vl{font-size:11.5px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+.sig-vupd{display:flex;flex-direction:column;gap:3px;padding:13px 20px;margin-left:auto;text-align:right}
+.sig-vupd .vn{font-size:15px;font-weight:700;font-family:ui-monospace,monospace}
+.sig-vupd .vl{font-size:11px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+
+.sig-chartcard{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow:var(--shadow);
+  margin-bottom:18px;position:sticky;top:70px;z-index:2}
+@media(max-width:900px){.sig-chartcard{position:static}}
 .sig-charthead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;padding:0 4px}
 .sig-tk{font-family:ui-monospace,monospace;font-weight:750;font-size:18px}
 .sig-tv{font-size:12.5px;color:var(--accent);font-weight:600;white-space:nowrap}
-.tvchart{width:100%;height:400px;border-radius:10px;overflow:hidden;background:var(--surface-2)}
-.sig-levels{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:1px;margin-top:12px;background:var(--border);border:1px solid var(--border);border-radius:10px;overflow:hidden}
-.sig-levels .lvl{background:var(--surface);padding:11px 12px;display:flex;flex-direction:column;gap:3px}
-.sig-levels .lvl.cc{grid-column:1/-1;background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
+.tvchart{width:100%;height:clamp(360px,52vh,520px);border-radius:10px;overflow:hidden;background:var(--surface-2)}
+.sig-levels{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:1px;margin-top:12px;background:var(--border);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.sig-levels .lvl{background:var(--surface);padding:11px 14px;display:flex;flex-direction:column;gap:3px}
+.sig-levels .lvl.cc{background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
 .sig-levels .lk{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 .sig-levels .lv-v{font-family:ui-monospace,monospace;font-weight:700;font-size:15px}
-.sig-tablewrap{border:1px solid var(--border);border-radius:14px;overflow:auto;background:var(--surface);max-height:640px}
-.sig-table{width:100%;border-collapse:collapse;font-size:13px;min-width:440px}
-.sig-table thead th{position:sticky;top:0;background:var(--surface-2);text-align:left;padding:11px 13px;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);z-index:1}
+.sig-tablewrap{border:1px solid var(--border);border-radius:14px;overflow-x:hidden;background:var(--surface)}
+.sig-table{width:100%;border-collapse:collapse;font-size:13.5px}
+.sig-table thead th{text-align:left;padding:12px 16px;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);background:var(--surface-2)}
 .sig-table th.num,.sig-table td.num{text-align:right;font-variant-numeric:tabular-nums}
-.sig-table td{padding:10px 13px;border-bottom:1px solid var(--border)}
-.sig-table tbody tr{cursor:pointer}
+.sig-table td{padding:11px 16px;border-bottom:1px solid var(--border)}
+.sig-table tbody tr:last-child td{border-bottom:none}
+.sig-table tbody tr[data-tk]{cursor:pointer}
 .sig-table tbody tr:hover td{background:var(--surface-2)}
 .sig-table tbody tr.sel td{background:color-mix(in srgb,var(--accent) 12%,var(--surface))}
 .sig-table .mkt{font-size:9.5px;color:var(--muted);border:1px solid var(--border);border-radius:4px;padding:1px 4px;margin-left:4px;vertical-align:middle}

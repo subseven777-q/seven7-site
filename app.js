@@ -152,6 +152,8 @@
     "sig.active": { en: "active", pt: "ativos" },
     "sig.monitoring": { en: "monitoring", pt: "em monitoração" },
     "sig.total": { en: "on radar", pt: "no radar" },
+    "sig.flat": { en: "in cash", pt: "em caixa" },
+    "sig.none": { en: "No assets in this view right now.", pt: "Nenhum ativo nesta visão no momento." },
     "sig.updated": { en: "updated", pt: "atualizado" },
     "sig.state": { en: "State", pt: "Estado" },
     "sig.ticker": { en: "Asset", pt: "Ativo" },
@@ -677,8 +679,7 @@
   }
 
   /* ---- members signals dashboard ---- */
-  let SIGNALS = [], SIG_FILTER = "ALL", SIG_SEL = null, tvLoading = false;
-  const stOrder = s => (s === "ACTIVE" ? 0 : s === "MONITORING" ? 1 : 2);
+  let SIGNALS = [], SIG_FILTER = "ALL", SIG_SEL = null, STATE_VIEW = "ACTIVE", tvLoading = false;
   const stClass = s => (s === "ACTIVE" ? "active" : s === "MONITORING" ? "wait" : "flat");
   const stLabel = s => (s === "ACTIVE" ? t("sig.stActive") : s === "MONITORING" ? t("sig.stMon") : t("sig.stFlat"));
 
@@ -689,7 +690,7 @@
     host.innerHTML = `<p class="muted-note">${t("sig.loading")}</p>`;
     const { data, error } = await sb.from("signals").select("*");
     if (error) { host.innerHTML = `<p class="muted-note">${t("sig.err")}</p>`; return; }
-    SIGNALS = (data || []).sort((a, b) => stOrder(a.state) - stOrder(b.state) || (a.pct_in_range ?? 0) - (b.pct_in_range ?? 0) || a.ticker.localeCompare(b.ticker));
+    SIGNALS = (data || []).sort((a, b) => a.ticker.localeCompare(b.ticker));  // ordem alfabética
     const filters = [["ALL", t("sig.all")], ["US", "🇺🇸 US"], ["BR", "🇧🇷 BR"]];
     if (tabsHost) {
       tabsHost.innerHTML = filters.map(f => `<button class="book-tab ${SIG_FILTER === f[0] ? "on" : ""}" data-f="${f[0]}">${f[1]}</button>`).join("");
@@ -698,34 +699,33 @@
         SIG_FILTER = b.dataset.f; SIG_SEL = null; paintSignals();
       });
     }
-    // shell
     host.innerHTML = `
-      <div class="sig-summary" id="sigSummary"></div>
-      <div class="sig-layout">
-        <div class="sig-chartcard">
-          <div class="sig-charthead" id="sigChartHead"></div>
-          <div class="tvchart" id="tvChart"></div>
-          <div class="sig-levels" id="sigLevels"></div>
-        </div>
-        <div class="sig-tablewrap"><table class="sig-table" id="sigTable"></table></div>
-      </div>`;
+      <div class="sig-viewbar" id="sigViewbar"></div>
+      <div class="sig-chartcard">
+        <div class="sig-charthead" id="sigChartHead"></div>
+        <div class="tvchart" id="tvChart"></div>
+        <div class="sig-levels" id="sigLevels"></div>
+      </div>
+      <div class="sig-tablewrap"><table class="sig-table" id="sigTable"></table></div>`;
     paintSignals();
   }
 
   function paintSignals() {
-    const rows = SIGNALS.filter(s => SIG_FILTER === "ALL" || s.market === SIG_FILTER);
-    const active = rows.filter(s => s.state === "ACTIVE").length;
-    const mon = rows.filter(s => s.state === "MONITORING").length;
-    const sum = $("#sigSummary");
-    if (sum) sum.innerHTML = `
-      <div class="rs-pill"><div class="v pos">${active}</div><div class="l">${t("sig.active")}</div></div>
-      <div class="rs-pill"><div class="v">${mon}</div><div class="l">${t("sig.monitoring")}</div></div>
-      <div class="rs-pill"><div class="v">${rows.length}</div><div class="l">${t("sig.total")}</div></div>
-      <div class="rs-pill"><div class="v" style="font-size:15px">${DATA ? DATA.data_through : ""}</div><div class="l">${t("sig.updated")}</div></div>`;
+    const mkt = SIGNALS.filter(s => SIG_FILTER === "ALL" || s.market === SIG_FILTER);
+    const cnt = st => mkt.filter(s => s.state === st).length;
+    const views = [["ACTIVE", t("sig.active"), cnt("ACTIVE"), "pos"], ["MONITORING", t("sig.monitoring"), cnt("MONITORING"), "wait"]];
+    if (cnt("FLAT") > 0) views.push(["FLAT", t("sig.flat"), cnt("FLAT"), ""]);
+    if (!views.find(v => v[0] === STATE_VIEW && v[2] > 0)) STATE_VIEW = (views.find(v => v[2] > 0) || views[0])[0];
+    const vb = $("#sigViewbar");
+    if (vb) {
+      vb.innerHTML = views.map(v => `<button class="sig-vpill ${STATE_VIEW === v[0] ? "on" : ""}" data-v="${v[0]}"><span class="vn ${v[3]}">${v[2]}</span><span class="vl">${v[1]}</span></button>`).join("")
+        + `<div class="sig-vupd"><span class="vn">${DATA ? DATA.data_through : ""}</span><span class="vl">${t("sig.updated")}</span></div>`;
+      vb.querySelectorAll(".sig-vpill").forEach(b => b.onclick = () => { STATE_VIEW = b.dataset.v; SIG_SEL = null; paintSignals(); });
+    }
+    const rows = mkt.filter(s => s.state === STATE_VIEW);
     const elite = PROFILE && PROFILE.plan === "elite";
-    const head = `<thead><tr><th>${t("sig.state")}</th><th>${t("sig.ticker")}</th><th class="num">${t("sig.price")}</th><th class="num">${t("sig.entry")}</th><th class="num">${t("sig.stop")}</th><th class="num">${t("sig.tp")}</th><th class="num">R:R</th>${elite ? `<th class="num">${t("sig.cc")}</th>` : ""}</tr></thead>`;
+    const head = `<thead><tr><th>${t("sig.ticker")}</th><th class="num">${t("sig.price")}</th><th class="num">${t("sig.entry")}</th><th class="num">${t("sig.stop")}</th><th class="num">${t("sig.tp")}</th><th class="num">R:R</th>${elite ? `<th class="num">${t("sig.cc")}</th>` : ""}</tr></thead>`;
     const body = rows.map(s => `<tr data-tk="${s.ticker}" class="${SIG_SEL === s.ticker ? "sel" : ""}">
-        <td><span class="st ${stClass(s.state)}">${stLabel(s.state)}</span></td>
         <td class="tk-cell">${s.ticker} <span class="mkt">${s.market}</span></td>
         <td class="num">${fmtNum(s.price)}</td>
         <td class="num">${fmtNum(s.entry)}</td>
@@ -734,8 +734,14 @@
         <td class="num">${s.rr != null ? nf(s.rr, 2) : "—"}</td>
         ${elite ? `<td class="num">@${fmtNum(s.cc_strike)} · ${nf(s.cc_premium_pct, 1)}%</td>` : ""}
       </tr>`).join("");
-    const tbl = $("#sigTable"); if (tbl) { tbl.innerHTML = head + `<tbody>${body}</tbody>`; tbl.querySelectorAll("tbody tr").forEach(tr => tr.onclick = () => selectSignal(tr.dataset.tk)); }
-    if (!SIG_SEL || !rows.find(s => s.ticker === SIG_SEL)) selectSignal((rows[0] || {}).ticker);
+    const cols = elite ? 7 : 6;
+    const tbl = $("#sigTable");
+    if (tbl) {
+      tbl.innerHTML = head + `<tbody>${body || `<tr><td colspan="${cols}" class="muted-note" style="padding:22px;text-align:center">${t("sig.none")}</td></tr>`}</tbody>`;
+      tbl.querySelectorAll("tbody tr[data-tk]").forEach(tr => tr.onclick = () => selectSignal(tr.dataset.tk));
+    }
+    if (rows.length && (!SIG_SEL || !rows.find(s => s.ticker === SIG_SEL))) selectSignal(rows[0].ticker);
+    else if (!rows.length) { ["sigChartHead", "sigLevels", "tvChart"].forEach(id => { const e = document.getElementById(id); if (e) e.innerHTML = ""; }); }
     else selectSignal(SIG_SEL);
   }
 
