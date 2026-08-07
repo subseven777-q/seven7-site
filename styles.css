@@ -340,6 +340,30 @@ h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.02em;font-weight:680}
 .hedge-elite .he-s{font-size:13px;color:var(--ink-2)}
 .hedge-note{font-size:12px;color:var(--muted);margin-top:14px;line-height:1.5}
 
+/* ---- members signals dashboard ---- */
+.sig-summary{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+.sig-layout{display:grid;grid-template-columns:1.05fr .95fr;gap:16px;align-items:start}
+@media(max-width:900px){.sig-layout{grid-template-columns:1fr}}
+.sig-chartcard{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow:var(--shadow);position:sticky;top:76px}
+.sig-charthead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;padding:0 4px}
+.sig-tk{font-family:ui-monospace,monospace;font-weight:750;font-size:18px}
+.sig-tv{font-size:12.5px;color:var(--accent);font-weight:600;white-space:nowrap}
+.tvchart{width:100%;height:400px;border-radius:10px;overflow:hidden;background:var(--surface-2)}
+.sig-levels{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:1px;margin-top:12px;background:var(--border);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.sig-levels .lvl{background:var(--surface);padding:11px 12px;display:flex;flex-direction:column;gap:3px}
+.sig-levels .lvl.cc{grid-column:1/-1;background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
+.sig-levels .lk{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.sig-levels .lv-v{font-family:ui-monospace,monospace;font-weight:700;font-size:15px}
+.sig-tablewrap{border:1px solid var(--border);border-radius:14px;overflow:auto;background:var(--surface);max-height:640px}
+.sig-table{width:100%;border-collapse:collapse;font-size:13px;min-width:440px}
+.sig-table thead th{position:sticky;top:0;background:var(--surface-2);text-align:left;padding:11px 13px;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);z-index:1}
+.sig-table th.num,.sig-table td.num{text-align:right;font-variant-numeric:tabular-nums}
+.sig-table td{padding:10px 13px;border-bottom:1px solid var(--border)}
+.sig-table tbody tr{cursor:pointer}
+.sig-table tbody tr:hover td{background:var(--surface-2)}
+.sig-table tbody tr.sel td{background:color-mix(in srgb,var(--accent) 12%,var(--surface))}
+.sig-table .mkt{font-size:9.5px;color:var(--muted);border:1px solid var(--border);border-radius:4px;padding:1px 4px;margin-left:4px;vertical-align:middle}
+
 /* ---- proprietary note ---- */
 .proprietary{margin-top:22px;max-width:680px;color:var(--ink-2);font-size:15px;
   border-left:3px solid var(--accent);padding:4px 0 4px 18px}

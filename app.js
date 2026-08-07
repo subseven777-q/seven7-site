@@ -146,6 +146,24 @@
     "radar.lockT": { en: "Entry, stop and target levels are for subscribers only.", pt: "Os níveis de entrada, stop e alvo são exclusivos para assinantes." },
     "radar.lockS": { en: "See where to enter, protect and take profit — across {n} assets, updated daily.", pt: "Veja onde entrar, proteger e realizar — em {n} ativos, atualizado todo dia." },
     "radar.lockCta": { en: "Subscribe and see the signals", pt: "Assinar e ver os sinais" },
+    "sig.loading": { en: "Loading signals…", pt: "Carregando sinais…" },
+    "sig.err": { en: "Couldn't load signals. Please refresh.", pt: "Não foi possível carregar os sinais. Atualize a página." },
+    "sig.all": { en: "All", pt: "Todos" },
+    "sig.active": { en: "active", pt: "ativos" },
+    "sig.monitoring": { en: "monitoring", pt: "em monitoração" },
+    "sig.total": { en: "on radar", pt: "no radar" },
+    "sig.updated": { en: "updated", pt: "atualizado" },
+    "sig.state": { en: "State", pt: "Estado" },
+    "sig.ticker": { en: "Asset", pt: "Ativo" },
+    "sig.price": { en: "Price", pt: "Preço" },
+    "sig.entry": { en: "Entry", pt: "Entrada" },
+    "sig.stop": { en: "Stop", pt: "Stop" },
+    "sig.tp": { en: "Target", pt: "Alvo" },
+    "sig.cc": { en: "Covered call", pt: "Covered call" },
+    "sig.stActive": { en: "ACTIVE", pt: "ATIVO" },
+    "sig.stMon": { en: "MONITORING", pt: "MONITORANDO" },
+    "sig.stFlat": { en: "CASH", pt: "CAIXA" },
+    "sig.openTV": { en: "Open in TradingView", pt: "Abrir no TradingView" },
     "rep.month": { en: "Month", pt: "Mês" },
     "rep.trades": { en: "Trades", pt: "Operações" },
     "rep.win": { en: "Win rate", pt: "Acerto" },
@@ -605,9 +623,9 @@
       const { data } = await sb.auth.getSession();
       USER = data?.session?.user || null;
       await loadProfile();
-      updateAuthUI(); renderAccount();
+      updateAuthUI(); renderAccount(); renderMemberSignals();
       sb.auth.onAuthStateChange(async (_ev, session) => {
-        USER = session?.user || null; await loadProfile(); updateAuthUI(); renderAccount();
+        USER = session?.user || null; await loadProfile(); updateAuthUI(); renderAccount(); renderMemberSignals();
       });
     } catch (e) { console.error("auth init failed", e); renderAccount(); }
     wireAuthForms();
@@ -656,6 +674,108 @@
         show(interp(t("auth.err"), { msg: (e && e.message) || e }), false);
       } finally { if (btn) btn.disabled = false; f.querySelectorAll('input[type="password"]').forEach(i => i.value = ""); }
     };
+  }
+
+  /* ---- members signals dashboard ---- */
+  let SIGNALS = [], SIG_FILTER = "ALL", SIG_SEL = null, tvLoading = false;
+  const stOrder = s => (s === "ACTIVE" ? 0 : s === "MONITORING" ? 1 : 2);
+  const stClass = s => (s === "ACTIVE" ? "active" : s === "MONITORING" ? "wait" : "flat");
+  const stLabel = s => (s === "ACTIVE" ? t("sig.stActive") : s === "MONITORING" ? t("sig.stMon") : t("sig.stFlat"));
+
+  async function renderMemberSignals() {
+    if (document.body.dataset.page !== "signals" || !sb || !isMember()) return;
+    const host = $("#radarHost"), tabsHost = $("#radarTabs");
+    if (!host) return;
+    host.innerHTML = `<p class="muted-note">${t("sig.loading")}</p>`;
+    const { data, error } = await sb.from("signals").select("*");
+    if (error) { host.innerHTML = `<p class="muted-note">${t("sig.err")}</p>`; return; }
+    SIGNALS = (data || []).sort((a, b) => stOrder(a.state) - stOrder(b.state) || (a.pct_in_range ?? 0) - (b.pct_in_range ?? 0) || a.ticker.localeCompare(b.ticker));
+    const filters = [["ALL", t("sig.all")], ["US", "🇺🇸 US"], ["BR", "🇧🇷 BR"]];
+    if (tabsHost) {
+      tabsHost.innerHTML = filters.map(f => `<button class="book-tab ${SIG_FILTER === f[0] ? "on" : ""}" data-f="${f[0]}">${f[1]}</button>`).join("");
+      tabsHost.querySelectorAll(".book-tab").forEach(b => b.onclick = () => {
+        tabsHost.querySelectorAll(".book-tab").forEach(x => x.classList.remove("on")); b.classList.add("on");
+        SIG_FILTER = b.dataset.f; SIG_SEL = null; paintSignals();
+      });
+    }
+    // shell
+    host.innerHTML = `
+      <div class="sig-summary" id="sigSummary"></div>
+      <div class="sig-layout">
+        <div class="sig-chartcard">
+          <div class="sig-charthead" id="sigChartHead"></div>
+          <div class="tvchart" id="tvChart"></div>
+          <div class="sig-levels" id="sigLevels"></div>
+        </div>
+        <div class="sig-tablewrap"><table class="sig-table" id="sigTable"></table></div>
+      </div>`;
+    paintSignals();
+  }
+
+  function paintSignals() {
+    const rows = SIGNALS.filter(s => SIG_FILTER === "ALL" || s.market === SIG_FILTER);
+    const active = rows.filter(s => s.state === "ACTIVE").length;
+    const mon = rows.filter(s => s.state === "MONITORING").length;
+    const sum = $("#sigSummary");
+    if (sum) sum.innerHTML = `
+      <div class="rs-pill"><div class="v pos">${active}</div><div class="l">${t("sig.active")}</div></div>
+      <div class="rs-pill"><div class="v">${mon}</div><div class="l">${t("sig.monitoring")}</div></div>
+      <div class="rs-pill"><div class="v">${rows.length}</div><div class="l">${t("sig.total")}</div></div>
+      <div class="rs-pill"><div class="v" style="font-size:15px">${DATA ? DATA.data_through : ""}</div><div class="l">${t("sig.updated")}</div></div>`;
+    const elite = PROFILE && PROFILE.plan === "elite";
+    const head = `<thead><tr><th>${t("sig.state")}</th><th>${t("sig.ticker")}</th><th class="num">${t("sig.price")}</th><th class="num">${t("sig.entry")}</th><th class="num">${t("sig.stop")}</th><th class="num">${t("sig.tp")}</th><th class="num">R:R</th>${elite ? `<th class="num">${t("sig.cc")}</th>` : ""}</tr></thead>`;
+    const body = rows.map(s => `<tr data-tk="${s.ticker}" class="${SIG_SEL === s.ticker ? "sel" : ""}">
+        <td><span class="st ${stClass(s.state)}">${stLabel(s.state)}</span></td>
+        <td class="tk-cell">${s.ticker} <span class="mkt">${s.market}</span></td>
+        <td class="num">${fmtNum(s.price)}</td>
+        <td class="num">${fmtNum(s.entry)}</td>
+        <td class="num neg">${fmtNum(s.stop)}</td>
+        <td class="num pos">${fmtNum(s.tp)}</td>
+        <td class="num">${s.rr != null ? nf(s.rr, 2) : "—"}</td>
+        ${elite ? `<td class="num">@${fmtNum(s.cc_strike)} · ${nf(s.cc_premium_pct, 1)}%</td>` : ""}
+      </tr>`).join("");
+    const tbl = $("#sigTable"); if (tbl) { tbl.innerHTML = head + `<tbody>${body}</tbody>`; tbl.querySelectorAll("tbody tr").forEach(tr => tr.onclick = () => selectSignal(tr.dataset.tk)); }
+    if (!SIG_SEL || !rows.find(s => s.ticker === SIG_SEL)) selectSignal((rows[0] || {}).ticker);
+    else selectSignal(SIG_SEL);
+  }
+
+  function selectSignal(ticker) {
+    const s = SIGNALS.find(x => x.ticker === ticker); if (!s) return;
+    SIG_SEL = ticker;
+    document.querySelectorAll("#sigTable tbody tr").forEach(tr => tr.classList.toggle("sel", tr.dataset.tk === ticker));
+    const elite = PROFILE && PROFILE.plan === "elite";
+    const head = $("#sigChartHead");
+    if (head) head.innerHTML = `<div><span class="sig-tk">${s.ticker}</span> <span class="st ${stClass(s.state)}">${stLabel(s.state)}</span></div>
+      <a class="sig-tv" href="https://www.tradingview.com/chart/?symbol=${encodeURIComponent(s.tv_symbol)}" target="_blank" rel="noopener">${t("sig.openTV")} ↗</a>`;
+    const lv = $("#sigLevels");
+    if (lv) lv.innerHTML = `
+      <div class="lvl"><span class="lk">${t("sig.entry")}</span><span class="lv-v">${fmtNum(s.entry)}</span></div>
+      <div class="lvl"><span class="lk">${t("sig.stop")}</span><span class="lv-v neg">${fmtNum(s.stop)}</span></div>
+      <div class="lvl"><span class="lk">${t("sig.tp")}</span><span class="lv-v pos">${fmtNum(s.tp)}</span></div>
+      <div class="lvl"><span class="lk">R:R</span><span class="lv-v">${s.rr != null ? nf(s.rr, 2) : "—"}</span></div>
+      ${elite ? `<div class="lvl cc"><span class="lk">🍒 ${t("sig.cc")}</span><span class="lv-v">@${fmtNum(s.cc_strike)} · ${nf(s.cc_premium_pct, 1)}%</span></div>` : ""}`;
+    showTVChart(s.tv_symbol);
+  }
+
+  function ensureTV() {
+    return new Promise(res => {
+      if (window.TradingView) return res();
+      if (tvLoading) { const i = setInterval(() => { if (window.TradingView) { clearInterval(i); res(); } }, 120); return; }
+      tvLoading = true;
+      const sc = document.createElement("script"); sc.src = "https://s3.tradingview.com/tv.js"; sc.onload = () => res();
+      document.head.appendChild(sc);
+    });
+  }
+  async function showTVChart(symbol) {
+    await ensureTV();
+    const el = $("#tvChart"); if (!el || !window.TradingView) return;
+    el.innerHTML = "";
+    new window.TradingView.widget({
+      container_id: "tvChart", symbol, interval: "D", autosize: true,
+      theme: document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark",
+      style: "1", locale: LANG === "pt" ? "br" : "en",
+      hide_side_toolbar: true, allow_symbol_change: false, save_image: false,
+    });
   }
 
   /* ---- account page ---- */
