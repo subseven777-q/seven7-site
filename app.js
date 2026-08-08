@@ -32,7 +32,7 @@
   };
   /* Link "no-code" do Portal do Cliente Stripe (Settings -> Billing -> Customer portal).
      Formato https://billing.stripe.com/p/login/... — deixe vazio p/ cair no suporte por e-mail. */
-  const STRIPE_PORTAL = "";
+  const STRIPE_PORTAL = "https://billing.stripe.com/p/login/6oU3cxaWndOD95Q4nG8Ra00";
 
   /* ---------------- i18n dictionary ---------------- */
   const T = {
