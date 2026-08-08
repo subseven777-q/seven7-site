@@ -622,7 +622,15 @@
 
   /* ---- pricing (USD, Stripe-ready) ---- */
   let CYCLE = "monthly";
-  function subscribeHref(tier) { const l = STRIPE_LINKS[tier] && STRIPE_LINKS[tier][CYCLE]; return l ? l : `register.html?plan=${tier.toLowerCase()}&cycle=${CYCLE}`; }
+  function subscribe(tier) {
+    const link = STRIPE_LINKS[tier] && STRIPE_LINKS[tier][CYCLE];
+    if (!USER) { localStorage.setItem("seven7-intent", tier + ":" + CYCLE); location.href = "register.html"; return; }
+    if (!link) { location.href = "account.html"; return; }          // checkout ainda não configurado
+    const u = new URL(link);
+    u.searchParams.set("client_reference_id", USER.id + ":" + tier.toLowerCase());
+    if (USER.email) u.searchParams.set("prefilled_email", USER.email);
+    location.href = u.toString();
+  }
   function renderPricing() {
     $("#pricingGrid").innerHTML = PLANS.map(p => {
       const annualMo = Math.round(p.monthly * (1 - p.disc));
@@ -638,9 +646,10 @@
         <div class="price-amt">$${price} <span>${t("price.perMonth")}</span></div>
         <div class="price-sub">${sub}</div>
         <ul class="price-feats">${feats}</ul>
-        <a class="btn ${p.featured ? "btn-primary" : "btn-ghost"} btn-block" href="${subscribeHref(p.tier)}">${p.cta[LANG]}</a>
+        <a class="btn ${p.featured ? "btn-primary" : "btn-ghost"} btn-block" data-tier="${p.tier}" href="#">${p.cta[LANG]}</a>
       </div>`;
     }).join("");
+    $$("#pricingGrid a[data-tier]").forEach(a => a.onclick = ev => { ev.preventDefault(); subscribe(a.dataset.tier); });
   }
   function initBilling() {
     const tg = $("#billingToggle"); if (!tg) return;
@@ -702,7 +711,8 @@
           const { error } = await sb.auth.signInWithPassword({ email, password: pass });
           if (error) throw error;
           show(t("auth.loginOk"), true);
-          setTimeout(() => location.href = "index.html", 900);
+          const intent = localStorage.getItem("seven7-intent");
+          setTimeout(() => location.href = intent ? "plans.html" : "index.html", 900);
         }
       } catch (e) {
         show(interp(t("auth.err"), { msg: (e && e.message) || e }), false);
