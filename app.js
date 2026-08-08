@@ -191,6 +191,7 @@
     "pf.won": { en: "WON", pt: "GANHOU" },
     "pf.lost": { en: "LOST", pt: "PERDEU" },
     "pf.openst": { en: "OPEN", pt: "ABERTA" },
+    "pf.pending": { en: "PENDING", pt: "PENDENTE" },
     "pf.remove": { en: "Remove", pt: "Remover" },
     "pf.computing": { en: "Full metrics (drawdown, vol drag, benchmark curve) are computed daily — they'll appear after the next update.", pt: "As métricas completas (drawdown, vol drag, curva comparativa) são calculadas diariamente — aparecem após a próxima atualização." },
     "pf.emptyT": { en: "Your portfolio is empty", pt: "Seu portfólio está vazio" },
@@ -887,14 +888,14 @@
         <div class="legend"><span class="lg"><span class="sw" style="background:var(--series)"></span>${t("pf.you")}</span><span class="lg"><span class="sw" style="background:var(--bench)"></span>SPY</span><span class="lg"><span class="sw" style="background:var(--warn)"></span>BOVA11</span></div></div>
         <div class="chart-body" id="pfChart"></div></div>`;
       // positions table
+      const smap = { won: ["pos", "active", t("pf.won")], lost: ["neg", "flat", t("pf.lost")], open: ["", "wait", t("pf.openst")], pending: ["", "flat", t("pf.pending")] };
       const rows = positions.map(p => {
-        const stc = p.status === "won" ? "pos" : p.status === "lost" ? "neg" : "";
-        const stl = p.status === "won" ? t("pf.won") : p.status === "lost" ? t("pf.lost") : t("pf.openst");
+        const [retc, stcls, stl] = smap[p.status] || smap.open;
         return `<tr><td class="tk-cell">${p.ticker} <span class="mkt">${p.market}</span></td>
           <td>${p.added_at}</td><td class="num">${nf(p.alloc_pct, 1)}%</td>
           <td class="num">${fmtNum(p.entry)}</td><td class="num">${fmtNum(p.current_price ?? p.entry)}</td>
-          <td><span class="st ${p.status === "open" ? "wait" : p.status === "won" ? "active" : "flat"}">${stl}</span></td>
-          <td class="num ${stc}">${p.ret_pct == null ? "—" : fmtPct(p.ret_pct)}</td>
+          <td><span class="st ${stcls}">${stl}</span></td>
+          <td class="num ${retc}">${p.status === "pending" ? "—" : (p.ret_pct == null ? "—" : fmtPct(p.ret_pct))}</td>
           <td><button class="pf-del" data-id="${p.id}" title="${t("pf.remove")}">✕</button></td></tr>`;
       }).join("");
       html += `<div class="table-wrap" style="margin-top:18px"><table class="sig-table"><thead><tr>
