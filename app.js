@@ -26,10 +26,13 @@
   /* Preencha quando o Stripe estiver pronto: links de checkout hospedado.
      Ex.: STRIPE_LINKS.PRO.monthly = "https://buy.stripe.com/xxxx". Vazio => vai ao registro. */
   const STRIPE_LINKS = {
-    BEGINNER: { monthly: "", annual: "" },
-    PRO: { monthly: "", annual: "" },
-    ELITE: { monthly: "", annual: "" },
+    BEGINNER: { monthly: "https://buy.stripe.com/bJeaEZfcDfWL3Lw3jC8Ra05", annual: "https://buy.stripe.com/4gM3cxe8z5i795Q8DW8Ra02" },
+    PRO:      { monthly: "https://buy.stripe.com/14A3cxfcD11R0zk3jC8Ra04", annual: "https://buy.stripe.com/00waEZc0rdODbdYf2k8Ra01" },
+    ELITE:    { monthly: "https://buy.stripe.com/5kQ00l6G75i7bdY7zS8Ra03", annual: "https://buy.stripe.com/6oU3cxaWndOD95Q4nG8Ra00" },
   };
+  /* Link "no-code" do Portal do Cliente Stripe (Settings -> Billing -> Customer portal).
+     Formato https://billing.stripe.com/p/login/... — deixe vazio p/ cair no suporte por e-mail. */
+  const STRIPE_PORTAL = "";
 
   /* ---------------- i18n dictionary ---------------- */
   const T = {
@@ -954,6 +957,17 @@
         <button class="btn btn-ghost btn-block" id="acctLogout">${t("auth.logout")}</button>
       </div>`;
     const lo = $("#acctLogout"); if (lo) lo.onclick = async () => { if (sb) await sb.auth.signOut(); location.href = "index.html"; };
+    const mb = $("#manageBtn");
+    if (mb) mb.onclick = ev => {
+      ev.preventDefault();
+      if (STRIPE_PORTAL) {
+        const u = new URL(STRIPE_PORTAL);
+        if (USER.email) u.searchParams.set("prefilled_email", USER.email);
+        window.open(u.toString(), "_blank", "noopener");
+      } else {
+        location.href = "mailto:support@seven7invest.com?subject=" + encodeURIComponent("Manage subscription — " + USER.email);
+      }
+    };
   }
 
   /* ---- toggles (theme + language) ---- */
