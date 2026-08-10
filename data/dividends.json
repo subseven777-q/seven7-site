@@ -1,0 +1,123 @@
+{
+  "generated": "2026-08-10 10:55",
+  "data_through": "2026-08-07",
+  "market": "BR",
+  "min_tier": "beginner",
+  "years": 10,
+  "headline": {
+    "yield_on_cost_pct": 9.76,
+    "total_return_drip_pct": 46.0,
+    "total_return_income_pct": 35.6,
+    "div_collected_pct": 29.8,
+    "annual_income_per_100k": 9756.0,
+    "invested_base": 429000.0
+  },
+  "benchmarks": {
+    "cdi_pct": 45.7,
+    "divo11_pct": 60.2,
+    "bova11_pct": 49.3
+  },
+  "salary_by_year": {
+    "2019": 746.81,
+    "2020": 3430.36,
+    "2021": 11958.62,
+    "2022": 15722.06,
+    "2023": 22353.8,
+    "2024": 25358.77,
+    "2025": 37217.74
+  },
+  "core_count": 18,
+  "buy_zone_now": 16,
+  "core": [
+    {
+      "name": "GRND3",
+      "yield_pct": 43.19,
+      "yield_on_cost_pct": 27.2
+    },
+    {
+      "name": "VLID3",
+      "yield_pct": 9.9,
+      "yield_on_cost_pct": 23.1
+    },
+    {
+      "name": "POMO4",
+      "yield_pct": 20.89,
+      "yield_on_cost_pct": 16.9
+    },
+    {
+      "name": "CYRE3",
+      "yield_pct": 12.6,
+      "yield_on_cost_pct": 16.0
+    },
+    {
+      "name": "CMIG4",
+      "yield_pct": 11.73,
+      "yield_on_cost_pct": 14.5
+    },
+    {
+      "name": "ITSA4",
+      "yield_pct": 9.91,
+      "yield_on_cost_pct": 13.6
+    },
+    {
+      "name": "ALOS3",
+      "yield_pct": 10.91,
+      "yield_on_cost_pct": 13.5
+    },
+    {
+      "name": "ITUB4",
+      "yield_pct": 8.47,
+      "yield_on_cost_pct": 12.2
+    },
+    {
+      "name": "BRAP4",
+      "yield_pct": 11.04,
+      "yield_on_cost_pct": 12.2
+    },
+    {
+      "name": "VIVT3",
+      "yield_pct": 8.12,
+      "yield_on_cost_pct": 11.7
+    },
+    {
+      "name": "RDOR3",
+      "yield_pct": 12.53,
+      "yield_on_cost_pct": 11.5
+    },
+    {
+      "name": "MILS3",
+      "yield_pct": 11.53,
+      "yield_on_cost_pct": 11.4
+    },
+    {
+      "name": "BBDC4",
+      "yield_pct": 8.97,
+      "yield_on_cost_pct": 10.4
+    },
+    {
+      "name": "RECV3",
+      "yield_pct": 13.34,
+      "yield_on_cost_pct": 10.1
+    },
+    {
+      "name": "EZTC3",
+      "yield_pct": 10.55,
+      "yield_on_cost_pct": 10.0
+    },
+    {
+      "name": "TAEE11",
+      "yield_pct": 8.34,
+      "yield_on_cost_pct": 9.8
+    },
+    {
+      "name": "INTB3",
+      "yield_pct": 8.17,
+      "yield_on_cost_pct": 9.0
+    },
+    {
+      "name": "MOVI3",
+      "yield_pct": 9.46,
+      "yield_on_cost_pct": 6.5
+    }
+  ]
+}

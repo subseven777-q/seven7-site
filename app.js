@@ -50,6 +50,7 @@
     "nav.perf": { en: "Performance", pt: "Desempenho" },
     "nav.metrics": { en: "Metrics", pt: "Métricas" },
     "nav.signals": { en: "Signals", pt: "Sinais" },
+    "nav.dividends": { en: "Dividends", pt: "Dividendos" },
     "nav.replay": { en: "Replay", pt: "Replay" },
     "nav.portfolio": { en: "Portfolio", pt: "Portfólio" },
     "nav.plans": { en: "Plans", pt: "Planos" },
@@ -185,6 +186,47 @@
     "sig.buyCalcBR": { en: "Buy <b>{shares}</b> whole share(s) · {notional} — <b>{consumed}% of portfolio used</b> · real risk ≈ {risk} ({riskpct}%), capped by the stop. B3 trades whole shares only (fractional market, ticker+F).", pt: "Comprar <b>{shares}</b> ação(ões) inteira(s) · {notional} — <b>{consumed}% do portfólio consumido</b> · risco real ≈ {risk} ({riskpct}%), limitado pelo stop. A B3 negocia só ações inteiras (fracionário, ticker+F)." },
     "sig.buyWarnBR": { en: "⚠ The minimum 1 whole share already uses {consumed}% of your portfolio — above the {pct}% Kelly target. Increase your deposit to size closer to target.", pt: "⚠ O mínimo de 1 ação inteira já consome {consumed}% do seu portfólio — acima do alvo de {pct}% do Kelly. Aumente o depósito para chegar mais perto do alvo." },
     "sig.buyNoDep": { en: "Set your initial deposit on the Portfolio page to see exactly how much to buy.", pt: "Defina seu depósito inicial na página Portfólio para ver exatamente quanto comprar." },
+
+    "div.kicker": { en: "DIVIDENDS · BRAZIL · BEGINNER", pt: "DIVIDENDOS · BRASIL · BEGINNER" },
+    "div.h1": { en: "Your growing <span class='accent'>dividend salary</span>", pt: "Seu <span class='accent'>salário de dividendos</span> crescente" },
+    "div.sub": { en: "A long-term income portfolio built from Brazil's most consistent dividend payers — bought only on weakness, <b>never sold</b>, every payout reinvested. Real, auditable data over 10 years.", pt: "Uma carteira de renda de longo prazo com as pagadoras de dividendos mais consistentes do Brasil — compradas só na queda, <b>nunca vendidas</b>, cada provento reinvestido. Dados reais e auditáveis de 10 anos." },
+    "div.tile.yoc": { en: "Yield on cost", pt: "Yield on cost" },
+    "div.tile.yocD": { en: "Annual income today vs. what you originally put in.", pt: "Renda anual hoje sobre o que você aportou." },
+    "div.tile.income": { en: "Income per R$100k", pt: "Renda por R$100 mil" },
+    "div.tile.incomeD": { en: "Estimated annual dividends for every R$100k invested.", pt: "Dividendos anuais estimados para cada R$100 mil aportados." },
+    "div.tile.returned": { en: "Cash returned", pt: "Caixa devolvido" },
+    "div.tile.returnedD": { en: "Share of everything invested already paid back as cash dividends.", pt: "Parte de tudo o que foi aportado já devolvida em dividendos." },
+    "div.tile.drip": { en: "Total return (reinvested)", pt: "Retorno total (reinvestido)" },
+    "div.tile.dripD": { en: "Total return with every dividend reinvested (DRIP).", pt: "Retorno total reinvestindo cada dividendo (DRIP)." },
+    "div.salaryTitle": { en: "Dividend income per year, per R$100k invested", pt: "Renda de dividendos por ano, por R$100 mil aportados" },
+    "div.salarySub": { en: "The income stream compounds as you accumulate more shares and payouts grow.", pt: "A renda cresce à medida que você acumula mais ações e os proventos aumentam." },
+    "div.benchKicker": { en: "HONEST COMPARISON", pt: "COMPARAÇÃO HONESTA" },
+    "div.benchH": { en: "How it stacks up", pt: "Como se compara" },
+    "div.benchSub": { en: "Same money, same dates. This is an <b>income-first</b> strategy: it pays far more cash income than the risk-free CDI and than a dividend ETF. On pure total return, a passive dividend ETF still leads — we optimise for the paycheck, not the scoreboard.", pt: "Mesmo dinheiro, mesmas datas. É uma estratégia <b>income-first</b>: paga muito mais renda em caixa que o CDI e que um ETF de dividendos. No retorno total puro, um ETF passivo de dividendos ainda lidera — otimizamos o contracheque, não o placar." },
+    "div.bench.you": { en: "Seven7 Dividends (reinvested)", pt: "Seven7 Dividendos (reinvestido)" },
+    "div.bench.divo": { en: "DIVO11 (dividend ETF)", pt: "DIVO11 (ETF de dividendos)" },
+    "div.bench.bova": { en: "BOVA11 (index)", pt: "BOVA11 (índice)" },
+    "div.bench.cdi": { en: "CDI (risk-free)", pt: "CDI (risk-free)" },
+    "div.coreKicker": { en: "THE CORE", pt: "O NÚCLEO" },
+    "div.coreH": { en: "The payers we accumulate", pt: "As pagadoras que acumulamos" },
+    "div.coreSub": { en: "Only proven payers qualify — a track record of paying every year, at a healthy yield. <b id='divZone'></b>", pt: "Só pagadoras provadas entram — histórico de pagar todo ano, com yield saudável. <b id='divZone'></b>" },
+    "div.core.yoc": { en: "yield on cost", pt: "yield on cost" },
+    "div.core.yld": { en: "current yield", pt: "yield atual" },
+    "div.zone": { en: "{n} of {total} are in the buy zone right now — members see the live signals.", pt: "{n} de {total} estão na zona de compra agora — membros veem os sinais ao vivo." },
+    "div.howKicker": { en: "HOW IT WORKS", pt: "COMO FUNCIONA" },
+    "div.howH": { en: "Simple, disciplined, hands-off", pt: "Simples, disciplinado, sem esforço" },
+    "div.how1t": { en: "Only proven payers", pt: "Só pagadoras provadas" },
+    "div.how1d": { en: "We track Brazil's most consistent dividend stocks — those with a real history of paying every year at a strong yield.", pt: "Acompanhamos as ações mais consistentes em dividendos do Brasil — com histórico real de pagar todo ano, com yield forte." },
+    "div.how2t": { en: "Buy only on weakness", pt: "Compra só na queda" },
+    "div.how2d": { en: "We add only when a name dips into value territory — never chasing highs. Better entry, higher yield on your cost.", pt: "Só compramos quando o papel cai para região de valor — nunca correndo atrás do topo. Entrada melhor, yield maior sobre o custo." },
+    "div.how3t": { en: "Never sell", pt: "Nunca vende" },
+    "div.how3d": { en: "A true long-term portfolio. Positions are held for the income — the paycheck grows as payouts rise and you own more shares.", pt: "Uma carteira de longo prazo de verdade. As posições são mantidas pela renda — o contracheque cresce conforme os proventos sobem e você tem mais ações." },
+    "div.how4t": { en: "Reinvest every payout", pt: "Reinveste cada provento" },
+    "div.how4d": { en: "Dividends buy more shares automatically (DRIP), compounding your income year after year — or take the cash if you prefer.", pt: "Os dividendos compram mais ações automaticamente (DRIP), compondo sua renda ano após ano — ou receba em caixa, se preferir." },
+    "div.ctaH": { en: "Start building your dividend salary", pt: "Comece a construir seu salário de dividendos" },
+    "div.ctaSub": { en: "Included in every plan, from Beginner. Live Brazilian dividend signals, updated daily.", pt: "Incluído em todos os planos, a partir do Beginner. Sinais de dividendos brasileiros ao vivo, atualizados diariamente." },
+    "div.ctaBtn": { en: "See plans", pt: "Ver planos" },
+    "div.note": { en: "Illustrative, from a real 10-year backtest with point-in-time selection (no hindsight). Income shown gross; dividends may be under-counted (JCP). Past results don't guarantee the future.", pt: "Ilustrativo, de um backtest real de 10 anos com seleção point-in-time (sem retrovisor). Renda bruta; dividendos podem estar subcontados (JCP). Resultados passados não garantem o futuro." },
     "sig.kellyHint": { en: "This is how much of your deposit to <b>buy</b> — not risk. The stop caps each trade's real loss, so even a bad streak is a drawdown, not ruin. Fractional shares/lots work on MT5 brokers (e.g. Exness, from 0.01). ⅛ Kelly mirrors the metrics' 6.5% VaR posture.", pt: "Isto é quanto do seu depósito <b>comprar</b> — não é risco. O stop limita a perda real de cada trade, então mesmo uma sequência ruim é drawdown, não ruína. Frações de ação/lote funcionam em corretoras MT5 (ex.: Exness, a partir de 0,01). ⅛ de Kelly espelha a postura de 6,5% VaR das métricas." },
     "sig.addBtn": { en: "＋ Portfolio", pt: "＋ Portfólio" },
     "sig.added": { en: "Added ✓", pt: "Adicionado ✓" },
@@ -362,6 +404,7 @@
         <a href="performance.html" data-page="performance" data-i18n="nav.perf"></a>
         <a href="metrics.html" data-page="metrics" data-i18n="nav.metrics"></a>
         <a href="signals.html" data-page="signals" data-i18n="nav.signals"></a>
+        <a href="dividends.html" data-page="dividends" data-i18n="nav.dividends"></a>
         <a href="portfolio.html" data-page="portfolio" data-i18n="nav.portfolio"></a>
         <a href="replay.html" data-page="replay" data-i18n="nav.replay"></a>
         <a href="plans.html" data-page="plans" data-i18n="nav.plans"></a>
@@ -390,7 +433,7 @@
       <p class="copy" id="copy"></p>
     </footer>`;
 
-  let DATA = null;
+  let DATA = null, DIVDATA = null;
   const boot = window.__DATA__ ? Promise.resolve(window.__DATA__) : fetch("data/metrics.json?d=" + new Date().toISOString().slice(0, 10)).then(r => r.json());
   boot.then(d => { DATA = d; render(); }).catch(e => { render(); console.error(e); });
 
@@ -411,6 +454,7 @@
       guard("#trustGrid", buildTrust);
       guard("#homeCards", buildHomeCards);
     }
+    guard("#divTiles", renderDividends);
     guard("#pricingGrid", () => { renderPricing(); initBilling(); });
     initAuth();
     const cp = $("#copy"); if (cp) cp.textContent = t("footer.copy");
@@ -1041,6 +1085,81 @@
   }
 
   /* ================= SVG CHARTS ================= */
+  function renderDividends() {
+    const host = $("#divTiles"); if (!host) return;
+    if (!DIVDATA) {
+      fetch("data/dividends.json?d=" + new Date().toISOString().slice(0, 10))
+        .then(r => r.json()).then(d => { DIVDATA = d; renderDividends(); })
+        .catch(e => console.error("dividends load failed", e));
+      return;
+    }
+    const D = DIVDATA, h = D.headline || {}, b = D.benchmarks || {};
+    const brl0 = v => "R$ " + Number(v || 0).toLocaleString("pt-BR", { maximumFractionDigits: 0 });
+    const tiles = [
+      { v: nf(h.yield_on_cost_pct, 1) + "%", l: t("div.tile.yoc"), d: t("div.tile.yocD"), c: "pos" },
+      { v: brl0(h.annual_income_per_100k), l: t("div.tile.income"), d: t("div.tile.incomeD"), c: "" },
+      { v: nf(h.div_collected_pct, 0) + "%", l: t("div.tile.returned"), d: t("div.tile.returnedD"), c: "" },
+      { v: "+" + nf(h.total_return_drip_pct, 0) + "%", l: t("div.tile.drip"), d: t("div.tile.dripD"), c: "pos" },
+    ];
+    host.innerHTML = tiles.map(x => `<div class="qcard"><div class="qv ${x.c}">${x.v}</div><div class="ql">${x.l}</div><div class="qd">${x.d}</div></div>`).join("");
+
+    const base = h.invested_base || 0, factor = base > 0 ? 100000 / base : 1;
+    const salary = {};
+    Object.keys(D.salary_by_year || {}).forEach(y => salary[y] = (D.salary_by_year[y] || 0) * factor);
+    const sc = $("#divSalary");
+    if (sc) barChart(sc, salary, { fmt: v => "R$" + (v >= 1000 ? nf(v / 1000, 1) + "k" : nf(v, 0)) });
+
+    const bench = [
+      { k: "div.bench.you", v: h.total_return_drip_pct, hi: true },
+      { k: "div.bench.divo", v: b.divo11_pct },
+      { k: "div.bench.bova", v: b.bova11_pct },
+      { k: "div.bench.cdi", v: b.cdi_pct },
+    ].filter(x => x.v != null);
+    const mx = Math.max(...bench.map(x => x.v));
+    const bh = $("#divBench");
+    if (bh) bh.innerHTML = `<div class="divbars">` + bench.map(x =>
+      `<div class="divbar-row"><span class="divbar-lbl">${t(x.k)}</span>` +
+      `<span class="divbar-track"><span class="divbar-fill ${x.hi ? "hi" : ""}" style="width:${Math.max(4, x.v / mx * 100).toFixed(1)}%"></span></span>` +
+      `<span class="divbar-val ${x.hi ? "hi" : ""}">+${nf(x.v, 1)}%</span></div>`).join("") + `</div>`;
+
+    const core = D.core || [];
+    const cg = $("#divCore");
+    if (cg) cg.innerHTML = `<div class="divcore-grid">` + core.map(c =>
+      `<div class="divcore-cell"><div class="divcore-tk">${c.name}</div>` +
+      `<div class="divcore-yoc">${nf(c.yield_on_cost_pct, 1)}%<span> ${t("div.core.yoc")}</span></div>` +
+      `<div class="divcore-yld">${c.yield_pct != null ? nf(c.yield_pct, 1) + "% " + t("div.core.yld") : ""}</div></div>`).join("") + `</div>`;
+    const zone = $("#divZone");
+    if (zone) zone.textContent = interp(t("div.zone"), { n: D.buy_zone_now, total: D.core_count });
+
+    const how = [["1t", "1d"], ["2t", "2d"], ["3t", "3d"], ["4t", "4d"]];
+    const hw = $("#divHow");
+    if (hw) hw.innerHTML = how.map(x => `<div class="divhow-cell"><h3>${t("div.how" + x[0])}</h3><p>${t("div.how" + x[1])}</p></div>`).join("");
+
+    const cta = $("#divCTA");
+    if (cta) cta.innerHTML = `<div class="div-cta"><h2>${t("div.ctaH")}</h2><p>${t("div.ctaSub")}</p>` +
+      `<a class="btn btn-primary btn-lg" href="plans.html">${t("div.ctaBtn")}</a>` +
+      `<p class="div-note">${t("div.note")}</p></div>`;
+  }
+  function barChart(host, data, opt) {
+    host.innerHTML = "";
+    const years = Object.keys(data).sort(), vals = years.map(y => data[y]);
+    if (!years.length) return;
+    const maxV = Math.max(...vals, 1);
+    const w = 1000, h = 300, pl = 12, pr = 12, pb = 30, pt = 24;
+    const svg = svgEl(w, h);
+    const n = years.length, slot = (w - pl - pr) / n, bw = Math.min(slot * 0.6, 80);
+    vals.forEach((v, i) => {
+      const bh = (v / maxV) * (h - pt - pb);
+      const x = pl + i * slot + (slot - bw) / 2, y = h - pb - bh;
+      svg.appendChild(mk("rect", { x: x.toFixed(1), y: y.toFixed(1), width: bw.toFixed(1), height: bh.toFixed(1), rx: 4, fill: "var(--accent)" }));
+      const vt = mk("text", { x: (x + bw / 2).toFixed(1), y: (y - 7).toFixed(1), "text-anchor": "middle", class: "axis-label" });
+      vt.textContent = (opt && opt.fmt) ? opt.fmt(v) : nf(v, 0); svg.appendChild(vt);
+      const yt = mk("text", { x: (x + bw / 2).toFixed(1), y: h - 9, "text-anchor": "middle", class: "axis-label" });
+      yt.textContent = years[i]; svg.appendChild(yt);
+    });
+    host.appendChild(svg);
+  }
+
   const W = 1000, H = 340, PAD = { t: 16, r: 16, b: 26, l: 46 };
   const NS = "http://www.w3.org/2000/svg";
   const mk = (tag, a) => { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); return e; };
