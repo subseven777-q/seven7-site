@@ -187,22 +187,26 @@
     "sig.buyWarnBR": { en: "⚠ The minimum 1 whole share already uses {consumed}% of your portfolio — above the {pct}% Kelly target. Increase your deposit to size closer to target.", pt: "⚠ O mínimo de 1 ação inteira já consome {consumed}% do seu portfólio — acima do alvo de {pct}% do Kelly. Aumente o depósito para chegar mais perto do alvo." },
     "sig.buyNoDep": { en: "Set your initial deposit on the Portfolio page to see exactly how much to buy.", pt: "Defina seu depósito inicial na página Portfólio para ver exatamente quanto comprar." },
 
-    "div.kicker": { en: "DIVIDENDS · BRAZIL · BEGINNER", pt: "DIVIDENDOS · BRASIL · BEGINNER" },
+    "div.kicker": { en: "DIVIDENDS · INCOME-FIRST", pt: "DIVIDENDOS · INCOME-FIRST" },
     "div.h1": { en: "Your growing <span class='accent'>dividend salary</span>", pt: "Seu <span class='accent'>salário de dividendos</span> crescente" },
-    "div.sub": { en: "A long-term income portfolio built from Brazil's most consistent dividend payers — bought only on weakness, <b>never sold</b>, every payout reinvested. Real, auditable data over 10 years.", pt: "Uma carteira de renda de longo prazo com as pagadoras de dividendos mais consistentes do Brasil — compradas só na queda, <b>nunca vendidas</b>, cada provento reinvestido. Dados reais e auditáveis de 10 anos." },
+    "div.sub": { en: "A long-term income portfolio built from the most consistent dividend payers — bought only on weakness, <b>never sold</b>, every payout reinvested. Brazil (Beginner) and the US (Pro). Real, auditable data over 10 years.", pt: "Uma carteira de renda de longo prazo com as pagadoras de dividendos mais consistentes — compradas só na queda, <b>nunca vendidas</b>, cada provento reinvestido. Brasil (Beginner) e EUA (Pro). Dados reais e auditáveis de 10 anos." },
+    "div.mkt.BR": { en: "🇧🇷 Brazil", pt: "🇧🇷 Brasil" },
+    "div.mkt.US": { en: "🇺🇸 United States", pt: "🇺🇸 Estados Unidos" },
+    "div.tier.beginner": { en: "Included from Beginner", pt: "Incluído a partir do Beginner" },
+    "div.tier.pro": { en: "Included from Pro", pt: "Incluído a partir do Pro" },
     "div.tile.yoc": { en: "Yield on cost", pt: "Yield on cost" },
     "div.tile.yocD": { en: "Annual income today vs. what you originally put in.", pt: "Renda anual hoje sobre o que você aportou." },
-    "div.tile.income": { en: "Income per R$100k", pt: "Renda por R$100 mil" },
+    "div.tile.income": { en: "Income per {cur}100k", pt: "Renda por {cur}100 mil" },
     "div.tile.incomeD": { en: "Estimated annual dividends for every R$100k invested.", pt: "Dividendos anuais estimados para cada R$100 mil aportados." },
     "div.tile.returned": { en: "Cash returned", pt: "Caixa devolvido" },
     "div.tile.returnedD": { en: "Share of everything invested already paid back as cash dividends.", pt: "Parte de tudo o que foi aportado já devolvida em dividendos." },
     "div.tile.drip": { en: "Total return (reinvested)", pt: "Retorno total (reinvestido)" },
     "div.tile.dripD": { en: "Total return with every dividend reinvested (DRIP).", pt: "Retorno total reinvestindo cada dividendo (DRIP)." },
-    "div.salaryTitle": { en: "Dividend income per year, per R$100k invested", pt: "Renda de dividendos por ano, por R$100 mil aportados" },
+    "div.salaryTitle": { en: "Dividend income per year, per {cur}100k invested", pt: "Renda de dividendos por ano, por {cur}100 mil aportados" },
     "div.salarySub": { en: "The income stream compounds as you accumulate more shares and payouts grow.", pt: "A renda cresce à medida que você acumula mais ações e os proventos aumentam." },
     "div.benchKicker": { en: "HONEST COMPARISON", pt: "COMPARAÇÃO HONESTA" },
     "div.benchH": { en: "How it stacks up", pt: "Como se compara" },
-    "div.benchSub": { en: "Same money, same dates. This is an <b>income-first</b> strategy: it pays far more cash income than the risk-free CDI and than a dividend ETF. On pure total return, a passive dividend ETF still leads — we optimise for the paycheck, not the scoreboard.", pt: "Mesmo dinheiro, mesmas datas. É uma estratégia <b>income-first</b>: paga muito mais renda em caixa que o CDI e que um ETF de dividendos. No retorno total puro, um ETF passivo de dividendos ainda lidera — otimizamos o contracheque, não o placar." },
+    "div.benchSub": { en: "Same money, same dates, reinvested. An <b>income-first</b> strategy that pays far more cash than the risk-free rate — and, in the US, has beaten the index outright over the last decade.", pt: "Mesmo dinheiro, mesmas datas, reinvestido. Uma estratégia <b>income-first</b> que paga muito mais caixa que o risk-free — e, nos EUA, superou o próprio índice na última década." },
     "div.bench.you": { en: "Seven7 Dividends (reinvested)", pt: "Seven7 Dividendos (reinvestido)" },
     "div.bench.divo": { en: "DIVO11 (dividend ETF)", pt: "DIVO11 (ETF de dividendos)" },
     "div.bench.bova": { en: "BOVA11 (index)", pt: "BOVA11 (índice)" },
@@ -224,7 +228,7 @@
     "div.how4t": { en: "Reinvest every payout", pt: "Reinveste cada provento" },
     "div.how4d": { en: "Dividends buy more shares automatically (DRIP), compounding your income year after year — or take the cash if you prefer.", pt: "Os dividendos compram mais ações automaticamente (DRIP), compondo sua renda ano após ano — ou receba em caixa, se preferir." },
     "div.ctaH": { en: "Start building your dividend salary", pt: "Comece a construir seu salário de dividendos" },
-    "div.ctaSub": { en: "Included in every plan, from Beginner. Live Brazilian dividend signals, updated daily.", pt: "Incluído em todos os planos, a partir do Beginner. Sinais de dividendos brasileiros ao vivo, atualizados diariamente." },
+    "div.ctaSub": { en: "Brazil from Beginner, the US from Pro, both on Elite. Live dividend signals, updated daily.", pt: "Brasil no Beginner, EUA no Pro, os dois no Elite. Sinais de dividendos ao vivo, atualizados diariamente." },
     "div.ctaBtn": { en: "See plans", pt: "Ver planos" },
     "div.note": { en: "Illustrative, from a real 10-year backtest with point-in-time selection (no hindsight). Income shown gross; dividends may be under-counted (JCP). Past results don't guarantee the future.", pt: "Ilustrativo, de um backtest real de 10 anos com seleção point-in-time (sem retrovisor). Renda bruta; dividendos podem estar subcontados (JCP). Resultados passados não garantem o futuro." },
     "sig.kellyHint": { en: "This is how much of your deposit to <b>buy</b> — not risk. The stop caps each trade's real loss, so even a bad streak is a drawdown, not ruin. Fractional shares/lots work on MT5 brokers (e.g. Exness, from 0.01). ⅛ Kelly mirrors the metrics' 6.5% VaR posture.", pt: "Isto é quanto do seu depósito <b>comprar</b> — não é risco. O stop limita a perda real de cada trade, então mesmo uma sequência ruim é drawdown, não ruína. Frações de ação/lote funcionam em corretoras MT5 (ex.: Exness, a partir de 0,01). ⅛ de Kelly espelha a postura de 6,5% VaR das métricas." },
@@ -1085,6 +1089,7 @@
   }
 
   /* ================= SVG CHARTS ================= */
+  let DIV_MKT = null;
   function renderDividends() {
     const host = $("#divTiles"); if (!host) return;
     if (!DIVDATA) {
@@ -1093,43 +1098,56 @@
         .catch(e => console.error("dividends load failed", e));
       return;
     }
-    const D = DIVDATA, h = D.headline || {}, b = D.benchmarks || {};
-    const brl0 = v => "R$ " + Number(v || 0).toLocaleString("pt-BR", { maximumFractionDigits: 0 });
+    const markets = DIVDATA.markets || {};
+    const codes = Object.keys(markets);
+    if (!codes.length) return;
+    if (!DIV_MKT || !markets[DIV_MKT]) DIV_MKT = codes[0];
+
+    // toggle de mercado
+    const tabs = $("#divMarketTabs");
+    if (tabs) {
+      tabs.innerHTML = codes.map(c =>
+        `<button class="book-tab ${c === DIV_MKT ? "on" : ""}" data-mkt="${c}">${t("div.mkt." + c)}</button>`).join("");
+      tabs.querySelectorAll("button").forEach(b => b.onclick = () => { DIV_MKT = b.dataset.mkt; renderDividends(); });
+    }
+    renderDivMarket(markets[DIV_MKT]);
+  }
+  function renderDivMarket(M) {
+    const h = M.headline || {}, cur = M.currency || "$";
+    const money0 = v => cur + " " + Number(v || 0).toLocaleString(locale(), { maximumFractionDigits: 0 });
+    const tier = $("#divTier"); if (tier) tier.textContent = t("div.tier." + M.min_tier);
+
     const tiles = [
       { v: nf(h.yield_on_cost_pct, 1) + "%", l: t("div.tile.yoc"), d: t("div.tile.yocD"), c: "pos" },
-      { v: brl0(h.annual_income_per_100k), l: t("div.tile.income"), d: t("div.tile.incomeD"), c: "" },
+      { v: money0(h.annual_income_per_100k), l: interp(t("div.tile.income"), { cur }), d: t("div.tile.incomeD"), c: "" },
       { v: nf(h.div_collected_pct, 0) + "%", l: t("div.tile.returned"), d: t("div.tile.returnedD"), c: "" },
       { v: "+" + nf(h.total_return_drip_pct, 0) + "%", l: t("div.tile.drip"), d: t("div.tile.dripD"), c: "pos" },
     ];
-    host.innerHTML = tiles.map(x => `<div class="qcard"><div class="qv ${x.c}">${x.v}</div><div class="ql">${x.l}</div><div class="qd">${x.d}</div></div>`).join("");
+    $("#divTiles").innerHTML = tiles.map(x => `<div class="qcard"><div class="qv ${x.c}">${x.v}</div><div class="ql">${x.l}</div><div class="qd">${x.d}</div></div>`).join("");
 
+    const st = $(".chart-title[data-i18n='div.salaryTitle']"); if (st) st.textContent = interp(t("div.salaryTitle"), { cur });
     const base = h.invested_base || 0, factor = base > 0 ? 100000 / base : 1;
     const salary = {};
-    Object.keys(D.salary_by_year || {}).forEach(y => salary[y] = (D.salary_by_year[y] || 0) * factor);
+    Object.keys(M.salary_by_year || {}).forEach(y => salary[y] = (M.salary_by_year[y] || 0) * factor);
     const sc = $("#divSalary");
-    if (sc) barChart(sc, salary, { fmt: v => "R$" + (v >= 1000 ? nf(v / 1000, 1) + "k" : nf(v, 0)) });
+    if (sc) barChart(sc, salary, { fmt: v => cur + (v >= 1000 ? nf(v / 1000, 1) + "k" : nf(v, 0)) });
 
-    const bench = [
-      { k: "div.bench.you", v: h.total_return_drip_pct, hi: true },
-      { k: "div.bench.divo", v: b.divo11_pct },
-      { k: "div.bench.bova", v: b.bova11_pct },
-      { k: "div.bench.cdi", v: b.cdi_pct },
-    ].filter(x => x.v != null);
+    const bench = [{ label: t("div.bench.you"), v: h.total_return_drip_pct, hi: true }]
+      .concat((M.benchmarks || []).filter(x => x.ret != null).map(x => ({ label: x.label, v: x.ret })));
     const mx = Math.max(...bench.map(x => x.v));
     const bh = $("#divBench");
     if (bh) bh.innerHTML = `<div class="divbars">` + bench.map(x =>
-      `<div class="divbar-row"><span class="divbar-lbl">${t(x.k)}</span>` +
+      `<div class="divbar-row"><span class="divbar-lbl">${x.label}</span>` +
       `<span class="divbar-track"><span class="divbar-fill ${x.hi ? "hi" : ""}" style="width:${Math.max(4, x.v / mx * 100).toFixed(1)}%"></span></span>` +
       `<span class="divbar-val ${x.hi ? "hi" : ""}">+${nf(x.v, 1)}%</span></div>`).join("") + `</div>`;
 
-    const core = D.core || [];
     const cg = $("#divCore");
-    if (cg) cg.innerHTML = `<div class="divcore-grid">` + core.map(c =>
+    if (cg) cg.innerHTML = `<div class="divcore-grid">` + (M.core || []).map(c =>
       `<div class="divcore-cell"><div class="divcore-tk">${c.name}</div>` +
       `<div class="divcore-yoc">${nf(c.yield_on_cost_pct, 1)}%<span> ${t("div.core.yoc")}</span></div>` +
       `<div class="divcore-yld">${c.yield_pct != null ? nf(c.yield_pct, 1) + "% " + t("div.core.yld") : ""}</div></div>`).join("") + `</div>`;
     const zone = $("#divZone");
-    if (zone) zone.textContent = interp(t("div.zone"), { n: D.buy_zone_now, total: D.core_count });
+    if (zone) zone.textContent = interp(t("div.zone"), { n: M.buy_zone_now, total: M.core_count });
 
     const how = [["1t", "1d"], ["2t", "2d"], ["3t", "3d"], ["4t", "4d"]];
     const hw = $("#divHow");
