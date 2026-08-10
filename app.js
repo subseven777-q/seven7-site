@@ -40,7 +40,8 @@
      (posicionamento institucional conservador, coerente com o alvo de 6.5% VaR). */
   const KELLY_FULL = { US: 28.8, BR: 9.7 };
   const KELLY_FRACS = [[1, "1 Kelly"], [0.5, "½ Kelly"], [0.25, "¼ Kelly"], [0.125, "⅛ Kelly"]];
-  const KELLY_DEFAULT = 0.25;
+  const KELLY_DEFAULT = 0.125;
+  const savedKelly = () => { const v = parseFloat(localStorage.getItem("seven7-kelly")); return KELLY_FRACS.some(f => f[0] === v) ? v : KELLY_DEFAULT; };
   const kellyPct = (market, frac) => +(( KELLY_FULL[market] || KELLY_FULL.US) * frac).toFixed(1);
 
   /* ---------------- i18n dictionary ---------------- */
@@ -179,8 +180,10 @@
     "sig.stMon": { en: "MONITORING", pt: "MONITORANDO" },
     "sig.stFlat": { en: "CASH", pt: "CAIXA" },
     "sig.openTV": { en: "Open in TradingView", pt: "Abrir no TradingView" },
-    "sig.allocLbl": { en: "Kelly sizing (% of deposit)", pt: "Sizing de Kelly (% do depósito)" },
-    "sig.kellyHint": { en: "Full Kelly maximizes long-run growth but swings hard. ¼ Kelly is the conservative institutional default.", pt: "Kelly cheio maximiza o crescimento no longo prazo, mas oscila muito. ¼ de Kelly é o padrão institucional conservador." },
+    "sig.allocLbl": { en: "Kelly sizing (% of deposit to buy)", pt: "Sizing de Kelly (% do depósito p/ comprar)" },
+    "sig.buyCalc": { en: "Buy ≈ <b>{shares}</b> shares · {notional} ({pct}% of deposit) · real risk ≈ {risk} ({riskpct}%), capped by the stop", pt: "Comprar ≈ <b>{shares}</b> ações · {notional} ({pct}% do depósito) · risco real ≈ {risk} ({riskpct}%), limitado pelo stop" },
+    "sig.buyNoDep": { en: "Set your initial deposit on the Portfolio page to see exactly how much to buy.", pt: "Defina seu depósito inicial na página Portfólio para ver exatamente quanto comprar." },
+    "sig.kellyHint": { en: "This is how much of your deposit to <b>buy</b> — not risk. The stop caps each trade's real loss, so even a bad streak is a drawdown, not ruin. Fractional shares/lots work on MT5 brokers (e.g. Exness, from 0.01). ⅛ Kelly mirrors the metrics' 6.5% VaR posture.", pt: "Isto é quanto do seu depósito <b>comprar</b> — não é risco. O stop limita a perda real de cada trade, então mesmo uma sequência ruim é drawdown, não ruína. Frações de ação/lote funcionam em corretoras MT5 (ex.: Exness, a partir de 0,01). ⅛ de Kelly espelha a postura de 6,5% VaR das métricas." },
     "sig.addBtn": { en: "＋ Portfolio", pt: "＋ Portfólio" },
     "sig.added": { en: "Added ✓", pt: "Adicionado ✓" },
     "sig.goPortfolio": { en: "view portfolio →", pt: "ver portfólio →" },
@@ -818,15 +821,38 @@
       ${elite ? `<div class="lvl cc"><span class="lk">🍒 ${t("sig.cc")}</span><span class="lv-v">@${fmtNum(s.cc_strike)} · ${nf(s.cc_premium_pct, 1)}%</span></div>` : ""}`;
     const add = $("#sigAdd");
     if (add) {
+      const cur = s.market === "BR" ? "R$" : "$";
+      const dep = PROFILE && PROFILE.portfolio_deposit ? Number(PROFILE.portfolio_deposit) : null;
+      const chosen = savedKelly();
       const opts = KELLY_FRACS.map(([fr, lbl]) =>
-        `<option value="${kellyPct(s.market, fr)}" ${fr === KELLY_DEFAULT ? "selected" : ""}>${lbl} — ${kellyPct(s.market, fr)}%</option>`).join("");
+        `<option value="${fr}" ${fr === chosen ? "selected" : ""}>${lbl} — ${kellyPct(s.market, fr)}%</option>`).join("");
       add.innerHTML = `<span class="alloc-lbl">${t("sig.allocLbl")}</span>
-        <select id="allocPct" class="alloc-in alloc-sel">${opts}</select>
+        <select id="allocFrac" class="alloc-in alloc-sel">${opts}</select>
         <button class="btn btn-primary" id="addPortfolioBtn">${t("sig.addBtn")}</button>
         <span class="add-msg" id="addMsg"></span>
+        <div class="buy-calc" id="buyCalc"></div>
         <div class="kelly-hint">${t("sig.kellyHint")}</div>`;
+      const money = v => cur + Number(v).toLocaleString(locale(), { maximumFractionDigits: v >= 1000 ? 0 : 2 });
+      const paintBuy = () => {
+        const fr = parseFloat($("#allocFrac").value);
+        const pct = kellyPct(s.market, fr);
+        const px = s.entry || s.price;
+        const bc = $("#buyCalc"); if (!bc) return;
+        if (!dep) { bc.innerHTML = t("sig.buyNoDep"); return; }
+        const notional = dep * pct / 100;
+        const shares = px > 0 ? notional / px : 0;
+        const riskPct = (s.entry > 0 && s.stop > 0 && s.entry > s.stop) ? pct * (s.entry - s.stop) / s.entry : null;
+        bc.innerHTML = interp(t("sig.buyCalc"), {
+          shares: nf(shares, shares >= 100 ? 0 : 2), notional: money(notional), pct: nf(pct, 1),
+          risk: riskPct != null ? money(dep * riskPct / 100) : "—", riskpct: riskPct != null ? nf(riskPct, 2) : "—",
+        });
+      };
+      paintBuy();
+      $("#allocFrac").onchange = () => { localStorage.setItem("seven7-kelly", $("#allocFrac").value); paintBuy(); };
       $("#addPortfolioBtn").onclick = async () => {
-        const pct = Math.min(100, Math.max(0.1, parseFloat($("#allocPct").value) || kellyPct(s.market, KELLY_DEFAULT)));
+        const fr = parseFloat($("#allocFrac").value) || KELLY_DEFAULT;
+        localStorage.setItem("seven7-kelly", String(fr));
+        const pct = Math.min(100, Math.max(0.1, kellyPct(s.market, fr)));
         const msg = $("#addMsg"), btn = $("#addPortfolioBtn"); btn.disabled = true;
         const err = await addPosition(s, pct);
         if (err) { msg.textContent = t("sig.addErr"); msg.className = "add-msg err"; }
