@@ -217,6 +217,25 @@
     "div.core.yoc": { en: "yield on cost", pt: "yield on cost" },
     "div.core.yld": { en: "current yield", pt: "yield atual" },
     "div.zone": { en: "{n} of {total} are in the buy zone right now — members see the live signals.", pt: "{n} de {total} estão na zona de compra agora — membros veem os sinais ao vivo." },
+    "div.sigKicker": { en: "LIVE SIGNALS · MEMBERS", pt: "SINAIS AO VIVO · MEMBROS" },
+    "div.sigH": { en: "In the buy zone right now", pt: "Na zona de compra agora" },
+    "div.sigSub": { en: "Which proven payers have dipped into value today — the moment our rule adds to the position. Updated daily.", pt: "Quais pagadoras provadas caíram para região de valor hoje — o momento em que nossa regra reforça a posição. Atualizado diariamente." },
+    "div.sig.loginTeaser": { en: "Log in to see which stocks are in the buy zone right now.", pt: "Entre para ver quais ações estão na zona de compra agora." },
+    "div.sig.upgradeTeaser": { en: "Subscribe to unlock the live dividend buy-zone signals.", pt: "Assine para liberar os sinais de dividendos na zona de compra ao vivo." },
+    "div.sig.proTeaser": { en: "US dividend signals are a Pro feature. Upgrade to Pro (or Elite) to unlock them.", pt: "Sinais de dividendos dos EUA são um recurso Pro. Faça upgrade para Pro (ou Elite) para liberar." },
+    "div.sig.login": { en: "Log in", pt: "Entrar" },
+    "div.sig.upgrade": { en: "See plans", pt: "Ver planos" },
+    "div.sig.none": { en: "No payer is in the buy zone right now — check back tomorrow.", pt: "Nenhuma pagadora na zona de compra agora — volte amanhã." },
+    "div.sig.loading": { en: "Loading live signals…", pt: "Carregando sinais ao vivo…" },
+    "div.sig.buyzone": { en: "BUY ZONE", pt: "ZONA DE COMPRA" },
+    "div.sig.watch": { en: "MONITORING", pt: "MONITORANDO" },
+    "div.sig.hTicker": { en: "Ticker", pt: "Ativo" },
+    "div.sig.hState": { en: "Status", pt: "Situação" },
+    "div.sig.hPrice": { en: "Price", pt: "Preço" },
+    "div.sig.hYield": { en: "Yield (12m)", pt: "Yield (12m)" },
+    "div.sig.hYoc": { en: "Yield on cost", pt: "Yield on cost" },
+    "div.sig.tv": { en: "Chart ↗", pt: "Gráfico ↗" },
+    "div.sig.count": { en: "{a} in the buy zone · {m} monitoring", pt: "{a} na zona de compra · {m} monitorando" },
     "div.howKicker": { en: "HOW IT WORKS", pt: "COMO FUNCIONA" },
     "div.howH": { en: "Simple, disciplined, hands-off", pt: "Simples, disciplinado, sem esforço" },
     "div.how1t": { en: "Only proven payers", pt: "Só pagadoras provadas" },
@@ -732,9 +751,9 @@
       const { data } = await sb.auth.getSession();
       USER = data?.session?.user || null;
       await loadProfile();
-      updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio();
+      updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio(); renderDivSignals();
       sb.auth.onAuthStateChange(async (_ev, session) => {
-        USER = session?.user || null; await loadProfile(); updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio();
+        USER = session?.user || null; await loadProfile(); updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio(); renderDivSignals();
       });
     } catch (e) { console.error("auth init failed", e); renderAccount(); }
     wireAuthForms();
@@ -1157,6 +1176,45 @@
     if (cta) cta.innerHTML = `<div class="div-cta"><h2>${t("div.ctaH")}</h2><p>${t("div.ctaSub")}</p>` +
       `<a class="btn btn-primary btn-lg" href="plans.html">${t("div.ctaBtn")}</a>` +
       `<p class="div-note">${t("div.note")}</p></div>`;
+
+    renderDivSignals();
+  }
+  async function renderDivSignals() {
+    const host = $("#divSignals"); if (!host) return;
+    const teaser = (msgKey, btnKey, href) =>
+      `<div class="div-siglock"><p>${t(msgKey)}</p><a class="btn btn-primary" href="${href}">${t(btnKey)}</a></div>`;
+    if (!sb || !USER) { host.innerHTML = teaser("div.sig.loginTeaser", "div.sig.login", "login.html"); return; }
+    if (!isMember()) { host.innerHTML = teaser("div.sig.upgradeTeaser", "div.sig.upgrade", "plans.html"); return; }
+    host.innerHTML = `<p class="muted-note">${t("div.sig.loading")}</p>`;
+    const { data, error } = await sb.from("dividend_signals").select("*");
+    if (error) { host.innerHTML = `<p class="muted-note">${t("sig.err")}</p>`; return; }
+    let rows = (data || []).filter(r => !DIV_MKT || r.market === DIV_MKT);
+    if (!rows.length) {
+      const plan = (PROFILE && PROFILE.plan) || "";
+      if (DIV_MKT === "US" && plan === "beginner") { host.innerHTML = teaser("div.sig.proTeaser", "div.sig.upgrade", "plans.html"); return; }
+      host.innerHTML = `<p class="muted-note">${t("div.sig.none")}</p>`; return;
+    }
+    rows.sort((a, b) => (a.state !== "ACTIVE") - (b.state !== "ACTIVE") || (b.yield_on_cost_pct || 0) - (a.yield_on_cost_pct || 0));
+    const nA = rows.filter(r => r.state === "ACTIVE").length, nM = rows.length - nA;
+    const stBadge = s => s === "ACTIVE"
+      ? `<span class="dsig-badge buy">● ${t("div.sig.buyzone")}</span>`
+      : `<span class="dsig-badge watch">${t("div.sig.watch")}</span>`;
+    const fmtP = v => v == null ? "—" : (DIV_MKT === "BR" ? "R$ " : "$") + nf(v, 2);
+    host.innerHTML =
+      `<div class="dsig-count">${interp(t("div.sig.count"), { a: nA, m: nM })}</div>` +
+      `<div class="sig-tablewrap"><table class="sig-table dsig-table"><thead><tr>` +
+      `<th>${t("div.sig.hTicker")}</th><th>${t("div.sig.hState")}</th>` +
+      `<th class="num">${t("div.sig.hPrice")}</th><th class="num">${t("div.sig.hYield")}</th>` +
+      `<th class="num">${t("div.sig.hYoc")}</th><th></th></tr></thead><tbody>` +
+      rows.map(r => `<tr class="${r.state === "ACTIVE" ? "dsig-on" : ""}">` +
+        `<td class="tk-cell">${r.ticker} <span class="mkt">${r.market}</span></td>` +
+        `<td>${stBadge(r.state)}</td>` +
+        `<td class="num">${fmtP(r.price)}</td>` +
+        `<td class="num pos">${r.trailing_yield_pct != null ? nf(r.trailing_yield_pct, 1) + "%" : "—"}</td>` +
+        `<td class="num">${r.yield_on_cost_pct != null ? nf(r.yield_on_cost_pct, 1) + "%" : "—"}</td>` +
+        `<td><a class="dsig-tv" href="https://www.tradingview.com/chart/?symbol=${encodeURIComponent(r.tv_symbol || r.ticker)}" target="_blank" rel="noopener">${t("div.sig.tv")}</a></td>` +
+        `</tr>`).join("") +
+      `</tbody></table></div>`;
   }
   function barChart(host, data, opt) {
     host.innerHTML = "";
