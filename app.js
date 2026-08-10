@@ -34,6 +34,15 @@
      Formato https://billing.stripe.com/p/login/... — deixe vazio p/ cair no suporte por e-mail. */
   const STRIPE_PORTAL = "https://billing.stripe.com/p/login/6oU3cxaWndOD95Q4nG8Ra00";
 
+  /* Sizing por Kelly — full Kelly f* = W - (1-W)/payoff, do track record real 10a
+     (payoff = ganho médio / perda média). US: W65.1% payoff .96 -> 28.8%;
+     BR: W55.5% payoff .97 -> 9.7%. Ladder 1 / ½ / ¼ / ⅛. Padrão ¼ Kelly
+     (posicionamento institucional conservador, coerente com o alvo de 6.5% VaR). */
+  const KELLY_FULL = { US: 28.8, BR: 9.7 };
+  const KELLY_FRACS = [[1, "1 Kelly"], [0.5, "½ Kelly"], [0.25, "¼ Kelly"], [0.125, "⅛ Kelly"]];
+  const KELLY_DEFAULT = 0.25;
+  const kellyPct = (market, frac) => +(( KELLY_FULL[market] || KELLY_FULL.US) * frac).toFixed(1);
+
   /* ---------------- i18n dictionary ---------------- */
   const T = {
     "brand.tag": { en: "QUANTIFIED INVESTING", pt: "INVESTIMENTOS QUANTIFICADOS" },
@@ -170,7 +179,8 @@
     "sig.stMon": { en: "MONITORING", pt: "MONITORANDO" },
     "sig.stFlat": { en: "CASH", pt: "CAIXA" },
     "sig.openTV": { en: "Open in TradingView", pt: "Abrir no TradingView" },
-    "sig.allocLbl": { en: "% of deposit", pt: "% do depósito" },
+    "sig.allocLbl": { en: "Kelly sizing (% of deposit)", pt: "Sizing de Kelly (% do depósito)" },
+    "sig.kellyHint": { en: "Full Kelly maximizes long-run growth but swings hard. ¼ Kelly is the conservative institutional default.", pt: "Kelly cheio maximiza o crescimento no longo prazo, mas oscila muito. ¼ de Kelly é o padrão institucional conservador." },
     "sig.addBtn": { en: "＋ Portfolio", pt: "＋ Portfólio" },
     "sig.added": { en: "Added ✓", pt: "Adicionado ✓" },
     "sig.goPortfolio": { en: "view portfolio →", pt: "ver portfólio →" },
@@ -808,12 +818,15 @@
       ${elite ? `<div class="lvl cc"><span class="lk">🍒 ${t("sig.cc")}</span><span class="lv-v">@${fmtNum(s.cc_strike)} · ${nf(s.cc_premium_pct, 1)}%</span></div>` : ""}`;
     const add = $("#sigAdd");
     if (add) {
+      const opts = KELLY_FRACS.map(([fr, lbl]) =>
+        `<option value="${kellyPct(s.market, fr)}" ${fr === KELLY_DEFAULT ? "selected" : ""}>${lbl} — ${kellyPct(s.market, fr)}%</option>`).join("");
       add.innerHTML = `<span class="alloc-lbl">${t("sig.allocLbl")}</span>
-        <input id="allocPct" class="alloc-in" type="number" value="5" min="0.5" max="100" step="0.5"> %
+        <select id="allocPct" class="alloc-in alloc-sel">${opts}</select>
         <button class="btn btn-primary" id="addPortfolioBtn">${t("sig.addBtn")}</button>
-        <span class="add-msg" id="addMsg"></span>`;
+        <span class="add-msg" id="addMsg"></span>
+        <div class="kelly-hint">${t("sig.kellyHint")}</div>`;
       $("#addPortfolioBtn").onclick = async () => {
-        const pct = Math.min(100, Math.max(0.5, parseFloat($("#allocPct").value) || 5));
+        const pct = Math.min(100, Math.max(0.1, parseFloat($("#allocPct").value) || kellyPct(s.market, KELLY_DEFAULT)));
         const msg = $("#addMsg"), btn = $("#addPortfolioBtn"); btn.disabled = true;
         const err = await addPosition(s, pct);
         if (err) { msg.textContent = t("sig.addErr"); msg.className = "add-msg err"; }
