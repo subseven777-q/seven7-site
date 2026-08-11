@@ -249,7 +249,7 @@
     "div.ctaH": { en: "Start building your dividend salary", pt: "Comece a construir seu salário de dividendos" },
     "div.ctaSub": { en: "Brazil from Beginner, the US from Pro, both on Elite. Live dividend signals, updated daily.", pt: "Brasil no Beginner, EUA no Pro, os dois no Elite. Sinais de dividendos ao vivo, atualizados diariamente." },
     "div.ctaBtn": { en: "See plans", pt: "Ver planos" },
-    "div.note": { en: "Illustrative, from a real 10-year backtest with point-in-time selection (no hindsight). Income shown gross; dividends may be under-counted (JCP). Past results don't guarantee the future.", pt: "Ilustrativo, de um backtest real de 10 anos com seleção point-in-time (sem retrovisor). Renda bruta; dividendos podem estar subcontados (JCP). Resultados passados não garantem o futuro." },
+    "div.note": { en: "Illustrative, from a real 10-year backtest with point-in-time selection (no hindsight), a curated blue-chip universe and full dividend + interest-on-equity data. Past results don't guarantee the future.", pt: "Ilustrativo, de um backtest real de 10 anos com seleção point-in-time (sem retrovisor), universo curado de blue chips e dados completos de dividendos + JCP. Resultados passados não garantem o futuro." },
     "sig.kellyHint": { en: "This is how much of your deposit to <b>buy</b> — not risk. The stop caps each trade's real loss, so even a bad streak is a drawdown, not ruin. Fractional shares/lots work on MT5 brokers (e.g. Exness, from 0.01). ⅛ Kelly mirrors the metrics' 6.5% VaR posture.", pt: "Isto é quanto do seu depósito <b>comprar</b> — não é risco. O stop limita a perda real de cada trade, então mesmo uma sequência ruim é drawdown, não ruína. Frações de ação/lote funcionam em corretoras MT5 (ex.: Exness, a partir de 0,01). ⅛ de Kelly espelha a postura de 6,5% VaR das métricas." },
     "sig.addBtn": { en: "＋ Portfolio", pt: "＋ Portfólio" },
     "sig.added": { en: "Added ✓", pt: "Adicionado ✓" },
@@ -327,7 +327,7 @@
     "tick.buy": { en: "BUY", pt: "COMPRA" },
     "tick.live": { en: "LIVE", pt: "AO VIVO" },
     "book.us": { en: "🇺🇸 US · S&P 100", pt: "🇺🇸 EUA · S&P 100" },
-    "book.br": { en: "🇧🇷 Brazil · IBrX", pt: "🇧🇷 Brasil · IBrX" },
+    "book.br": { en: "🇧🇷 Brazil · Ibovespa", pt: "🇧🇷 Brasil · Ibovespa" },
     "book.global": { en: "🌐 Global 50/50", pt: "🌐 Global 50/50" },
     "disclaimer": { en: "Backtest results over 10 years of real data. A mostly-bull-market window; the Sharpe is optimistic. Software and market information — not investment advice. Past performance does not guarantee future results.", pt: "Resultados de backtest sobre 10 anos de dados reais. Janela majoritariamente de bull market; o Sharpe é otimista. Software e informação de mercado — não é recomendação de investimento. Rentabilidade passada não garante resultado futuro." },
     "footer.copy": { en: "© 2026 Seven7 · Quantified Investing. All rights reserved.", pt: "© 2026 Seven7 · Investimentos Quantificados. Todos os direitos reservados." },
@@ -374,14 +374,13 @@
     {
       tier: "BEGINNER", monthly: 9, disc: 0.10, featured: false,
       feats: [
-        [true, { en: "Brazilian market signals (IBrX)", pt: "Sinais do mercado brasileiro (IBrX)" }],
+        [true, { en: "Brazilian market signals (Ibovespa)", pt: "Sinais do mercado brasileiro (Ibovespa)" }],
         [true, { en: "The Magnificent 7 (US) — AAPL · MSFT · GOOGL · AMZN · NVDA · META · TSLA", pt: "As 7 Magníficas dos EUA — AAPL · MSFT · GOOGL · AMZN · NVDA · META · TSLA" }],
         [true, { en: "💰 Dividend income portfolio — Brazil (the “dividend salary”)", pt: "💰 Carteira de renda com dividendos — Brasil (o “salário de dividendos”)" }],
         [true, { en: "10-year performance and history", pt: "Desempenho e histórico de 10 anos" }],
         [false, { en: "US dividend income portfolio", pt: "Carteira de renda com dividendos — EUA" }],
         [false, { en: "Full Signal Radar (US + BR)", pt: "Signal Radar completo (US + BR)" }],
-        [false, { en: "Exclusive Hedge signal", pt: "Sinal de Hedge exclusivo" }],
-        [false, { en: "Community + weekly videos", pt: "Comunidade + vídeos semanais" }],
+        [false, { en: "YouTube members area — videos & community", pt: "Área de membros no YouTube — vídeos e comunidade" }],
       ],
       cta: { en: "Get Beginner", pt: "Assinar Beginner" },
     },
@@ -389,30 +388,35 @@
       tier: "PRO", monthly: 29, disc: 0.15, featured: true,
       badge: { en: "MOST POPULAR", pt: "MAIS POPULAR" },
       feats: [
-        [true, { en: "All signals — US (S&P 100) + Brazil (IBrX)", pt: "Todos os sinais — EUA (S&P 100) + Brasil (IBrX)" }],
+        [true, { en: "All signals — US (S&P 100) + Brazil (Ibovespa)", pt: "Todos os sinais — EUA (S&P 100) + Brasil (Ibovespa)" }],
         [true, { en: "💰 Dividend income portfolio — US + Brazil", pt: "💰 Carteira de renda com dividendos — EUA + Brasil" }],
         [true, { en: "Full Signal Radar + watchlist", pt: "Signal Radar completo + watchlist" }],
         [true, { en: "Complete quantitative metrics", pt: "Métricas quantitativas completas" }],
-        [true, { en: "Real-time alerts", pt: "Alertas em tempo real" }],
+        [true, { en: "YouTube members area — weekly videos & community", pt: "Área de membros no YouTube — vídeos semanais e comunidade" }],
         [false, { en: "Exclusive Hedge signal", pt: "Sinal de Hedge exclusivo" }],
-        [false, { en: "Community + weekly videos", pt: "Comunidade + vídeos semanais" }],
+        [false, { en: "🍒 The cherry — an exclusive income layer", pt: "🍒 A cereja — camada de renda exclusiva" }],
       ],
       cta: { en: "Get Pro", pt: "Assinar Pro" },
     },
     {
       tier: "ELITE", monthly: 59, disc: 0.20, featured: false,
       cycleFeat: {
-        annual: [true, { en: "Full strategy revealed on subscription", pt: "Estratégia completa revelada na assinatura" }, "hot"],
-        monthly: [true, { en: "Full strategy revealed after 6 months", pt: "Estratégia completa revelada após 6 meses de plano" }, "hot"],
+        annual: [
+          [true, { en: "Full strategy revealed on subscription", pt: "Estratégia completa revelada na assinatura" }, "hot"],
+          [true, { en: "Automated MT5 robot — trades the signals for you", pt: "Robô automatizado em MT5 — opera os sinais sozinho" }],
+        ],
+        monthly: [
+          [true, { en: "Full strategy revealed after 6 months", pt: "Estratégia completa revelada após 6 meses de plano" }, "hot"],
+          [false, { en: "Automated MT5 robot — annual plan only", pt: "Robô automatizado em MT5 — só no plano anual" }],
+        ],
       },
       feats: [
         [true, { en: "Everything in Pro", pt: "Tudo do Pro" }],
         [true, { en: "💰 Both dividend income portfolios (US + Brazil)", pt: "💰 As duas carteiras de renda com dividendos (EUA + Brasil)" }],
         [true, { en: "🍒 The cherry on top — an exclusive layer that lifts every metric", pt: "🍒 A cereja do bolo — camada exclusiva que eleva cada métrica" }, "hot"],
-        [true, { en: "Automated MT5 robot — trades the signals for you (bonus)", pt: "Robô automatizado em MT5 — opera os sinais sozinho (bônus)" }],
-        [true, { en: "Exclusive Hedge — 15%→30% in an uncorrelated protection asset", pt: "Sinal de Hedge exclusivo — 15%→30% em ativo de proteção descorrelacionado" }],
-        [true, { en: "Community: weekly market videos, outlook and reads", pt: "Comunidade: vídeos semanais de mercado, expectativas e leitura" }],
-        [true, { en: "Export history (CSV) + API access", pt: "Exportar histórico (CSV) + acesso à API" }],
+        [true, { en: "Exclusive Hedge signal — an uncorrelated protection asset for market stress", pt: "Sinal de Hedge exclusivo — ativo de proteção descorrelacionado para o estresse de mercado" }],
+        [true, { en: "YouTube members area — weekly videos & community", pt: "Área de membros no YouTube — vídeos semanais e comunidade" }],
+        [true, { en: "Export history (CSV)", pt: "Exportar histórico (CSV)" }],
         [true, { en: "Priority support", pt: "Suporte prioritário" }],
       ],
       cta: { en: "Get Elite", pt: "Assinar Elite" },
@@ -727,7 +731,7 @@
       const sub = CYCLE === "annual" ? `<span class="price-strike">$${p.monthly}</span> ${t("price.billed")} $${annualMo * 12}/${t("price.year")}` : t("price.cancel");
       const save = CYCLE === "annual" ? `<div class="price-save">−${Math.round(p.disc * 100)}%</div>` : "";
       let featList = p.feats.slice();
-      if (p.cycleFeat) featList = [featList[0], p.cycleFeat[CYCLE], ...featList.slice(1)];
+      if (p.cycleFeat) featList = [featList[0], ...p.cycleFeat[CYCLE], ...featList.slice(1)];
       const feats = featList.map(f => `<li class="${f[0] ? "" : "off"} ${f[2] || ""}">${f[1][LANG]}</li>`).join("");
       return `<div class="price-card ${p.featured ? "featured" : ""}">
         ${p.badge ? `<div class="price-badge">${p.badge[LANG]}</div>` : ""}${save}
