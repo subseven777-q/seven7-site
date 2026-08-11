@@ -376,7 +376,9 @@
       feats: [
         [true, { en: "Brazilian market signals (IBrX)", pt: "Sinais do mercado brasileiro (IBrX)" }],
         [true, { en: "The Magnificent 7 (US) — AAPL · MSFT · GOOGL · AMZN · NVDA · META · TSLA", pt: "As 7 Magníficas dos EUA — AAPL · MSFT · GOOGL · AMZN · NVDA · META · TSLA" }],
+        [true, { en: "💰 Dividend income portfolio — Brazil (the “dividend salary”)", pt: "💰 Carteira de renda com dividendos — Brasil (o “salário de dividendos”)" }],
         [true, { en: "10-year performance and history", pt: "Desempenho e histórico de 10 anos" }],
+        [false, { en: "US dividend income portfolio", pt: "Carteira de renda com dividendos — EUA" }],
         [false, { en: "Full Signal Radar (US + BR)", pt: "Signal Radar completo (US + BR)" }],
         [false, { en: "Exclusive Hedge signal", pt: "Sinal de Hedge exclusivo" }],
         [false, { en: "Community + weekly videos", pt: "Comunidade + vídeos semanais" }],
@@ -388,6 +390,7 @@
       badge: { en: "MOST POPULAR", pt: "MAIS POPULAR" },
       feats: [
         [true, { en: "All signals — US (S&P 100) + Brazil (IBrX)", pt: "Todos os sinais — EUA (S&P 100) + Brasil (IBrX)" }],
+        [true, { en: "💰 Dividend income portfolio — US + Brazil", pt: "💰 Carteira de renda com dividendos — EUA + Brasil" }],
         [true, { en: "Full Signal Radar + watchlist", pt: "Signal Radar completo + watchlist" }],
         [true, { en: "Complete quantitative metrics", pt: "Métricas quantitativas completas" }],
         [true, { en: "Real-time alerts", pt: "Alertas em tempo real" }],
@@ -404,6 +407,7 @@
       },
       feats: [
         [true, { en: "Everything in Pro", pt: "Tudo do Pro" }],
+        [true, { en: "💰 Both dividend income portfolios (US + Brazil)", pt: "💰 As duas carteiras de renda com dividendos (EUA + Brasil)" }],
         [true, { en: "🍒 The cherry on top — an exclusive layer that lifts every metric", pt: "🍒 A cereja do bolo — camada exclusiva que eleva cada métrica" }, "hot"],
         [true, { en: "Automated MT5 robot — trades the signals for you (bonus)", pt: "Robô automatizado em MT5 — opera os sinais sozinho (bônus)" }],
         [true, { en: "Exclusive Hedge — 15%→30% in an uncorrelated protection asset", pt: "Sinal de Hedge exclusivo — 15%→30% em ativo de proteção descorrelacionado" }],
