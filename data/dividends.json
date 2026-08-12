@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-11 19:32",
+  "generated": "2026-08-12 19:31",
   "data_through": "2026-08-10",
   "markets": {
     "BR": {
@@ -29,7 +29,7 @@
         {
           "key": "riskfree",
           "label": "CDI",
-          "ret": 67.2
+          "ret": 67.3
         }
       ],
       "salary_by_year": {
