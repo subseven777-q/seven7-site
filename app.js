@@ -273,6 +273,13 @@
     "mem.vidH": { en: "Weekly videos", pt: "Vídeos semanais" },
     "mem.vidSub": { en: "Market reads, outlook and strategy walkthroughs — new videos every week.", pt: "Leitura de mercado, expectativas e explicações da estratégia — vídeos novos toda semana." },
     "mem.vidSoon": { en: "The first videos are being produced — they'll appear here.", pt: "Os primeiros vídeos estão sendo produzidos — aparecerão aqui." },
+    "mem.hedgeKicker": { en: "TAIL HEDGE · ELITE", pt: "HEDGE DE CAUDA · ELITE" },
+    "mem.hedgeH": { en: "Protection overlay — live status", pt: "Overlay de proteção — estado ao vivo" },
+    "mem.hedgeSub": { en: "How much of the book should sit in the uncorrelated protection asset right now. The asset itself is named in your strategy pack.", pt: "Quanto da carteira deve estar no ativo de proteção descorrelacionado agora. O ativo é revelado no seu material de estratégia." },
+    "mem.hedgeNormal": { en: "NORMAL", pt: "NORMAL" },
+    "mem.hedgeStress": { en: "STRESS — protection raised", pt: "ESTRESSE — proteção elevada" },
+    "mem.hedgeDesc": { en: "Current market regime for the hedge.", pt: "Regime de mercado atual para o hedge." },
+    "mem.hedgeTarget": { en: "target weight", pt: "peso-alvo" },
     "mem.pfH": { en: "Your portfolio", pt: "Seu portfólio" },
     "mem.gateLogin": { en: "The members area is for subscribers. Log in to enter.", pt: "A área de membros é para assinantes. Entre para acessar." },
     "mem.gateUpgrade": { en: "Subscribe to unlock the members area — live panels, videos and your portfolio.", pt: "Assine para liberar a área de membros — painéis ao vivo, vídeos e seu portfólio." },
@@ -286,6 +293,7 @@
     "pf.needLoginSub": { en: "Log in to build and track your portfolio.", pt: "Entre para montar e acompanhar seu portfólio." },
     "pf.deposit": { en: "Initial deposit", pt: "Depósito inicial" },
     "pf.save": { en: "Save", pt: "Salvar" },
+    "pf.export": { en: "Export CSV", pt: "Exportar CSV" },
     "pf.saved": { en: "Saved ✓ (metrics update at the next daily run)", pt: "Salvo ✓ (as métricas atualizam no próximo ciclo diário)" },
     "pf.value": { en: "Portfolio value", pt: "Valor do portfólio" },
     "pf.return": { en: "Total return", pt: "Retorno total" },
@@ -854,7 +862,7 @@
     host.innerHTML = `<p class="muted-note">${t("sig.loading")}</p>`;
     const { data, error } = await sb.from("signals").select("*");
     if (error) { host.innerHTML = `<p class="muted-note">${t("sig.err")}</p>`; return; }
-    SIGNALS = (data || []).sort((a, b) => a.ticker.localeCompare(b.ticker));  // ordem alfabética
+    SIGNALS = (data || []).filter(s => !s.ticker.startsWith("__")).sort((a, b) => a.ticker.localeCompare(b.ticker));  // ordem alfabética; exclui meta (__HEDGE__)
     const filters = [["ALL", t("sig.all")], ["US", "🇺🇸 US"], ["BR", "🇧🇷 BR"]];
     if (tabsHost) {
       tabsHost.innerHTML = filters.map(f => `<button class="book-tab ${SIG_FILTER === f[0] ? "on" : ""}" data-f="${f[0]}">${f[1]}</button>`).join("");
@@ -1031,11 +1039,13 @@
     const d = (st.data && st.data.data) || null;
     const sym = cur === "BRL" ? "R$" : "$";
     const money = v => v == null ? "—" : sym + Number(v).toLocaleString(locale(), { maximumFractionDigits: 0 });
+    const isElite = PROFILE && PROFILE.plan === "elite";
 
     let html = `<div class="pf-deposit">
       <label>${t("pf.deposit")}</label>
       <div class="pf-dep-in"><span>${sym}</span><input id="pfDeposit" type="number" value="${deposit}" min="0" step="100"></div>
       <button class="btn btn-ghost" id="pfSaveDep">${t("pf.save")}</button>
+      ${isElite && positions.length ? `<button class="btn btn-ghost" id="pfExport">⇩ ${t("pf.export")}</button>` : ""}
       <span class="add-msg" id="pfDepMsg"></span></div>`;
 
     if (!positions.length) {
@@ -1086,9 +1096,33 @@
     host.querySelectorAll(".pf-del").forEach(b => b.onclick = async () => {
       await sb.from("portfolio_positions").delete().eq("id", b.dataset.id); renderPortfolio();
     });
+    const exp = $("#pfExport");
+    if (exp) exp.onclick = () => exportPortfolioCSV(positions, d, deposit, cur);
     if (d && d.curve && d.curve.length > 1) {
       lineChart($("#pfChart"), d.curve, { keys: ["p", "spy", "bova"], colors: ["var(--series)", "var(--bench)", "var(--warn)"], labels: [t("pf.you"), "SPY", "BOVA11"], dash: [false, true, true], asPctGrowth: true });
     }
+  }
+
+  function exportPortfolioCSV(positions, d, deposit, cur) {
+    const esc = v => { v = (v == null ? "" : String(v)); return /[",\n;]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+    const L = [];
+    L.push(["Seven7 — Portfolio export", new Date().toISOString().slice(0, 10)]);
+    L.push(["Deposit", deposit, cur]);
+    if (d) {
+      L.push(["Value", d.value]); L.push(["Total return %", d.total_return]);
+      L.push(["Win rate %", d.win_rate]); L.push(["Max drawdown %", d.max_dd]);
+      L.push(["Vol drag %", d.vol_drag]); L.push(["vs SPY %", d.spy_return]); L.push(["vs BOVA11 %", d.bova_return]);
+    }
+    L.push([]);
+    L.push(["Ticker", "Market", "Added", "Allocation %", "Entry", "Stop", "TP", "Current", "Status", "Return %", "Return R"]);
+    positions.forEach(p => L.push([p.ticker, p.market, p.added_at, p.alloc_pct, p.entry, p.stop, p.tp,
+      p.current_price ?? p.entry, p.status, p.ret_pct, p.ret_r]));
+    const csv = L.map(r => r.map(esc).join(",")).join("\n");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "seven7-portfolio-" + new Date().toISOString().slice(0, 10) + ".csv";
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
   }
 
   /* ---- account page ---- */
@@ -1263,7 +1297,21 @@
     if (!isMember()) { gate.innerHTML = teaser("mem.gateUpgrade", "mem.plans", "plans.html"); if (content) content.hidden = true; return; }
     gate.innerHTML = ""; if (content) content.hidden = false;
     if (DATA) guard("#po3Tabs", () => initSection(["US", "BR"], "#po3Tabs", renderPO3Panel));
-    renderDividends(); renderVideos(); renderPortfolio();
+    renderDividends(); renderVideos(); renderPortfolio(); renderHedgeLive();
+  }
+  async function renderHedgeLive() {
+    const sec = $("#hedgeLiveSection"), host = $("#hedgeLiveHost"); if (!host) return;
+    const elite = PROFILE && PROFILE.plan === "elite";
+    if (!sb || !USER || !elite) { if (sec) sec.hidden = true; return; }
+    let data = null;
+    try { const r = await sb.from("signals").select("*").eq("ticker", "__HEDGE__").maybeSingle(); data = r.data; } catch (e) { data = null; }
+    if (!data) { if (sec) sec.hidden = true; return; }
+    if (sec) sec.hidden = false;
+    const stress = data.state === "STRESS";
+    host.innerHTML = `<div class="hedge-live ${stress ? "stress" : "normal"}">
+      <div class="hl-left"><span class="hl-dot"></span><div><div class="hl-state">${stress ? t("mem.hedgeStress") : t("mem.hedgeNormal")}</div><div class="hl-desc">${t("mem.hedgeDesc")}</div></div></div>
+      <div class="hl-weight"><div class="hl-w">${nf(data.pct_in_range, 0)}%</div><div class="hl-wl">${t("mem.hedgeTarget")}</div></div>
+    </div>`;
   }
   function renderPO3Panel(k) {
     const b = DATA && DATA.books && DATA.books[k]; if (!b) return;
