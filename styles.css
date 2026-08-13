@@ -421,6 +421,16 @@ h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.02em;font-weight:680}
 .dsig-badge.watch{background:var(--raised);color:var(--muted)}
 .dsig-tv{color:var(--accent);font-size:12.5px;white-space:nowrap}
 .dsig-tv:hover{text-decoration:underline}
+
+/* ---------------- Members area ---------------- */
+.charts-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:820px){.charts-2{grid-template-columns:1fr}}
+.mem-subhead{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);margin:26px 0 12px}
+.vid-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+.vid-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.vid-frame{position:relative;width:100%;padding-top:56.25%;background:#000}
+.vid-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vid-title{padding:12px 14px;font-size:14px;font-weight:600}
 .sig-add .kelly-hint{flex-basis:100%;font-size:12px;color:var(--ink-2);line-height:1.45;margin-top:2px}
 .add-msg{font-size:12.5px}
 .add-msg.ok{color:var(--pos)} .add-msg.ok a{color:var(--accent);text-decoration:underline}

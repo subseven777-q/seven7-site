@@ -26,13 +26,18 @@
   /* Preencha quando o Stripe estiver pronto: links de checkout hospedado.
      Ex.: STRIPE_LINKS.PRO.monthly = "https://buy.stripe.com/xxxx". Vazio => vai ao registro. */
   const STRIPE_LINKS = {
-    BEGINNER: { monthly: "https://buy.stripe.com/bJeaEZfcDfWL3Lw3jC8Ra05", annual: "https://buy.stripe.com/4gM3cxe8z5i795Q8DW8Ra02" },
-    PRO:      { monthly: "https://buy.stripe.com/14A3cxfcD11R0zk3jC8Ra04", annual: "https://buy.stripe.com/00waEZc0rdODbdYf2k8Ra01" },
-    ELITE:    { monthly: "https://buy.stripe.com/5kQ00l6G75i7bdY7zS8Ra03", annual: "https://buy.stripe.com/6oU3cxaWndOD95Q4nG8Ra00" },
+    BEGINNER: { monthly: "https://buy.stripe.com/bJeaEZfcDfWL3Lw3jC8Ra05", annual: "" },
+    PRO:      { monthly: "https://buy.stripe.com/14A3cxfcD11R0zk3jC8Ra04", annual: "" },
+    ELITE:    { monthly: "", annual: "" },
   };
   /* Link "no-code" do Portal do Cliente Stripe (Settings -> Billing -> Customer portal).
      Formato https://billing.stripe.com/p/login/... — deixe vazio p/ cair no suporte por e-mail. */
   const STRIPE_PORTAL = "https://billing.stripe.com/p/login/6oU3cxaWndOD95Q4nG8Ra00";
+
+  /* Vídeos da área de membros (YouTube "não listado"). Preencha com {id, title}.
+     id = o código do vídeo (youtu.be/<id> ou watch?v=<id>). Ex.:
+     { id: "dQw4w9WgXcQ", title: { en: "Weekly outlook", pt: "Expectativas da semana" } } */
+  const VIDEOS = [];
 
   /* Sizing por Kelly — full Kelly f* = W - (1-W)/payoff, do track record real 10a
      (payoff = ganho médio / perda média). US: W65.1% payoff .96 -> 28.8%;
@@ -51,6 +56,7 @@
     "nav.metrics": { en: "Metrics", pt: "Métricas" },
     "nav.signals": { en: "Signals", pt: "Sinais" },
     "nav.dividends": { en: "Dividends", pt: "Dividendos" },
+    "nav.members": { en: "Members", pt: "Membros" },
     "nav.replay": { en: "Replay", pt: "Replay" },
     "nav.portfolio": { en: "Portfolio", pt: "Portfólio" },
     "nav.plans": { en: "Plans", pt: "Planos" },
@@ -126,6 +132,7 @@
     "legend.stratBenchBR": { en: "BR index (buy & hold)", pt: "índice BR (buy & hold)" },
     "m.totalRet": { en: "Total return", pt: "Retorno total" },
     "m.maxDD": { en: "MaxDD", pt: "MaxDD" },
+    "m.bench": { en: "Benchmark", pt: "Benchmark" },
     "dd.worst": { en: "Worst peak-to-trough:", pt: "Pior queda de pico a vale:" },
     "mt.cagr.l": { en: "CAGR (10 years)", pt: "CAGR (10 anos)" },
     "mt.cagr.d": { en: "The average yearly return, already compounded — what your money grew, per year.", pt: "O retorno médio ao ano, já composto — o quanto seu dinheiro rendeu por ano." },
@@ -250,6 +257,27 @@
     "div.ctaSub": { en: "Brazil from Beginner, the US from Pro, both on Elite. Live dividend signals, updated daily.", pt: "Brasil no Beginner, EUA no Pro, os dois no Elite. Sinais de dividendos ao vivo, atualizados diariamente." },
     "div.ctaBtn": { en: "See plans", pt: "Ver planos" },
     "div.note": { en: "Illustrative, from a real 10-year backtest with point-in-time selection (no hindsight), a curated blue-chip universe and full dividend + interest-on-equity data. Past results don't guarantee the future.", pt: "Ilustrativo, de um backtest real de 10 anos com seleção point-in-time (sem retrovisor), universo curado de blue chips e dados completos de dividendos + JCP. Resultados passados não garantem o futuro." },
+    "mem.kicker": { en: "MEMBERS AREA", pt: "ÁREA DE MEMBROS" },
+    "mem.h1": { en: "Your quant desk", pt: "Sua mesa quant" },
+    "mem.sub": { en: "Two live strategies, full quantitative panels, videos and your portfolio — updated every day.", pt: "Duas estratégias ao vivo, painéis quantitativos completos, vídeos e seu portfólio — atualizados todos os dias." },
+    "mem.p1kicker": { en: "STRATEGY 1 · STOP & TARGET", pt: "ESTRATÉGIA 1 · STOP E ALVO" },
+    "mem.p1h": { en: "Breakout strategy — full quant panel", pt: "Estratégia de rompimento — painel quant completo" },
+    "mem.p1sub": { en: "The active strategy: every trade has an entry, a stop and a target. Complete risk & return metrics, 10 years, updated daily.", pt: "A estratégia ativa: cada operação tem entrada, stop e alvo. Métricas completas de risco e retorno, 10 anos, atualizadas diariamente." },
+    "mem.p2kicker": { en: "STRATEGY 2 · DIVIDENDS", pt: "ESTRATÉGIA 2 · DIVIDENDOS" },
+    "mem.p2h": { en: "Dividend strategy — full quant panel", pt: "Estratégia de dividendos — painel quant completo" },
+    "mem.p2sub": { en: "The long-term income strategy: buy on weakness, never sell, reinvest. Yield, income and total return vs the benchmarks.", pt: "A estratégia de renda de longo prazo: compra na queda, nunca vende, reinveste. Yield, renda e retorno total vs os benchmarks." },
+    "mem.equity": { en: "Equity curve vs benchmark", pt: "Curva de capital vs benchmark" },
+    "mem.dd": { en: "Drawdown", pt: "Drawdown" },
+    "mem.heat": { en: "Monthly returns", pt: "Retornos mensais" },
+    "mem.vidKicker": { en: "VIDEOS & COMMUNITY", pt: "VÍDEOS E COMUNIDADE" },
+    "mem.vidH": { en: "Weekly videos", pt: "Vídeos semanais" },
+    "mem.vidSub": { en: "Market reads, outlook and strategy walkthroughs — new videos every week.", pt: "Leitura de mercado, expectativas e explicações da estratégia — vídeos novos toda semana." },
+    "mem.vidSoon": { en: "The first videos are being produced — they'll appear here.", pt: "Os primeiros vídeos estão sendo produzidos — aparecerão aqui." },
+    "mem.pfH": { en: "Your portfolio", pt: "Seu portfólio" },
+    "mem.gateLogin": { en: "The members area is for subscribers. Log in to enter.", pt: "A área de membros é para assinantes. Entre para acessar." },
+    "mem.gateUpgrade": { en: "Subscribe to unlock the members area — live panels, videos and your portfolio.", pt: "Assine para liberar a área de membros — painéis ao vivo, vídeos e seu portfólio." },
+    "mem.login": { en: "Log in", pt: "Entrar" },
+    "mem.plans": { en: "See plans", pt: "Ver planos" },
     "sig.kellyHint": { en: "This is how much of your deposit to <b>buy</b> — not risk. The stop caps each trade's real loss, so even a bad streak is a drawdown, not ruin. Fractional shares/lots work on MT5 brokers (e.g. Exness, from 0.01). ⅛ Kelly mirrors the metrics' 6.5% VaR posture.", pt: "Isto é quanto do seu depósito <b>comprar</b> — não é risco. O stop limita a perda real de cada trade, então mesmo uma sequência ruim é drawdown, não ruína. Frações de ação/lote funcionam em corretoras MT5 (ex.: Exness, a partir de 0,01). ⅛ de Kelly espelha a postura de 6,5% VaR das métricas." },
     "sig.addBtn": { en: "＋ Portfolio", pt: "＋ Portfólio" },
     "sig.added": { en: "Added ✓", pt: "Adicionado ✓" },
@@ -372,7 +400,7 @@
   /* ---------------- plans (USD) ---------------- */
   const PLANS = [
     {
-      tier: "BEGINNER", monthly: 9, disc: 0.10, featured: false,
+      tier: "BEGINNER", monthly: 9, disc: 0.15, featured: false,
       feats: [
         [true, { en: "Brazilian market signals (Ibovespa)", pt: "Sinais do mercado brasileiro (Ibovespa)" }],
         [true, { en: "The Magnificent 7 (US) — AAPL · MSFT · GOOGL · AMZN · NVDA · META · TSLA", pt: "As 7 Magníficas dos EUA — AAPL · MSFT · GOOGL · AMZN · NVDA · META · TSLA" }],
@@ -385,7 +413,7 @@
       cta: { en: "Get Beginner", pt: "Assinar Beginner" },
     },
     {
-      tier: "PRO", monthly: 29, disc: 0.15, featured: true,
+      tier: "PRO", monthly: 29, disc: 0.20, featured: true,
       badge: { en: "MOST POPULAR", pt: "MAIS POPULAR" },
       feats: [
         [true, { en: "All signals — US (S&P 100) + Brazil (Ibovespa)", pt: "Todos os sinais — EUA (S&P 100) + Brasil (Ibovespa)" }],
@@ -399,7 +427,7 @@
       cta: { en: "Get Pro", pt: "Assinar Pro" },
     },
     {
-      tier: "ELITE", monthly: 59, disc: 0.20, featured: false,
+      tier: "ELITE", monthly: 79, disc: 0.25, featured: false,
       cycleFeat: {
         annual: [
           [true, { en: "Full strategy revealed on subscription", pt: "Estratégia completa revelada na assinatura" }, "hot"],
@@ -436,7 +464,7 @@
         <a href="metrics.html" data-page="metrics" data-i18n="nav.metrics"></a>
         <a href="signals.html" data-page="signals" data-i18n="nav.signals"></a>
         <a href="dividends.html" data-page="dividends" data-i18n="nav.dividends"></a>
-        <a href="portfolio.html" data-page="portfolio" data-i18n="nav.portfolio"></a>
+        <a href="members.html" data-page="members" data-i18n="nav.members"></a>
         <a href="replay.html" data-page="replay" data-i18n="nav.replay"></a>
         <a href="plans.html" data-page="plans" data-i18n="nav.plans"></a>
       </nav>
@@ -486,6 +514,7 @@
       guard("#homeCards", buildHomeCards);
     }
     guard("#divTiles", renderDividends);
+    guard("#memberGate", renderMembers);
     guard("#pricingGrid", () => { renderPricing(); initBilling(); });
     initAuth();
     const cp = $("#copy"); if (cp) cp.textContent = t("footer.copy");
@@ -759,9 +788,9 @@
       const { data } = await sb.auth.getSession();
       USER = data?.session?.user || null;
       await loadProfile();
-      updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio(); renderDivSignals();
+      updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio(); renderDivSignals(); renderMembers();
       sb.auth.onAuthStateChange(async (_ev, session) => {
-        USER = session?.user || null; await loadProfile(); updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio(); renderDivSignals();
+        USER = session?.user || null; await loadProfile(); updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio(); renderDivSignals(); renderMembers();
       });
     } catch (e) { console.error("auth init failed", e); renderAccount(); }
     wireAuthForms();
@@ -985,7 +1014,7 @@
 
   /* ---- portfolio page ---- */
   async function renderPortfolio() {
-    const host = $("#portfolioHost"); if (!host || document.body.dataset.page !== "portfolio") return;
+    const host = $("#portfolioHost"); if (!host || !["portfolio", "members"].includes(document.body.dataset.page)) return;
     if (!USER) {
       host.innerHTML = `<div class="auth-card" style="margin:0 auto"><h1>${t("acct.needLogin")}</h1><p class="auth-sub">${t("pf.needLoginSub")}</p><a class="btn btn-primary btn-block" href="login.html">${t("nav.login")}</a></div>`;
       return;
@@ -1223,6 +1252,59 @@
         `<td><a class="dsig-tv" href="https://www.tradingview.com/chart/?symbol=${encodeURIComponent(r.tv_symbol || r.ticker)}" target="_blank" rel="noopener">${t("div.sig.tv")}</a></td>` +
         `</tr>`).join("") +
       `</tbody></table></div>`;
+  }
+  /* ---- members area ---- */
+  function renderMembers() {
+    const gate = $("#memberGate"); if (!gate) return;
+    const content = $("#memberContent");
+    const teaser = (msgKey, btnKey, href) =>
+      `<section class="section"><div class="div-siglock" style="max-width:640px;margin:0 auto"><p>${t(msgKey)}</p><a class="btn btn-primary" href="${href}">${t(btnKey)}</a></div></section>`;
+    if (!USER) { gate.innerHTML = teaser("mem.gateLogin", "mem.login", "login.html"); if (content) content.hidden = true; return; }
+    if (!isMember()) { gate.innerHTML = teaser("mem.gateUpgrade", "mem.plans", "plans.html"); if (content) content.hidden = true; return; }
+    gate.innerHTML = ""; if (content) content.hidden = false;
+    if (DATA) guard("#po3Tabs", () => initSection(["US", "BR"], "#po3Tabs", renderPO3Panel));
+    renderDividends(); renderVideos(); renderPortfolio();
+  }
+  function renderPO3Panel(k) {
+    const b = DATA && DATA.books && DATA.books[k]; if (!b) return;
+    const h = b.headline, tr = b.track_record || {}, vp = b.validation_public || {};
+    const tiles = [
+      { v: fmtPct(h.cagr), l: t("mt.cagr.l"), c: h.cagr >= 0 ? "pos" : "neg" },
+      { v: h.sharpe, l: t("stat.sharpe") },
+      { v: h.sortino, l: t("mt.sortino.l") },
+      { v: h.calmar, l: "Calmar" },
+      { v: "-" + nf(Math.abs(h.max_dd)) + "%", l: t("mt.maxdd.l"), c: "neg" },
+      { v: nf(h.ann_vol) + "%", l: t("mt.vol.l") },
+      { v: nf(tr.win_rate) + "%", l: t("stat.win") },
+      { v: tr.profit_factor ?? "—", l: t("stat.pf") },
+      { v: tr.total_trades ?? "—", l: t("stat.trades") },
+      { v: fmtPct(h.total_return), l: t("m.totalRet"), c: h.total_return >= 0 ? "pos" : "neg" },
+      { v: nf(h.vol_drag, 2) + "%", l: t("mt.drag.l") },
+      { v: interp(t("mt.pct.v"), { x: Math.max(1, Math.round(100 - vp.pf_percentile)) }), l: t("mt.pct.l") },
+    ];
+    const th = $("#po3Tiles");
+    if (th) th.innerHTML = tiles.map(x => `<div class="qcard"><div class="qv ${x.c || ""}">${x.v}</div><div class="ql">${x.l}</div></div>`).join("");
+    const sub = $("#po3EquitySub");
+    if (sub) sub.textContent = `${t("m.totalRet")} ${fmtPct(h.total_return)} · CAGR ${fmtPct(h.cagr)} · Sharpe ${h.sharpe} · ${t("m.maxDD")} -${nf(Math.abs(h.max_dd))}%`;
+    const eq = $("#po3Equity");
+    if (eq && b.equity_curve) {
+      const hasB = b.equity_curve.some(p => p.b != null);
+      lineChart(eq, b.equity_curve, { keys: hasB ? ["e", "b"] : ["e"], colors: ["var(--series)", "var(--bench)"], labels: ["Seven7", t("m.bench")], dash: [false, true], asPctGrowth: true });
+    }
+    const dd = $("#po3Dd");
+    if (dd) {
+      let d = b.drawdown_curve;
+      if (!d && b.equity_curve) { let pk = -Infinity; d = b.equity_curve.map(p => { pk = Math.max(pk, p.e); return { d: p.d, e: p.e / pk - 1 }; }); }
+      if (d) areaChart(dd, d, { color: "var(--neg)" });
+    }
+    guard("#po3Heat", () => heatmap($("#po3Heat"), b.monthly_returns));
+  }
+  function renderVideos() {
+    const host = $("#memberVideos"); if (!host) return;
+    if (!VIDEOS.length) { host.innerHTML = `<div class="div-siglock"><p>${t("mem.vidSoon")}</p></div>`; return; }
+    host.innerHTML = `<div class="vid-grid">` + VIDEOS.map(v =>
+      `<div class="vid-card"><div class="vid-frame"><iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(v.id)}" title="${(v.title && v.title[LANG]) || ""}" loading="lazy" allow="accelerometer; clipboard-write; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>` +
+      `<div class="vid-title">${(v.title && v.title[LANG]) || ""}</div></div>`).join("") + `</div>`;
   }
   function barChart(host, data, opt) {
     host.innerHTML = "";
