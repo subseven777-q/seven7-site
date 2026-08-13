@@ -26,9 +26,9 @@
   /* Preencha quando o Stripe estiver pronto: links de checkout hospedado.
      Ex.: STRIPE_LINKS.PRO.monthly = "https://buy.stripe.com/xxxx". Vazio => vai ao registro. */
   const STRIPE_LINKS = {
-    BEGINNER: { monthly: "https://buy.stripe.com/bJeaEZfcDfWL3Lw3jC8Ra05", annual: "" },
-    PRO:      { monthly: "https://buy.stripe.com/14A3cxfcD11R0zk3jC8Ra04", annual: "" },
-    ELITE:    { monthly: "", annual: "" },
+    BEGINNER: { monthly: "https://buy.stripe.com/bJeaEZfcDfWL3Lw3jC8Ra05", annual: "https://buy.stripe.com/4gM3cxe8z5i795Q8DW8Ra02" },
+    PRO:      { monthly: "https://buy.stripe.com/14A3cxfcD11R0zk3jC8Ra04", annual: "https://buy.stripe.com/fZu8wR0hJeSH2HsdYg8Ra06" },
+    ELITE:    { monthly: "https://buy.stripe.com/eVq6oJaWncKzeqadYg8Ra08", annual: "https://buy.stripe.com/3cIfZjd4v7qf3Lw5rK8Ra07" },
   };
   /* Link "no-code" do Portal do Cliente Stripe (Settings -> Billing -> Customer portal).
      Formato https://billing.stripe.com/p/login/... — deixe vazio p/ cair no suporte por e-mail. */
