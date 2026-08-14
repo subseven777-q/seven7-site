@@ -298,6 +298,25 @@
     "mem.hedgeStress": { en: "STRESS — protection raised", pt: "ESTRESSE — proteção elevada" },
     "mem.hedgeDesc": { en: "Current market regime for the hedge.", pt: "Regime de mercado atual para o hedge." },
     "mem.hedgeTarget": { en: "target weight", pt: "peso-alvo" },
+    "kmlm.sub": { en: "Tail hedge · managed-futures (uncorrelated)", pt: "Hedge de cauda · managed futures (descorrelacionado)" },
+    "kmlm.recommended": { en: "Recommended now", pt: "Recomendado agora" },
+    "kmlm.current": { en: "Your portfolio", pt: "No seu portfólio" },
+    "kmlm.under": { en: "Below target — bring KMLM up to {rec}% to match the current regime.", pt: "Abaixo do alvo — leve o KMLM a {rec}% para acompanhar o regime atual." },
+    "kmlm.onTarget": { en: "On target — your hedge matches the current regime.", pt: "No alvo — seu hedge acompanha o regime atual." },
+    "kmlm.desc": { en: "KMLM rises when stocks fall. We hold 15% normally, 30% when the market turns defensive — cutting drawdowns without killing returns.", pt: "O KMLM sobe quando as ações caem. Mantemos 15% no normal e 30% quando o mercado fica defensivo — cortando o drawdown sem matar o retorno." },
+    "kmlm.addBtn": { en: "＋ Add KMLM at {rec}%", pt: "＋ Adicionar KMLM a {rec}%" },
+    "kmlm.added": { en: "Added to your portfolio.", pt: "Adicionado ao seu portfólio." },
+    "mcc.kicker": { en: "COVERED CALL · ELITE", pt: "COVERED CALL · ELITE" },
+    "mcc.h": { en: "The income layer — covered calls", pt: "A camada de renda — covered calls" },
+    "mcc.sub": { en: "The exclusive overlay that turns every take-profit into extra cash. Here's exactly how it works and what it adds.", pt: "O overlay exclusivo que transforma cada realização de lucro em caixa extra. Veja exatamente como funciona e o que ele soma." },
+    "mcc.explain": { en: "A covered call means: while you hold the stock, you sell a call option at your take-profit price. You get paid a premium upfront. If the stock reaches the target you were going to sell there anyway — now you also keep the premium. If it doesn't, the premium is pure extra income. You already planned the exit, so there's no added risk.", pt: "Um covered call significa: enquanto você segura a ação, você vende uma opção de compra no seu preço-alvo. Você recebe um prêmio na hora. Se a ação chega no alvo, você ia vender ali de qualquer forma — e agora ainda fica com o prêmio. Se não chega, o prêmio é renda extra pura. Você já tinha planejado a saída, então não há risco a mais." },
+    "mcc.how1": { en: "You buy the stock on the signal (entry, stop, target — as usual).", pt: "Você compra a ação no sinal (entrada, stop, alvo — como sempre)." },
+    "mcc.how2": { en: "You sell a call at the target strike and pocket the premium immediately.", pt: "Você vende uma call no strike do alvo e embolsa o prêmio na hora." },
+    "mcc.how3": { en: "Win or lose the trade, the premium stays with you — pure added income.", pt: "Ganhando ou perdendo o trade, o prêmio fica com você — renda extra pura." },
+    "mcc.premium": { en: "Typical premium: {lo}–{hi}% of the position, collected on every trade.", pt: "Prêmio típico: {lo}–{hi}% da posição, coletado em cada operação." },
+    "mcc.colStocks": { en: "Stocks only", pt: "Só ações" },
+    "mcc.colWith": { en: "With covered call", pt: "Com covered call" },
+    "mcc.note": { en: "10-year backtest of the same trades, with the covered-call premium modelled on each position.", pt: "Backtest de 10 anos das mesmas operações, com o prêmio do covered call modelado em cada posição." },
     "mem.pfH": { en: "Your portfolio", pt: "Seu portfólio" },
     "mem.gateLogin": { en: "The members area is for subscribers. Log in to enter.", pt: "A área de membros é para assinantes. Entre para acessar." },
     "mem.gateUpgrade": { en: "Subscribe to unlock the members area — live panels, videos and your portfolio.", pt: "Assine para liberar a área de membros — painéis ao vivo, vídeos e seu portfólio." },
@@ -814,9 +833,9 @@
       const { data } = await sb.auth.getSession();
       USER = data?.session?.user || null;
       await loadProfile();
-      updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio(); renderDivSignals(); renderMembers();
+      updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio(); renderDivSignals(); renderMembers(); renderKmlmCard();
       sb.auth.onAuthStateChange(async (_ev, session) => {
-        USER = session?.user || null; await loadProfile(); updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio(); renderDivSignals(); renderMembers();
+        USER = session?.user || null; await loadProfile(); updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio(); renderDivSignals(); renderMembers(); renderKmlmCard();
       });
     } catch (e) { console.error("auth init failed", e); renderAccount(); }
     wireAuthForms();
@@ -1315,20 +1334,75 @@
     if (!isMember()) { gate.innerHTML = teaser("mem.gateUpgrade", "mem.plans", "plans.html"); if (content) content.hidden = true; return; }
     gate.innerHTML = ""; if (content) content.hidden = false;
     if (DATA) guard("#po3Tabs", () => initSection(["US", "BR"], "#po3Tabs", renderPO3Panel));
-    renderDividends(); renderVideos(); renderPortfolio(); renderHedgeLive();
+    renderDividends(); renderVideos(); renderPortfolio(); renderKmlmCard(); renderCoveredCallMembers();
   }
-  async function renderHedgeLive() {
-    const sec = $("#hedgeLiveSection"), host = $("#hedgeLiveHost"); if (!host) return;
+  async function renderKmlmCard() {
+    const host = $("#kmlmHost"); if (!host) return;
     const elite = PROFILE && PROFILE.plan === "elite";
-    if (!sb || !USER || !elite) { if (sec) sec.hidden = true; return; }
-    let data = null;
-    try { const r = await sb.from("signals").select("*").eq("ticker", "__HEDGE__").maybeSingle(); data = r.data; } catch (e) { data = null; }
-    if (!data) { if (sec) sec.hidden = true; return; }
+    if (!sb || !USER || !elite) { host.innerHTML = ""; return; }
+    let hedge = null, positions = [];
+    try {
+      const [hg, po] = await Promise.all([
+        sb.from("signals").select("*").eq("ticker", "__HEDGE__").maybeSingle(),
+        sb.from("portfolio_positions").select("ticker,alloc_pct"),
+      ]);
+      hedge = hg.data; positions = po.data || [];
+    } catch (e) { hedge = null; }
+    if (!hedge) { host.innerHTML = ""; return; }
+    const stress = hedge.state === "STRESS";
+    const rec = Number(hedge.pct_in_range) || 0;
+    const cur = positions.filter(p => p.ticker === "KMLM").reduce((s, p) => s + (Number(p.alloc_pct) || 0), 0);
+    const under = cur < rec - 0.5;
+    host.innerHTML = `<div class="kmlm-card ${stress ? "stress" : ""}">
+      <div class="kmlm-top">
+        <div class="kmlm-id"><span class="kmlm-badge">🛡 KMLM</span><span class="kmlm-sub">${t("kmlm.sub")}</span></div>
+        <span class="dsig-badge ${stress ? "watch" : "buy"}">${stress ? t("mem.hedgeStress") : t("mem.hedgeNormal")}</span>
+      </div>
+      <div class="kmlm-grid">
+        <div class="kmlm-metric"><div class="kmlm-v accent">${nf(rec, 0)}%</div><div class="kmlm-l">${t("kmlm.recommended")}</div></div>
+        <div class="kmlm-metric"><div class="kmlm-v ${under ? "neg" : "pos"}">${nf(cur, 0)}%</div><div class="kmlm-l">${t("kmlm.current")}</div></div>
+      </div>
+      <div class="${under ? "kmlm-alert" : "kmlm-ok"}">${under ? interp(t("kmlm.under"), { rec: nf(rec, 0) }) : t("kmlm.onTarget")}</div>
+      <div class="kmlm-desc">${t("kmlm.desc")}</div>
+      ${hedge.price ? `<button class="btn btn-primary" id="kmlmAdd">${interp(t("kmlm.addBtn"), { rec: nf(rec, 0) })}</button><span class="add-msg" id="kmlmMsg"></span>` : ""}
+    </div>`;
+    const add = $("#kmlmAdd");
+    if (add) add.onclick = async () => {
+      add.disabled = true;
+      const { error } = await sb.from("portfolio_positions").insert({
+        ticker: "KMLM", tv_symbol: "AMEX:KMLM", market: "US",
+        entry: hedge.price, stop: null, tp: null, alloc_pct: rec,
+      });
+      const m = $("#kmlmMsg"); if (m) { m.textContent = error ? t("sig.addErr") : t("kmlm.added"); m.className = "add-msg " + (error ? "err" : "ok"); }
+      renderKmlmCard(); if (document.body.dataset.page === "members") renderPortfolio();
+    };
+  }
+  function renderCoveredCallMembers() {
+    const sec = $("#ccMembersSection"), host = $("#ccMembersHost"); if (!host) return;
+    const elite = PROFILE && PROFILE.plan === "elite";
+    const cc = DATA && DATA.cherry;
+    if (!elite || !cc || !cc.stocks_only || !cc.with) { if (sec) sec.hidden = true; return; }
     if (sec) sec.hidden = false;
-    const stress = data.state === "STRESS";
-    host.innerHTML = `<div class="hedge-live ${stress ? "stress" : "normal"}">
-      <div class="hl-left"><span class="hl-dot"></span><div><div class="hl-state">${stress ? t("mem.hedgeStress") : t("mem.hedgeNormal")}</div><div class="hl-desc">${t("mem.hedgeDesc")}</div></div></div>
-      <div class="hl-weight"><div class="hl-w">${nf(data.pct_in_range, 0)}%</div><div class="hl-wl">${t("mem.hedgeTarget")}</div></div>
+    const so = cc.stocks_only, w = cc.with;
+    const pct = v => (v > 0 ? "+" : "") + nf(v) + "%";
+    const rows = [
+      ["CAGR", pct(so.cagr), pct(w.cagr), w.cagr > so.cagr],
+      ["Sharpe", nf(so.sharpe, 2), nf(w.sharpe, 2), w.sharpe > so.sharpe],
+      ["Sortino", nf(so.sortino, 2), nf(w.sortino, 2), w.sortino > so.sortino],
+      [t("m.maxDD"), "-" + nf(Math.abs(so.max_dd)) + "%", "-" + nf(Math.abs(w.max_dd)) + "%", w.max_dd < so.max_dd],
+    ];
+    const how = [["1"], ["2"], ["3"]];
+    host.innerHTML = `<div class="cc-mem-grid">
+      <div class="cc-mem-explain">
+        <p>${t("mcc.explain")}</p>
+        <ol class="cc-steps">${how.map(x => `<li>${t("mcc.how" + x[0])}</li>`).join("")}</ol>
+        <p class="cc-prem">${interp(t("mcc.premium"), { lo: cc.extra_lo, hi: cc.extra_hi })}</p>
+      </div>
+      <div class="chart-card cc-mem-table">
+        <table class="cmp-table"><thead><tr><th></th><th>${t("mcc.colStocks")}</th><th>${t("mcc.colWith")}</th></tr></thead>
+        <tbody>${rows.map(r => `<tr><td class="cmp-k">${r[0]}</td><td class="num">${r[1]}</td><td class="num ${r[3] ? "pos" : ""}"><b>${r[2]}</b></td></tr>`).join("")}</tbody></table>
+        <div class="cc-mem-note">${t("mcc.note")}</div>
+      </div>
     </div>`;
   }
   let PO3_CUR = null, PO3_FILTER = "ALL", PO3_SEARCH = "", PO3_SORT = { c: "out", d: -1 }, PO3_MONTH = null;
@@ -1385,7 +1459,7 @@
             <input id="po3Search" class="blotter-search" placeholder="${t("mem.searchTk")}" value="${PO3_SEARCH}">
           </div>
         </div>
-        <div class="table-wrap"><table class="sig-table blotter-table" id="po3Blotter"></table></div>
+        <div class="table-wrap blotter-scroll"><table class="sig-table blotter-table" id="po3Blotter"></table></div>
       </div>`;
     const eq = $("#po3Equity");
     if (eq && b.equity_curve) {
@@ -1453,7 +1527,7 @@
     host.innerHTML = `<div class="drill-card">
       <div class="drill-head"><div><b>${label}</b> — ${interp(t("mem.monthSummary"), { n: rows.length, w: wins, p: rows.length ? Math.round(wins / rows.length * 100) : 0 })} · <span class="${rColor(avgR)}">${avgR > 0 ? "+" : ""}${nf(avgR, 2)}R ${t("mem.avgShort")}</span></div>
         <button class="drill-close" id="drillClose">✕</button></div>
-      <div class="table-wrap"><table class="sig-table"><thead><tr><th>${t("sig.ticker")}</th><th class="num">${t("mem.window")}</th><th class="num">${t("mem.hold")}</th><th class="num">R</th><th class="num">${t("m.totalRet")}</th><th>${t("mem.outcome")}</th></tr></thead><tbody>${body}</tbody></table></div></div>`;
+      <div class="table-wrap blotter-scroll"><table class="sig-table"><thead><tr><th>${t("sig.ticker")}</th><th class="num">${t("mem.window")}</th><th class="num">${t("mem.hold")}</th><th class="num">R</th><th class="num">${t("m.totalRet")}</th><th>${t("mem.outcome")}</th></tr></thead><tbody>${body}</tbody></table></div></div>`;
     const cl = $("#drillClose"); if (cl) cl.onclick = () => { PO3_MONTH = null; renderPO3Panel(k); };
     host.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
@@ -1478,7 +1552,7 @@
     if (q) rows = rows.filter(z => z.tk.toUpperCase().includes(q));
     const c = PO3_SORT.c, dir = PO3_SORT.d;
     rows.sort((a, b) => { const x = a[c], y = b[c]; return (x < y ? -1 : x > y ? 1 : 0) * dir; });
-    const total = rows.length; rows = rows.slice(0, 200);
+    const total = rows.length; rows = rows.slice(0, 20);
     const cnt = $("#po3Count"); if (cnt) cnt.textContent = interp(t("mem.showing"), { n: rows.length, total });
     const th = (c2, lbl, num) => `<th class="${num ? "num" : ""} th-sort ${PO3_SORT.c === c2 ? "on" : ""}" data-c="${c2}">${lbl}${PO3_SORT.c === c2 ? (PO3_SORT.d < 0 ? " ↓" : " ↑") : ""}</th>`;
     const head = `<thead><tr>${th("tk", t("sig.ticker"))}${th("mkt", "Mkt")}${th("in", t("mem.entry"), 1)}${th("out", t("mem.exit"), 1)}${th("bars", t("mem.hold"), 1)}${th("r", "R", 1)}${th("ret", t("m.totalRet"), 1)}${th("res", t("mem.outcome"))}</tr></thead>`;
