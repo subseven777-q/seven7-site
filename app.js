@@ -1115,7 +1115,7 @@
           <td class="num ${retc}">${p.status === "pending" ? "—" : (p.ret_pct == null ? "—" : fmtPct(p.ret_pct))}</td>
           <td><button class="pf-del" data-id="${p.id}" title="${t("pf.remove")}">✕</button></td></tr>`;
       }).join("");
-      html += `<div class="table-wrap" style="margin-top:18px"><table class="sig-table"><thead><tr>
+      html += `<div class="table-wrap blotter-scroll" style="margin-top:18px"><table class="sig-table"><thead><tr>
         <th>${t("sig.ticker")}</th><th>${t("pf.added")}</th><th class="num">${t("pf.alloc")}</th><th class="num">${t("sig.entry")}</th><th class="num">${t("pf.current")}</th><th>${t("sig.state")}</th><th class="num">${t("pf.pl")}</th><th></th>
         </tr></thead><tbody>${rows}</tbody></table></div>
         ${d ? "" : `<p class="hedge-note">${t("pf.computing")}</p>`}`;

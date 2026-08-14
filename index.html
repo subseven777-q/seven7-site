@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Seven7 — Quantified Investing</title>
 <meta name="description" content="Seven7 — quantified investing. Systematic stock signals for the US and Brazil, with 10 years of real, auditable results.">
-<link rel="stylesheet" href="styles.css?v=24">
+<link rel="stylesheet" href="styles.css?v=25">
 </head>
 <body data-page="home">
 <div id="nav-root"></div>
@@ -45,7 +45,21 @@
   <div class="rules" id="trustGrid"></div>
 </section>
 
+<section class="section" id="homePlans">
+  <div class="section-head">
+    <div class="kicker" data-i18n="pricing.kicker"></div>
+    <h2 data-i18n="pricing.h2"></h2>
+    <p class="sub" data-i18n="pricing.sub"></p>
+  </div>
+  <div class="billing-toggle" id="billingToggle">
+    <button class="bt-opt on" data-cycle="monthly" data-i18n="billing.monthly"></button>
+    <button class="bt-opt" data-cycle="annual"><span data-i18n="billing.annual"></span> <span class="bt-save" data-i18n="billing.save"></span></button>
+  </div>
+  <div class="pricing-grid" id="pricingGrid"></div>
+  <p class="stat-note" style="margin-top:22px;text-align:center" data-i18n="page.plans.trial"></p>
+</section>
+
 <div id="footer-root"></div>
-<script src="app.js?v=24"></script>
+<script src="app.js?v=25"></script>
 </body>
 </html>
