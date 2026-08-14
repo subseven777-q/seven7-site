@@ -57,6 +57,13 @@
     "nav.signals": { en: "Signals", pt: "Sinais" },
     "nav.dividends": { en: "Dividends", pt: "Dividendos" },
     "nav.members": { en: "Members", pt: "Membros" },
+    "legal.kicker": { en: "LEGAL", pt: "LEGAL" },
+    "legal.updated": { en: "Last updated: August 2026 · draft", pt: "Última atualização: agosto de 2026 · rascunho" },
+    "legal.draft": { en: "⚠ Draft for review — have a qualified lawyer validate this before launch. This is not legal advice.", pt: "⚠ Rascunho para revisão — valide com um advogado especializado antes do lançamento. Isto não é aconselhamento jurídico." },
+    "terms.title": { en: "Terms of Use", pt: "Termos de Uso" },
+    "privacy.title": { en: "Privacy Policy", pt: "Política de Privacidade" },
+    "disc.title": { en: "Risk Disclosure", pt: "Aviso de Risco" },
+    "disc.sub": { en: "Please read before subscribing.", pt: "Leia com atenção antes de assinar." },
     "nav.replay": { en: "Replay", pt: "Replay" },
     "nav.portfolio": { en: "Portfolio", pt: "Portfólio" },
     "nav.plans": { en: "Plans", pt: "Planos" },
@@ -531,6 +538,7 @@
         <div class="brand"><span class="brand-mark">${MARK_SVG}</span><span class="brand-name">Seven7</span></div>
         <div class="footer-links">
           <a href="metrics.html" data-i18n="nav.metrics"></a><a href="performance.html" data-i18n="nav.perf"></a><a href="plans.html" data-i18n="nav.plans"></a>
+          <a href="terms.html" data-i18n="terms.title"></a><a href="privacy.html" data-i18n="privacy.title"></a><a href="disclosures.html" data-i18n="disc.title"></a>
         </div>
       </div>
       <p class="disclaimer" id="disclaimer"></p>
@@ -575,6 +583,7 @@
   function applyStatic() {
     $$("[data-i18n]").forEach(el => { const v = t(el.getAttribute("data-i18n")); if (v != null) el.textContent = v; });
     $$("[data-i18n-html]").forEach(el => { const v = t(el.getAttribute("data-i18n-html")); if (v != null) el.innerHTML = v; });
+    $$("[data-langsec]").forEach(el => { el.hidden = el.getAttribute("data-langsec") !== LANG; });   // blocos legais por idioma
     document.documentElement.lang = LANG;
   }
 
