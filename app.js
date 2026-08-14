@@ -43,11 +43,11 @@
      (payoff = ganho médio / perda média). US: W65.1% payoff .96 -> 28.8%;
      BR: W55.5% payoff .97 -> 9.7%. Ladder 1 / ½ / ¼ / ⅛. Padrão ¼ Kelly
      (posicionamento institucional conservador, coerente com o alvo de 6.5% VaR). */
-  const KELLY_FULL = { US: 28.8, BR: 9.7 };
-  const KELLY_FRACS = [[1, "1 Kelly"], [0.5, "½ Kelly"], [0.25, "¼ Kelly"], [0.125, "⅛ Kelly"]];
-  const KELLY_DEFAULT = 0.125;
-  const savedKelly = () => { const v = parseFloat(localStorage.getItem("seven7-kelly")); return KELLY_FRACS.some(f => f[0] === v) ? v : KELLY_DEFAULT; };
-  const kellyPct = (market, frac) => +(( KELLY_FULL[market] || KELLY_FULL.US) * frac).toFixed(1);
+  /* Sizing por RISCO/trade, normalizado a 6,5% VaR (= risco do S&P 500). Para esta
+     estratégia, o livro a 6,5% VaR corresponde a ~0,15% de risco por trade. Sem Kelly. */
+  const RISK_LEVELS = [0.10, 0.15, 0.20];
+  const RISK_DEFAULT = 0.15;                       // 6,5% VaR ≈ risco do S&P 500
+  const savedRisk = () => { const v = parseFloat(localStorage.getItem("seven7-risk")); return RISK_LEVELS.includes(v) ? v : RISK_DEFAULT; };
 
   /* ---------------- i18n dictionary ---------------- */
   const T = {
@@ -84,7 +84,7 @@
     "chart.dd.title": { en: "Underwater drawdown", pt: "Drawdown submerso" },
     "metrics.kicker": { en: "METRICS · THE DIFFERENCE", pt: "MÉTRICAS · O DIFERENCIAL" },
     "metrics.h2": { en: "Proof, not promise.", pt: "A prova, não a promessa." },
-    "metrics.sub": { en: "Performance measured over <em>10 years of real data</em>, with costs — the metrics that matter to judge a system.", pt: "Desempenho medido sobre <em>10 anos de dados reais</em>, com custos — as métricas que importam para julgar um sistema." },
+    "metrics.sub": { en: "Performance over <em>10 years of real data</em>, with costs — everything normalized to <em>6.5% monthly VaR, the same risk as holding the S&P 500</em>, so every number compares like-for-like.", pt: "Desempenho sobre <em>10 anos de dados reais</em>, com custos — tudo normalizado a <em>6,5% de VaR mensal, o mesmo risco de segurar o S&P 500</em>, para todos os números compararem de igual para igual." },
     "heatmap.title": { en: "Monthly returns (%)", pt: "Retornos mensais (%)" },
     "heatmap.sub": { en: "Green = positive month · red = negative. YTD column on the right.", pt: "Verde = mês positivo · vermelho = negativo. Coluna do ano à direita." },
     "heatmap.year": { en: "Year", pt: "Ano" },
@@ -188,10 +188,11 @@
     "sig.stMon": { en: "MONITORING", pt: "MONITORANDO" },
     "sig.stFlat": { en: "CASH", pt: "CAIXA" },
     "sig.openTV": { en: "Open in TradingView", pt: "Abrir no TradingView" },
-    "sig.allocLbl": { en: "Kelly sizing (% of deposit to buy)", pt: "Sizing de Kelly (% do depósito p/ comprar)" },
-    "sig.buyCalc": { en: "Buy ≈ <b>{shares}</b> shares · {notional} — <b>{consumed}% of portfolio used</b> · real risk ≈ {risk} ({riskpct}%), capped by the stop", pt: "Comprar ≈ <b>{shares}</b> ações · {notional} — <b>{consumed}% do portfólio consumido</b> · risco real ≈ {risk} ({riskpct}%), limitado pelo stop" },
-    "sig.buyCalcBR": { en: "Buy <b>{shares}</b> whole share(s) · {notional} — <b>{consumed}% of portfolio used</b> · real risk ≈ {risk} ({riskpct}%), capped by the stop. B3 trades whole shares only (fractional market, ticker+F).", pt: "Comprar <b>{shares}</b> ação(ões) inteira(s) · {notional} — <b>{consumed}% do portfólio consumido</b> · risco real ≈ {risk} ({riskpct}%), limitado pelo stop. A B3 negocia só ações inteiras (fracionário, ticker+F)." },
-    "sig.buyWarnBR": { en: "⚠ The minimum 1 whole share already uses {consumed}% of your portfolio — above the {pct}% Kelly target. Increase your deposit to size closer to target.", pt: "⚠ O mínimo de 1 ação inteira já consome {consumed}% do seu portfólio — acima do alvo de {pct}% do Kelly. Aumente o depósito para chegar mais perto do alvo." },
+    "sig.riskLbl": { en: "Risk per trade", pt: "Risco por trade" },
+    "sig.spLevel": { en: "S&P 500 level (6.5% VaR)", pt: "nível S&P 500 (6,5% VaR)" },
+    "sig.riskHint": { en: "Sized by <b>risk</b>, normalized to <b>6.5% VaR — the same risk as holding the S&P 500</b>. Each trade risks this % of your deposit; the stop caps the loss. We compute how many shares to buy from your stop distance. Fractional shares/lots work on MT5 brokers (e.g. Exness, from 0.01).", pt: "Dimensionado por <b>risco</b>, normalizado a <b>6,5% VaR — o mesmo risco de segurar o S&P 500</b>. Cada trade arrisca essa % do seu depósito; o stop limita a perda. Calculamos quantas ações comprar a partir da distância do seu stop. Frações de ação/lote funcionam em corretoras MT5 (ex.: Exness, a partir de 0,01)." },
+    "sig.buyCalc": { en: "Buy ≈ <b>{shares}</b> shares · {notional} ({consumed}% of portfolio) · <b>risk {risk} ({riskpct}% of deposit)</b>, capped by the stop", pt: "Comprar ≈ <b>{shares}</b> ações · {notional} ({consumed}% do portfólio) · <b>risco {risk} ({riskpct}% do depósito)</b>, limitado pelo stop" },
+    "sig.buyCalcBR": { en: "Buy <b>{shares}</b> whole share(s) · {notional} ({consumed}% of portfolio) · <b>risk {risk} ({riskpct}%)</b>, capped by the stop. B3 trades whole shares only.", pt: "Comprar <b>{shares}</b> ação(ões) inteira(s) · {notional} ({consumed}% do portfólio) · <b>risco {risk} ({riskpct}%)</b>, limitado pelo stop. A B3 negocia só ações inteiras." },
     "sig.buyNoDep": { en: "Set your initial deposit on the Portfolio page to see exactly how much to buy.", pt: "Defina seu depósito inicial na página Portfólio para ver exatamente quanto comprar." },
 
     "div.kicker": { en: "DIVIDENDS · INCOME-FIRST", pt: "DIVIDENDOS · INCOME-FIRST" },
@@ -322,7 +323,6 @@
     "mem.gateUpgrade": { en: "Subscribe to unlock the members area — live panels, videos and your portfolio.", pt: "Assine para liberar a área de membros — painéis ao vivo, vídeos e seu portfólio." },
     "mem.login": { en: "Log in", pt: "Entrar" },
     "mem.plans": { en: "See plans", pt: "Ver planos" },
-    "sig.kellyHint": { en: "This is how much of your deposit to <b>buy</b> — not risk. The stop caps each trade's real loss, so even a bad streak is a drawdown, not ruin. Fractional shares/lots work on MT5 brokers (e.g. Exness, from 0.01). ⅛ Kelly mirrors the metrics' 6.5% VaR posture.", pt: "Isto é quanto do seu depósito <b>comprar</b> — não é risco. O stop limita a perda real de cada trade, então mesmo uma sequência ruim é drawdown, não ruína. Frações de ação/lote funcionam em corretoras MT5 (ex.: Exness, a partir de 0,01). ⅛ de Kelly espelha a postura de 6,5% VaR das métricas." },
     "sig.addBtn": { en: "＋ Portfolio", pt: "＋ Portfólio" },
     "sig.added": { en: "Added ✓", pt: "Adicionado ✓" },
     "sig.goPortfolio": { en: "view portfolio →", pt: "ver portfólio →" },
@@ -974,50 +974,48 @@
     if (add) {
       const cur = s.market === "BR" ? "R$" : "$";
       const dep = PROFILE && PROFILE.portfolio_deposit ? Number(PROFILE.portfolio_deposit) : null;
-      const chosen = savedKelly();
-      const opts = KELLY_FRACS.map(([fr, lbl]) =>
-        `<option value="${fr}" ${fr === chosen ? "selected" : ""}>${lbl} — ${kellyPct(s.market, fr)}%</option>`).join("");
-      add.innerHTML = `<span class="alloc-lbl">${t("sig.allocLbl")}</span>
-        <select id="allocFrac" class="alloc-in alloc-sel">${opts}</select>
+      const chosen = savedRisk();
+      const opts = RISK_LEVELS.map(r =>
+        `<option value="${r}" ${r === chosen ? "selected" : ""}>${nf(r, 2)}%${r === RISK_DEFAULT ? " · " + t("sig.spLevel") : ""}</option>`).join("");
+      add.innerHTML = `<span class="alloc-lbl">${t("sig.riskLbl")}</span>
+        <select id="riskSel" class="alloc-in alloc-sel">${opts}</select>
         <button class="btn btn-primary" id="addPortfolioBtn">${t("sig.addBtn")}</button>
         <span class="add-msg" id="addMsg"></span>
         <div class="buy-calc" id="buyCalc"></div>
-        <div class="kelly-hint">${t("sig.kellyHint")}</div>`;
+        <div class="kelly-hint">${t("sig.riskHint")}</div>`;
       const money = v => cur + Number(v).toLocaleString(locale(), { maximumFractionDigits: v >= 1000 ? 0 : 2 });
-      // BR = mercado fracionário da B3: só ação INTEIRA (1..99). US = fracionário (Exness, 0.01).
-      const sizeTrade = fr => {
-        const pct = kellyPct(s.market, fr);            // alvo de Kelly (% notional)
+      // sizing por RISCO: ações = (risco% × depósito) / (entry − stop). BR = ação inteira.
+      const sizeTrade = riskPct => {
         const px = s.entry || s.price;
         const whole = s.market === "BR";
-        let shares = (dep && px > 0) ? (dep * pct / 100) / px : 0;
+        const perShare = (s.entry > 0 && s.stop > 0 && s.entry > s.stop) ? (s.entry - s.stop) : null;
+        if (!perShare || !dep || px <= 0) return { riskPct, shares: 0, whole, notional: 0, consumedPct: null, realRiskPct: null };
+        let shares = (dep * riskPct / 100) / perShare;
         if (whole) shares = Math.max(1, Math.floor(shares));
         const notional = shares * px;
-        const consumedPct = dep > 0 ? notional / dep * 100 : null;   // % do portfólio consumido de verdade
-        const riskPct = (consumedPct != null && s.entry > 0 && s.stop > 0 && s.entry > s.stop)
-          ? consumedPct * (s.entry - s.stop) / s.entry : null;
-        const exceeds = whole && consumedPct != null && consumedPct > pct * 1.5;
-        return { pct, px, shares, whole, notional, consumedPct, riskPct, exceeds };
+        const consumedPct = notional / dep * 100;             // % do portfólio consumido
+        const realRiskPct = shares * perShare / dep * 100;    // risco real ($ / depósito)
+        return { riskPct, px, shares, whole, notional, consumedPct, realRiskPct };
       };
       const paintBuy = () => {
         const bc = $("#buyCalc"); if (!bc) return;
         if (!dep) { bc.innerHTML = t("sig.buyNoDep"); return; }
-        const z = sizeTrade(parseFloat($("#allocFrac").value));
-        let html = interp(t(z.whole ? "sig.buyCalcBR" : "sig.buyCalc"), {
+        const z = sizeTrade(parseFloat($("#riskSel").value));
+        bc.innerHTML = interp(t(z.whole ? "sig.buyCalcBR" : "sig.buyCalc"), {
           shares: z.whole ? nf(z.shares, 0) : nf(z.shares, z.shares >= 100 ? 0 : 2),
           notional: money(z.notional), consumed: z.consumedPct != null ? nf(z.consumedPct, 1) : "—",
-          risk: z.riskPct != null ? money(dep * z.riskPct / 100) : "—", riskpct: z.riskPct != null ? nf(z.riskPct, 2) : "—",
+          risk: z.realRiskPct != null ? money(dep * z.realRiskPct / 100) : "—",
+          riskpct: z.realRiskPct != null ? nf(z.realRiskPct, 2) : "—",
         });
-        if (z.exceeds) html += `<div class="buy-warn">${interp(t("sig.buyWarnBR"), { consumed: nf(z.consumedPct, 1), pct: nf(z.pct, 1) })}</div>`;
-        bc.innerHTML = html;
       };
       paintBuy();
-      $("#allocFrac").onchange = () => { localStorage.setItem("seven7-kelly", $("#allocFrac").value); paintBuy(); };
+      $("#riskSel").onchange = () => { localStorage.setItem("seven7-risk", $("#riskSel").value); paintBuy(); };
       $("#addPortfolioBtn").onclick = async () => {
-        const fr = parseFloat($("#allocFrac").value) || KELLY_DEFAULT;
-        localStorage.setItem("seven7-kelly", String(fr));
-        const z = sizeTrade(fr);
-        // grava o % realmente consumido (p/ BR reflete a ação inteira; motor reconstrói as mesmas ações)
-        const pct = Math.min(100, Math.max(0.01, z.consumedPct != null ? z.consumedPct : z.pct));
+        const rk = parseFloat($("#riskSel").value) || RISK_DEFAULT;
+        localStorage.setItem("seven7-risk", String(rk));
+        const z = sizeTrade(rk);
+        // grava o % de notional consumido (motor reconstrói as mesmas ações)
+        const pct = Math.min(100, Math.max(0.01, z.consumedPct != null ? z.consumedPct : 1));
         const msg = $("#addMsg"), btn = $("#addPortfolioBtn"); btn.disabled = true;
         const err = await addPosition(s, pct);
         if (err) { msg.textContent = t("sig.addErr"); msg.className = "add-msg err"; }
