@@ -1,6 +1,6 @@
 {
-  "generated": "2026-08-12 19:31",
-  "data_through": "2026-08-10",
+  "generated": "2026-08-14 09:03",
+  "data_through": "2026-08-13",
   "markets": {
     "BR": {
       "code": "BR",
@@ -8,23 +8,23 @@
       "currency": "R$",
       "years": 10,
       "headline": {
-        "yield_on_cost_pct": 10.34,
-        "total_return_drip_pct": 131.3,
-        "total_return_income_pct": 103.5,
-        "div_collected_pct": 47.0,
-        "annual_income_per_100k": 10340.0,
-        "invested_base": 754000.0
+        "yield_on_cost_pct": 10.07,
+        "total_return_drip_pct": 124.6,
+        "total_return_income_pct": 99.1,
+        "div_collected_pct": 47.1,
+        "annual_income_per_100k": 10067.0,
+        "invested_base": 755000.0
       },
       "benchmarks": [
         {
           "key": "index",
           "label": "BOVA11",
-          "ret": 72.3
+          "ret": 67.6
         },
         {
           "key": "divetf",
           "label": "DIVO11",
-          "ret": 101.4
+          "ret": 96.4
         },
         {
           "key": "riskfree",
@@ -49,102 +49,102 @@
       "core": [
         {
           "name": "BBSE3",
-          "yield_pct": 17.09,
+          "yield_pct": 17.56,
           "yield_on_cost_pct": 21.3
         },
         {
-          "name": "VALE3",
-          "yield_pct": 9.89,
-          "yield_on_cost_pct": 16.7
-        },
-        {
           "name": "ITSA4",
-          "yield_pct": 10.45,
+          "yield_pct": 11.02,
           "yield_on_cost_pct": 14.1
         },
         {
           "name": "CMIG4",
-          "yield_pct": 7.71,
+          "yield_pct": 8.0,
           "yield_on_cost_pct": 13.7
         },
         {
+          "name": "VALE3",
+          "yield_pct": 7.81,
+          "yield_on_cost_pct": 12.5
+        },
+        {
           "name": "ITUB4",
-          "yield_pct": 8.82,
+          "yield_pct": 9.3,
           "yield_on_cost_pct": 11.7
         },
         {
           "name": "PSSA3",
-          "yield_pct": 6.06,
-          "yield_on_cost_pct": 11.7
+          "yield_pct": 6.44,
+          "yield_on_cost_pct": 11.6
         },
         {
           "name": "UGPA3",
-          "yield_pct": 4.19,
+          "yield_pct": 4.06,
           "yield_on_cost_pct": 10.9
         },
         {
           "name": "BBDC4",
-          "yield_pct": 9.46,
+          "yield_pct": 9.75,
           "yield_on_cost_pct": 10.1
         },
         {
           "name": "TAEE11",
-          "yield_pct": 8.51,
+          "yield_pct": 8.57,
           "yield_on_cost_pct": 9.4
         },
         {
           "name": "VBBR3",
-          "yield_pct": 4.67,
+          "yield_pct": 4.63,
           "yield_on_cost_pct": 9.1
         },
         {
           "name": "ABEV3",
-          "yield_pct": 8.19,
+          "yield_pct": 8.38,
           "yield_on_cost_pct": 8.9
         },
         {
           "name": "CXSE3",
-          "yield_pct": 7.13,
+          "yield_pct": 7.45,
           "yield_on_cost_pct": 8.7
         },
         {
           "name": "PETR4",
-          "yield_pct": 6.25,
+          "yield_pct": 6.3,
           "yield_on_cost_pct": 7.9
         },
         {
           "name": "SANB11",
-          "yield_pct": 7.89,
+          "yield_pct": 7.73,
           "yield_on_cost_pct": 7.7
         },
         {
           "name": "VIVT3",
-          "yield_pct": 7.76,
+          "yield_pct": 8.06,
           "yield_on_cost_pct": 7.7
         },
         {
           "name": "KLBN11",
-          "yield_pct": 6.57,
+          "yield_pct": 6.7,
           "yield_on_cost_pct": 7.5
         },
         {
           "name": "SBSP3",
-          "yield_pct": 2.62,
+          "yield_pct": 2.86,
           "yield_on_cost_pct": 7.4
         },
         {
           "name": "EGIE3",
-          "yield_pct": 6.84,
+          "yield_pct": 7.07,
           "yield_on_cost_pct": 6.8
         },
         {
           "name": "GGBR4",
-          "yield_pct": 2.69,
-          "yield_on_cost_pct": 5.5
+          "yield_pct": 2.26,
+          "yield_on_cost_pct": 4.5
         },
         {
           "name": "BBAS3",
-          "yield_pct": 2.75,
+          "yield_pct": 3.02,
           "yield_on_cost_pct": 3.3
         }
       ]
@@ -155,23 +155,23 @@
       "currency": "$",
       "years": 10,
       "headline": {
-        "yield_on_cost_pct": 4.79,
-        "total_return_drip_pct": 121.4,
-        "total_return_income_pct": 108.9,
+        "yield_on_cost_pct": 4.84,
+        "total_return_drip_pct": 121.9,
+        "total_return_income_pct": 109.3,
         "div_collected_pct": 18.2,
-        "annual_income_per_100k": 4787.0,
-        "invested_base": 919000.0
+        "annual_income_per_100k": 4844.0,
+        "invested_base": 921000.0
       },
       "benchmarks": [
         {
           "key": "index",
           "label": "S&P 500",
-          "ret": 100.7
+          "ret": 101.7
         },
         {
           "key": "divetf",
           "label": "SCHD",
-          "ret": 70.8
+          "ret": 71.8
         },
         {
           "key": "riskfree",
@@ -189,106 +189,111 @@
         "2025": 36813.04
       },
       "core_count": 30,
-      "buy_zone_now": 20,
+      "buy_zone_now": 19,
       "core": [
         {
           "name": "MO",
-          "yield_pct": 6.47,
+          "yield_pct": 6.52,
           "yield_on_cost_pct": 9.9
         },
         {
           "name": "VZ",
-          "yield_pct": 5.95,
+          "yield_pct": 5.8,
           "yield_on_cost_pct": 6.9
         },
         {
           "name": "MS",
-          "yield_pct": 1.93,
+          "yield_pct": 1.9,
           "yield_on_cost_pct": 6.6
         },
         {
           "name": "ABBV",
-          "yield_pct": 2.76,
+          "yield_pct": 2.72,
           "yield_on_cost_pct": 6.3
         },
         {
           "name": "PM",
-          "yield_pct": 3.16,
+          "yield_pct": 3.11,
           "yield_on_cost_pct": 6.1
         },
         {
           "name": "CVX",
-          "yield_pct": 3.58,
+          "yield_pct": 3.53,
           "yield_on_cost_pct": 6.1
         },
         {
           "name": "UPS",
-          "yield_pct": 6.26,
+          "yield_pct": 6.22,
           "yield_on_cost_pct": 5.9
         },
         {
           "name": "XOM",
-          "yield_pct": 2.55,
+          "yield_pct": 2.57,
           "yield_on_cost_pct": 5.8
         },
         {
           "name": "T",
-          "yield_pct": 4.62,
+          "yield_pct": 4.52,
           "yield_on_cost_pct": 5.5
         },
         {
           "name": "BMY",
-          "yield_pct": 3.87,
+          "yield_pct": 3.88,
           "yield_on_cost_pct": 5.4
         },
         {
           "name": "SO",
-          "yield_pct": 3.26,
+          "yield_pct": 3.21,
           "yield_on_cost_pct": 5.4
         },
         {
           "name": "PFE",
-          "yield_pct": 6.36,
-          "yield_on_cost_pct": 4.9
+          "yield_pct": 6.42,
+          "yield_on_cost_pct": 5.0
         },
         {
           "name": "GS",
-          "yield_pct": 1.64,
+          "yield_pct": 1.63,
           "yield_on_cost_pct": 4.9
         },
         {
           "name": "CME",
-          "yield_pct": 4.27,
+          "yield_pct": 4.21,
           "yield_on_cost_pct": 4.6
         },
         {
-          "name": "JPM",
-          "yield_pct": 1.67,
-          "yield_on_cost_pct": 4.3
+          "name": "IBM",
+          "yield_pct": 2.84,
+          "yield_on_cost_pct": 4.5
         },
         {
           "name": "TXN",
-          "yield_pct": 2.03,
+          "yield_pct": 2.08,
           "yield_on_cost_pct": 4.3
         },
         {
           "name": "PEP",
-          "yield_pct": 4.17,
+          "yield_pct": 4.09,
+          "yield_on_cost_pct": 4.2
+        },
+        {
+          "name": "JPM",
+          "yield_pct": 1.65,
           "yield_on_cost_pct": 4.2
         },
         {
           "name": "DUK",
-          "yield_pct": 3.52,
+          "yield_pct": 3.42,
           "yield_on_cost_pct": 4.2
         },
         {
           "name": "KO",
-          "yield_pct": 2.39,
+          "yield_pct": 2.38,
           "yield_on_cost_pct": 4.0
         },
         {
           "name": "MRK",
-          "yield_pct": 2.57,
+          "yield_pct": 2.48,
           "yield_on_cost_pct": 3.7
         },
         {
@@ -298,47 +303,42 @@
         },
         {
           "name": "LMT",
-          "yield_pct": 2.26,
+          "yield_pct": 2.28,
           "yield_on_cost_pct": 3.6
         },
         {
           "name": "NEE",
-          "yield_pct": 2.81,
-          "yield_on_cost_pct": 3.4
-        },
-        {
-          "name": "IBM",
-          "yield_pct": 2.14,
+          "yield_pct": 2.77,
           "yield_on_cost_pct": 3.4
         },
         {
           "name": "CSCO",
-          "yield_pct": 1.35,
+          "yield_pct": 1.46,
           "yield_on_cost_pct": 3.4
         },
         {
           "name": "CAT",
-          "yield_pct": 0.74,
+          "yield_pct": 0.72,
           "yield_on_cost_pct": 3.1
         },
         {
           "name": "RTX",
-          "yield_pct": 1.24,
+          "yield_pct": 1.26,
           "yield_on_cost_pct": 3.0
         },
         {
           "name": "QCOM",
-          "yield_pct": 2.21,
+          "yield_pct": 2.18,
           "yield_on_cost_pct": 2.9
         },
         {
           "name": "AXP",
-          "yield_pct": 1.04,
+          "yield_pct": 1.03,
           "yield_on_cost_pct": 2.3
         },
         {
           "name": "CB",
-          "yield_pct": 0.57,
+          "yield_pct": 0.58,
           "yield_on_cost_pct": 1.5
         }
       ]
