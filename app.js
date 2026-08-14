@@ -269,6 +269,24 @@
     "mem.equity": { en: "Equity curve vs benchmark", pt: "Curva de capital vs benchmark" },
     "mem.dd": { en: "Drawdown", pt: "Drawdown" },
     "mem.heat": { en: "Monthly returns", pt: "Retornos mensais" },
+    "mem.heatHint": { en: "Click a month to see its trades", pt: "Clique num mês para ver os trades" },
+    "mem.expectancy": { en: "Expectancy", pt: "Expectativa" },
+    "mem.leadersWin": { en: "Top contributors", pt: "Mais lucrativas" },
+    "mem.leadersLose": { en: "Biggest drags", pt: "Maiores perdas" },
+    "mem.blotter": { en: "Trade blotter", pt: "Livro de operações" },
+    "mem.all": { en: "All", pt: "Todos" },
+    "mem.wins": { en: "Wins", pt: "Ganhos" },
+    "mem.losses": { en: "Losses", pt: "Perdas" },
+    "mem.searchTk": { en: "Search ticker…", pt: "Buscar ativo…" },
+    "mem.showing": { en: "{n} of {total}", pt: "{n} de {total}" },
+    "mem.noTradesMonth": { en: "No closed trades this month.", pt: "Nenhum trade fechado neste mês." },
+    "mem.monthSummary": { en: "{n} trades · {w} wins ({p}%)", pt: "{n} trades · {w} ganhos ({p}%)" },
+    "mem.avgShort": { en: "avg", pt: "méd" },
+    "mem.window": { en: "Window", pt: "Janela" },
+    "mem.hold": { en: "Hold", pt: "Duração" },
+    "mem.outcome": { en: "Outcome", pt: "Resultado" },
+    "mem.entry": { en: "In", pt: "Entrada" },
+    "mem.exit": { en: "Out", pt: "Saída" },
     "mem.vidKicker": { en: "VIDEOS & COMMUNITY", pt: "VÍDEOS E COMUNIDADE" },
     "mem.vidH": { en: "Weekly videos", pt: "Vídeos semanais" },
     "mem.vidSub": { en: "Market reads, outlook and strategy walkthroughs — new videos every week.", pt: "Leitura de mercado, expectativas e explicações da estratégia — vídeos novos toda semana." },
@@ -500,7 +518,7 @@
       <p class="copy" id="copy"></p>
     </footer>`;
 
-  let DATA = null, DIVDATA = null;
+  let DATA = null, DIVDATA = null, TRADES = null;
   const boot = window.__DATA__ ? Promise.resolve(window.__DATA__) : fetch("data/metrics.json?d=" + new Date().toISOString().slice(0, 10)).then(r => r.json());
   boot.then(d => { DATA = d; render(); }).catch(e => { render(); console.error(e); });
 
@@ -1313,27 +1331,62 @@
       <div class="hl-weight"><div class="hl-w">${nf(data.pct_in_range, 0)}%</div><div class="hl-wl">${t("mem.hedgeTarget")}</div></div>
     </div>`;
   }
+  let PO3_CUR = null, PO3_FILTER = "ALL", PO3_SEARCH = "", PO3_SORT = { c: "out", d: -1 }, PO3_MONTH = null;
+  const rColor = r => (r == null ? "" : r > 0 ? "pos" : "neg");
   function renderPO3Panel(k) {
+    const host = $("#po3Panel"); if (!host) return;
     const b = DATA && DATA.books && DATA.books[k]; if (!b) return;
-    const h = b.headline, tr = b.track_record || {}, vp = b.validation_public || {};
-    const tiles = [
-      { v: fmtPct(h.cagr), l: t("mt.cagr.l"), c: h.cagr >= 0 ? "pos" : "neg" },
-      { v: h.sharpe, l: t("stat.sharpe") },
-      { v: h.sortino, l: t("mt.sortino.l") },
-      { v: h.calmar, l: "Calmar" },
-      { v: "-" + nf(Math.abs(h.max_dd)) + "%", l: t("mt.maxdd.l"), c: "neg" },
-      { v: nf(h.ann_vol) + "%", l: t("mt.vol.l") },
-      { v: nf(tr.win_rate) + "%", l: t("stat.win") },
-      { v: tr.profit_factor ?? "—", l: t("stat.pf") },
-      { v: tr.total_trades ?? "—", l: t("stat.trades") },
-      { v: fmtPct(h.total_return), l: t("m.totalRet"), c: h.total_return >= 0 ? "pos" : "neg" },
-      { v: nf(h.vol_drag, 2) + "%", l: t("mt.drag.l") },
-      { v: interp(t("mt.pct.v"), { x: Math.max(1, Math.round(100 - vp.pf_percentile)) }), l: t("mt.pct.l") },
-    ];
-    const th = $("#po3Tiles");
-    if (th) th.innerHTML = tiles.map(x => `<div class="qcard"><div class="qv ${x.c || ""}">${x.v}</div><div class="ql">${x.l}</div></div>`).join("");
-    const sub = $("#po3EquitySub");
-    if (sub) sub.textContent = `${t("m.totalRet")} ${fmtPct(h.total_return)} · CAGR ${fmtPct(h.cagr)} · Sharpe ${h.sharpe} · ${t("m.maxDD")} -${nf(Math.abs(h.max_dd))}%`;
+    if (!TRADES) {
+      fetch("data/trades.json?d=" + new Date().toISOString().slice(0, 10))
+        .then(r => r.json()).then(d => { TRADES = d; renderPO3Panel(k); })
+        .catch(() => { TRADES = {}; renderPO3Panel(k); });
+      return;
+    }
+    if (PO3_CUR !== k) { PO3_MONTH = null; PO3_FILTER = "ALL"; PO3_SEARCH = ""; PO3_SORT = { c: "out", d: -1 }; }
+    PO3_CUR = k;
+    const h = b.headline, tr = b.track_record || {};
+    const trades = TRADES[k] || [];
+    const kpi = (v, l, c) => `<div class="kpi"><div class="kpi-v ${c || ""}">${v}</div><div class="kpi-l">${l}</div></div>`;
+    const expR = tr.expectancy_r != null ? (tr.expectancy_r > 0 ? "+" : "") + nf(tr.expectancy_r, 2) + "R" : "—";
+    host.innerHTML = `
+      <div class="desk-kpis">
+        ${kpi(fmtPct(h.cagr), "CAGR", h.cagr >= 0 ? "pos" : "neg")}
+        ${kpi(h.sharpe, "Sharpe")}
+        ${kpi(nf(tr.win_rate) + "%", t("stat.win"), "")}
+        ${kpi(tr.profit_factor ?? "—", t("stat.pf"))}
+        ${kpi(expR, t("mem.expectancy"), tr.expectancy_r >= 0 ? "pos" : "neg")}
+        ${kpi(tr.total_trades ?? trades.length, t("stat.trades"))}
+        ${kpi("-" + nf(Math.abs(h.max_dd)) + "%", t("m.maxDD"), "neg")}
+        ${kpi(fmtPct(h.total_return), t("m.totalRet"), h.total_return >= 0 ? "pos" : "neg")}
+      </div>
+      <div class="chart-card"><div class="chart-head"><div class="chart-title">${t("mem.equity")}</div>
+        <div class="chart-sub">CAGR ${fmtPct(h.cagr)} · Sharpe ${h.sharpe} · ${t("m.maxDD")} -${nf(Math.abs(h.max_dd))}%</div></div>
+        <div class="chart-body" id="po3Equity"></div></div>
+      <div class="desk-2col">
+        <div class="chart-card"><div class="chart-head"><div class="chart-title">${t("mem.heat")}</div><div class="chart-sub">${t("mem.heatHint")}</div></div>
+          <div class="chart-body heatmap-body" id="po3Heat"></div></div>
+        <div class="chart-card"><div class="chart-head"><div class="chart-title">${t("mem.dd")}</div></div>
+          <div class="chart-body" id="po3Dd"></div></div>
+      </div>
+      <div id="po3Drill"></div>
+      <div class="desk-2col">
+        <div class="chart-card"><div class="chart-head"><div class="chart-title">🟢 ${t("mem.leadersWin")}</div></div><div id="po3LeadWin" class="lead-list"></div></div>
+        <div class="chart-card"><div class="chart-head"><div class="chart-title">🔴 ${t("mem.leadersLose")}</div></div><div id="po3LeadLose" class="lead-list"></div></div>
+      </div>
+      <div class="chart-card blotter-card">
+        <div class="blotter-head">
+          <div class="chart-title">${t("mem.blotter")} <span class="blotter-count" id="po3Count"></span></div>
+          <div class="blotter-controls">
+            <div class="seg" id="po3Seg">
+              <button data-f="ALL" class="${PO3_FILTER === "ALL" ? "on" : ""}">${t("mem.all")}</button>
+              <button data-f="TP" class="${PO3_FILTER === "TP" ? "on" : ""}">${t("mem.wins")}</button>
+              <button data-f="SL" class="${PO3_FILTER === "SL" ? "on" : ""}">${t("mem.losses")}</button>
+            </div>
+            <input id="po3Search" class="blotter-search" placeholder="${t("mem.searchTk")}" value="${PO3_SEARCH}">
+          </div>
+        </div>
+        <div class="table-wrap"><table class="sig-table blotter-table" id="po3Blotter"></table></div>
+      </div>`;
     const eq = $("#po3Equity");
     if (eq && b.equity_curve) {
       const hasB = b.equity_curve.some(p => p.b != null);
@@ -1341,11 +1394,107 @@
     }
     const dd = $("#po3Dd");
     if (dd) {
-      let d = b.drawdown_curve;
-      if (!d && b.equity_curve) { let pk = -Infinity; d = b.equity_curve.map(p => { pk = Math.max(pk, p.e); return { d: p.d, e: p.e / pk - 1 }; }); }
-      if (d) areaChart(dd, d, { color: "var(--neg)" });
+      let dc = b.drawdown_curve;
+      if (!dc && b.equity_curve) { let pk = -Infinity; dc = b.equity_curve.map(p => { pk = Math.max(pk, p.e); return { d: p.d, e: p.e / pk - 1 }; }); }
+      if (dc) areaChart(dd, dc, { color: "var(--neg)" });
     }
-    guard("#po3Heat", () => heatmap($("#po3Heat"), b.monthly_returns));
+    const heatHost = $("#po3Heat");
+    const drawHeat = () => memberHeatmap(heatHost, b.monthly_returns, PO3_MONTH, ym => {
+      PO3_MONTH = (PO3_MONTH === ym ? null : ym); drawHeat(); renderMonthDrill(k);
+    });
+    drawHeat();
+    renderMonthDrill(k);
+    renderLeaders(trades);
+    $("#po3Seg").querySelectorAll("button").forEach(bt => bt.onclick = () => {
+      PO3_FILTER = bt.dataset.f;
+      $("#po3Seg").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === bt));
+      paintBlotter(k);
+    });
+    const srch = $("#po3Search");
+    if (srch) srch.oninput = () => { PO3_SEARCH = srch.value; paintBlotter(k); };
+    paintBlotter(k);
+  }
+  function memberHeatmap(host, mr, selYm, onClick) {
+    host.innerHTML = ""; if (!mr || !mr.years) return;
+    const scale = 12, months = MONTHS[LANG];
+    const table = elh("table", "heat-table");
+    let head = "<tr><th></th>" + months.map(m => `<th>${m}</th>`).join("") + `<th class="heat-ytd">${t("heatmap.year")}</th></tr>`, rows = "";
+    mr.years.forEach((yr, ri) => {
+      let tds = `<td class="yr">${yr}</td>`;
+      mr.table[ri].forEach((v, mi) => {
+        if (v == null) { tds += `<td><div class="heat-cell empty">·</div></td>`; return; }
+        const ym = yr + "-" + String(mi + 1).padStart(2, "0");
+        const mag = Math.min(1, Math.abs(v) / scale) * 78 + 8, base = v >= 0 ? "var(--heat-pos)" : "var(--heat-neg)";
+        tds += `<td><div class="heat-cell heat-click ${ym === selYm ? "sel" : ""}" data-ym="${ym}" style="background:color-mix(in srgb, ${base} ${mag.toFixed(0)}%, var(--heat-mid))" title="${months[mi]} ${yr}: ${nf(v)}%">${nf(v, 0)}</div></td>`;
+      });
+      const yt = mr.ytd[ri], ym2 = Math.min(1, Math.abs(yt) / (scale * 2.5)) * 78 + 8;
+      tds += `<td class="heat-ytd"><div class="heat-cell" style="background:color-mix(in srgb, ${yt >= 0 ? "var(--heat-pos)" : "var(--heat-neg)"} ${ym2.toFixed(0)}%, var(--heat-mid))">${yt >= 0 ? "+" : ""}${nf(yt, 0)}</div></td>`;
+      rows += `<tr>${tds}</tr>`;
+    });
+    table.innerHTML = head + rows; host.appendChild(table);
+    host.querySelectorAll(".heat-click").forEach(c => c.onclick = () => onClick(c.dataset.ym));
+  }
+  function renderMonthDrill(k) {
+    const host = $("#po3Drill"); if (!host) return;
+    if (!PO3_MONTH) { host.innerHTML = ""; return; }
+    const rows = (TRADES[k] || []).filter(z => (z.out || "").startsWith(PO3_MONTH)).sort((a, b) => (a.out < b.out ? 1 : -1));
+    const wins = rows.filter(z => z.r > 0).length;
+    const avgR = rows.length ? rows.reduce((s, z) => s + z.r, 0) / rows.length : 0;
+    const [y, m] = PO3_MONTH.split("-");
+    const label = MONTHS[LANG][+m - 1] + " " + y;
+    const body = rows.length ? rows.map(z => `<tr>
+        <td class="tk-cell">${z.tk} <span class="mkt">${z.mkt}</span></td>
+        <td class="num muted-note">${z.in} → ${z.out}</td>
+        <td class="num">${z.bars}d</td>
+        <td class="num ${rColor(z.r)}">${z.r > 0 ? "+" : ""}${nf(z.r, 2)}R</td>
+        <td class="num ${rColor(z.ret)}">${z.ret == null ? "—" : (z.ret > 0 ? "+" : "") + nf(z.ret, 1) + "%"}</td>
+        <td><span class="tr-badge ${z.r > 0 ? "win" : "loss"}">${z.res}</span></td></tr>`).join("")
+      : `<tr><td colspan="6" class="muted-note" style="padding:16px;text-align:center">${t("mem.noTradesMonth")}</td></tr>`;
+    host.innerHTML = `<div class="drill-card">
+      <div class="drill-head"><div><b>${label}</b> — ${interp(t("mem.monthSummary"), { n: rows.length, w: wins, p: rows.length ? Math.round(wins / rows.length * 100) : 0 })} · <span class="${rColor(avgR)}">${avgR > 0 ? "+" : ""}${nf(avgR, 2)}R ${t("mem.avgShort")}</span></div>
+        <button class="drill-close" id="drillClose">✕</button></div>
+      <div class="table-wrap"><table class="sig-table"><thead><tr><th>${t("sig.ticker")}</th><th class="num">${t("mem.window")}</th><th class="num">${t("mem.hold")}</th><th class="num">R</th><th class="num">${t("m.totalRet")}</th><th>${t("mem.outcome")}</th></tr></thead><tbody>${body}</tbody></table></div></div>`;
+    const cl = $("#drillClose"); if (cl) cl.onclick = () => { PO3_MONTH = null; renderPO3Panel(k); };
+    host.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+  function renderLeaders(trades) {
+    const agg = {};
+    trades.forEach(z => { const a = agg[z.tk] || (agg[z.tk] = { tk: z.tk, r: 0, n: 0 }); a.r += z.r; a.n++; });
+    const arr = Object.values(agg);
+    const maxAbs = Math.max(1, ...arr.map(a => Math.abs(a.r)));
+    const row = a => `<div class="lead-row"><span class="lead-tk">${a.tk}</span>
+      <span class="lead-bar-wrap"><span class="lead-bar ${a.r >= 0 ? "pos" : "neg"}" style="width:${Math.max(3, Math.abs(a.r) / maxAbs * 100).toFixed(0)}%"></span></span>
+      <span class="lead-r ${rColor(a.r)}">${a.r > 0 ? "+" : ""}${nf(a.r, 1)}R</span><span class="lead-n">${a.n}</span></div>`;
+    const win = $("#po3LeadWin"), lose = $("#po3LeadLose");
+    if (win) win.innerHTML = arr.slice().sort((a, b) => b.r - a.r).slice(0, 7).map(row).join("") || `<p class="muted-note">—</p>`;
+    if (lose) lose.innerHTML = arr.slice().sort((a, b) => a.r - b.r).slice(0, 7).map(row).join("") || `<p class="muted-note">—</p>`;
+  }
+  function paintBlotter(k) {
+    const host = $("#po3Blotter"); if (!host) return;
+    let rows = (TRADES[k] || []).slice();
+    if (PO3_FILTER === "TP") rows = rows.filter(z => z.r > 0);
+    else if (PO3_FILTER === "SL") rows = rows.filter(z => z.r <= 0);
+    const q = PO3_SEARCH.trim().toUpperCase();
+    if (q) rows = rows.filter(z => z.tk.toUpperCase().includes(q));
+    const c = PO3_SORT.c, dir = PO3_SORT.d;
+    rows.sort((a, b) => { const x = a[c], y = b[c]; return (x < y ? -1 : x > y ? 1 : 0) * dir; });
+    const total = rows.length; rows = rows.slice(0, 200);
+    const cnt = $("#po3Count"); if (cnt) cnt.textContent = interp(t("mem.showing"), { n: rows.length, total });
+    const th = (c2, lbl, num) => `<th class="${num ? "num" : ""} th-sort ${PO3_SORT.c === c2 ? "on" : ""}" data-c="${c2}">${lbl}${PO3_SORT.c === c2 ? (PO3_SORT.d < 0 ? " ↓" : " ↑") : ""}</th>`;
+    const head = `<thead><tr>${th("tk", t("sig.ticker"))}${th("mkt", "Mkt")}${th("in", t("mem.entry"), 1)}${th("out", t("mem.exit"), 1)}${th("bars", t("mem.hold"), 1)}${th("r", "R", 1)}${th("ret", t("m.totalRet"), 1)}${th("res", t("mem.outcome"))}</tr></thead>`;
+    const body = rows.map(z => `<tr>
+      <td class="tk-cell">${z.tk}</td><td class="muted-note">${z.mkt}</td>
+      <td class="num muted-note">${z.in}</td><td class="num muted-note">${z.out}</td>
+      <td class="num">${z.bars}d</td>
+      <td class="num ${rColor(z.r)}">${z.r > 0 ? "+" : ""}${nf(z.r, 2)}</td>
+      <td class="num ${rColor(z.ret)}">${z.ret == null ? "—" : (z.ret > 0 ? "+" : "") + nf(z.ret, 1) + "%"}</td>
+      <td><span class="tr-badge ${z.r > 0 ? "win" : "loss"}">${z.res}</span></td></tr>`).join("");
+    host.innerHTML = head + `<tbody>${body}</tbody>`;
+    host.querySelectorAll(".th-sort").forEach(el => el.onclick = () => {
+      const cc = el.dataset.c;
+      if (PO3_SORT.c === cc) PO3_SORT.d *= -1; else PO3_SORT = { c: cc, d: (cc === "tk" || cc === "in" || cc === "out" || cc === "mkt") ? 1 : -1 };
+      paintBlotter(k);
+    });
   }
   function renderVideos() {
     const host = $("#memberVideos"); if (!host) return;
