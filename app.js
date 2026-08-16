@@ -54,7 +54,7 @@
     "brand.tag": { en: "QUANTIFIED INVESTING", pt: "INVESTIMENTOS QUANTIFICADOS" },
     "nav.perf": { en: "Performance", pt: "Desempenho" },
     "nav.metrics": { en: "Metrics", pt: "Métricas" },
-    "nav.signals": { en: "Signals", pt: "Sinais" },
+    "nav.signals": { en: "Live", pt: "Ao vivo" },
     "nav.dividends": { en: "Dividends", pt: "Dividendos" },
     "nav.members": { en: "Members", pt: "Membros" },
     "legal.kicker": { en: "LEGAL", pt: "LEGAL" },
@@ -71,12 +71,13 @@
     "hero.eyebrow": { en: "QUANTIFIED INVESTING · US + BRAZIL STOCKS", pt: "INVESTIMENTOS QUANTIFICADOS · AÇÕES EUA + BRASIL" },
     "hero.h1": { en: 'Less promise.<br>More <span class="accent">proof.</span>', pt: 'Menos promessa.<br>Mais <span class="accent">prova.</span>' },
     "hero.lede": {
-      en: "A systematic engine generates the signals — no opinions, no guesses, no after-the-fact heroes. And, unlike everyone else, you judge by the numbers: <strong>10 years of real, auditable performance</strong>, updated every day.",
-      pt: "Um motor sistemático gera os sinais — sem opinião, sem palpite, sem herói pós-fato. E, diferente de todo mundo, você julga pelos números: <strong>10 anos de desempenho real e auditável</strong>, atualizado todo dia."
+      en: "A systematic engine runs the strategy — no opinions, no guesses, no after-the-fact heroes. And, unlike everyone else, you judge by the numbers: <strong>10 years of real, auditable performance</strong>, updated every day.",
+      pt: "Um motor sistemático executa a estratégia — sem opinião, sem palpite, sem herói pós-fato. E, diferente de todo mundo, você julga pelos números: <strong>10 anos de desempenho real e auditável</strong>, atualizado todo dia."
     },
     "hero.cta1": { en: "Start 7-day free trial", pt: "Começar teste de 7 dias" },
     "hero.cta2": { en: "See the numbers →", pt: "Ver os números →" },
     "home.explore": { en: "EXPLORE", pt: "EXPLORE" },
+    "card.div.d": { en: "A long-term dividend-income strategy, normalized to the S&P 500 risk level.", pt: "Uma estratégia de renda com dividendos de longo prazo, normalizada ao risco do S&P 500." },
     "home.exploreH": { en: "Everything, on the record.", pt: "Tudo, registrado." },
     "card.perf.d": { en: "10-year equity curve, win rate and drawdown — with the tail hedge applied.", pt: "Curva de 10 anos, win rate e drawdown — já com o hedge de cauda aplicado." },
     "card.metrics.d": { en: "Sharpe, Sortino, monthly returns and the robustness checks behind the simulated data.", pt: "Sharpe, Sortino, retornos mensais e as verificações de robustez por trás dos dados simulados." },
@@ -97,9 +98,13 @@
     "hedge.kicker": { en: "PROTECTION · TAIL HEDGE · ELITE", pt: "PROTEÇÃO · HEDGE DE CAUDA · ELITE" },
     "hedge.h2": { en: "Insurance that pays for itself.", pt: "Um seguro que se paga." },
     "hedge.sub": { en: "Under market stress, the portfolio automatically raises protection in an <em>uncorrelated asset</em>. Which asset? Exclusive to Elite members.", pt: "Em estresse de mercado, a carteira eleva a proteção em um <em>ativo descorrelacionado</em>. Qual é o ativo? Exclusivo de quem é Elite." },
-    "radar.kicker": { en: "SIGNAL RADAR", pt: "SIGNAL RADAR" },
-    "radar.h2": { en: "What the system sees right now.", pt: "O que o sistema está vendo agora." },
-    "radar.subA": { en: "Live signals per asset.", pt: "Sinais ao vivo por ativo." },
+    "radar.kicker": { en: "QUANTITATIVE STRATEGY", pt: "ESTRATÉGIA QUANTITATIVA" },
+    "radar.h2": { en: "The strategy, live.", pt: "A estratégia, ao vivo." },
+    "radar.subA": { en: "Members-only.", pt: "Exclusivo para membros." },
+    "radar.gateT": { en: "The live strategy is for members", pt: "A estratégia ao vivo é para membros" },
+    "radar.gateS": { en: "Subscribers follow the systematic strategy's live positions, updated every day. First, judge it by the numbers — 10 years of real, auditable performance.", pt: "Assinantes acompanham as posições ao vivo da estratégia sistemática, atualizadas todo dia. Primeiro, julgue pelos números — 10 anos de desempenho real e auditável." },
+    "radar.gateCta": { en: "See plans", pt: "Ver planos" },
+    "radar.gateAlt": { en: "See the 10-year performance first →", pt: "Ver o desempenho de 10 anos primeiro →" },
     "replay.kicker": { en: "LIVE REPLAY", pt: "LIVE REPLAY" },
     "replay.h2": { en: "Closed results, month by month.", pt: "Resultados concluídos, mês a mês." },
     "replay.sub": { en: "Average performance of the trades closed each month — activity, win rate, and result.", pt: "Desempenho médio das operações fechadas em cada mês — atividade, acerto e resultado." },
@@ -231,6 +236,7 @@
     "div.core.yoc": { en: "yield on cost", pt: "yield on cost" },
     "div.core.yld": { en: "current yield", pt: "yield atual" },
     "div.zone": { en: "{n} of {total} are in the buy zone right now — members see the live signals.", pt: "{n} de {total} estão na zona de compra agora — membros veem os sinais ao vivo." },
+    "div.coreMembers": { en: "The specific holdings and the live buy zone are exclusive to members. The strategy's 10-year results above are open to everyone.", pt: "As posições específicas e a zona de compra ao vivo são exclusivas para membros. Os resultados de 10 anos da estratégia, acima, são abertos a todos." },
     "div.sigKicker": { en: "LIVE SIGNALS · MEMBERS", pt: "SINAIS AO VIVO · MEMBROS" },
     "div.sigH": { en: "In the buy zone right now", pt: "Na zona de compra agora" },
     "div.sigSub": { en: "Which proven payers have dipped into value today — the moment our rule adds to the position. Updated daily.", pt: "Quais pagadoras provadas caíram para região de valor hoje — o momento em que nossa regra reforça a posição. Atualizado diariamente." },
@@ -453,12 +459,12 @@
     {
       tier: "BEGINNER", monthly: 9, disc: 0.15, featured: false,
       feats: [
-        [true, { en: "Brazilian market signals (Ibovespa)", pt: "Sinais do mercado brasileiro (Ibovespa)" }],
+        [true, { en: "Brazilian market strategy (Ibovespa)", pt: "Estratégia do mercado brasileiro (Ibovespa)" }],
         [true, { en: "The Magnificent 7 (US) — AAPL · MSFT · GOOGL · AMZN · NVDA · META · TSLA", pt: "As 7 Magníficas dos EUA — AAPL · MSFT · GOOGL · AMZN · NVDA · META · TSLA" }],
         [true, { en: "💰 Dividend income portfolio — Brazil (the “dividend salary”)", pt: "💰 Carteira de renda com dividendos — Brasil (o “salário de dividendos”)" }],
         [true, { en: "10-year performance and history", pt: "Desempenho e histórico de 10 anos" }],
         [false, { en: "US dividend income portfolio", pt: "Carteira de renda com dividendos — EUA" }],
-        [false, { en: "Full Signal Radar (US + BR)", pt: "Signal Radar completo (US + BR)" }],
+        [false, { en: "Full live strategy (US + BR)", pt: "Estratégia completa ao vivo (US + BR)" }],
         [false, { en: "YouTube members area — videos & community", pt: "Área de membros no YouTube — vídeos e comunidade" }],
       ],
       cta: { en: "Get Beginner", pt: "Assinar Beginner" },
@@ -467,9 +473,9 @@
       tier: "PRO", monthly: 29, disc: 0.20, featured: true,
       badge: { en: "MOST POPULAR", pt: "MAIS POPULAR" },
       feats: [
-        [true, { en: "All signals — US (S&P 100) + Brazil (Ibovespa)", pt: "Todos os sinais — EUA (S&P 100) + Brasil (Ibovespa)" }],
+        [true, { en: "Full strategy — US (S&P 100) + Brazil (Ibovespa)", pt: "Estratégia completa — EUA (S&P 100) + Brasil (Ibovespa)" }],
         [true, { en: "💰 Dividend income portfolio — US + Brazil", pt: "💰 Carteira de renda com dividendos — EUA + Brasil" }],
-        [true, { en: "Full Signal Radar + watchlist", pt: "Signal Radar completo + watchlist" }],
+        [true, { en: "Live positions + watchlist", pt: "Posições ao vivo + watchlist" }],
         [true, { en: "Complete quantitative metrics", pt: "Métricas quantitativas completas" }],
         [true, { en: "YouTube members area — weekly videos & community", pt: "Área de membros no YouTube — vídeos semanais e comunidade" }],
         [false, { en: "Exclusive Hedge signal", pt: "Sinal de Hedge exclusivo" }],
@@ -560,7 +566,7 @@
       guard("#cherryHost", renderCherry);
       guard("#cherryTeaser", buildCherryTeaser);
       guard("#hedgeHost", renderHedge);
-      guard("#radarTabs", () => initSection(["US", "BR"], "#radarTabs", renderRadar));
+      guard("#radarHost", renderRadar);   // público: portão sem dados; membros: renderMemberSignals sobrescreve
       guard("#replayTabs", () => initSection(["US", "BR"], "#replayTabs", renderReplay));
       guard("#trustGrid", buildTrust);
       guard("#homeCards", buildHomeCards);
@@ -625,7 +631,7 @@
     const cards = [
       { p: "performance.html", k: "nav.perf", d: "card.perf.d" },
       { p: "metrics.html", k: "nav.metrics", d: "card.metrics.d" },
-      { p: "signals.html", k: "nav.signals", d: "card.signals.d" },
+      { p: "dividends.html", k: "nav.dividends", d: "card.div.d" },
       { p: "replay.html", k: "nav.replay", d: "card.replay.d" },
     ];
     $("#homeCards").innerHTML = cards.map(c => `<a class="home-card" href="${c.p}">
@@ -755,25 +761,16 @@
       </div>
       <p class="hedge-note">${interp(t("hg.note"), { years: nf(h.period.years), corr: h.corr_to_equity })}</p>`;
   }
-  function renderRadar(k) {
-    const b = DATA.books[k], s = b.signals_summary;
-    $("#radarAsOf").textContent = `${t("radar.asof")} ${DATA.data_through}. ${b.regime_on ? t("radar.on") : t("radar.off")}`;
-    const rows = s.sample.slice(0, 8).map(tk => `<tr><td class="tk-cell">${tk}</td><td><span class="dir-buy">${t("radar.buy")}</span></td>
-       <td class="num"><span class="lockval">000.00</span></td><td class="num"><span class="lockval">000.00</span></td><td class="num"><span class="lockval">000.00</span></td></tr>`).join("");
-    $("#radarHost").innerHTML = `
-      <div class="radar-summary">
-        <div class="rs-pill"><div class="v pos">${s.active}</div><div class="l">${t("radar.active")}</div></div>
-        <div class="rs-pill"><div class="v">${s.total}</div><div class="l">${t("radar.total")}</div></div>
-        <div class="rs-pill"><div class="v">${s.waiting}</div><div class="l">${t("radar.waiting")}</div></div>
-      </div>
-      <div class="locked-wrap">
-        <table class="locked-table">
-          <thead><tr><th>${t("radar.hAsset")}</th><th>${t("radar.hDir")}</th><th class="num">${t("radar.hEntry")}</th><th class="num">${t("radar.hStop")}</th><th class="num">${t("radar.hTarget")}</th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-        <div class="locked-cta"><div class="lk">🔒</div><div class="lt">${t("radar.lockT")}</div>
-          <div class="ls">${interp(t("radar.lockS"), { n: s.total })}</div>
-          <a class="btn btn-primary" href="plans.html">${t("radar.lockCta")}</a></div>
+  function renderRadar() {
+    const host = $("#radarHost"); if (!host) return;
+    const asof = $("#radarAsOf"); if (asof) asof.textContent = "";
+    host.innerHTML = `
+      <div class="radar-gate">
+        <div class="rg-lock">🔒</div>
+        <div class="rg-title">${t("radar.gateT")}</div>
+        <div class="rg-sub">${t("radar.gateS")}</div>
+        <a class="btn btn-primary btn-lg" href="plans.html">${t("radar.gateCta")}</a>
+        <a class="rg-alt" href="metrics.html">${t("radar.gateAlt")}</a>
       </div>`;
   }
   function moLabel(ym) { const [y, m] = ym.split("-"); return `${MONTHS[LANG][+m - 1]}/${y.slice(2)}`; }
@@ -1274,13 +1271,20 @@
       `<span class="divbar-track"><span class="divbar-fill ${x.hi ? "hi" : ""}" style="width:${Math.max(4, x.v / mx * 100).toFixed(1)}%"></span></span>` +
       `<span class="divbar-val ${x.hi ? "hi" : ""}">+${nf(x.v, 1)}%</span></div>`).join("") + `</div>`;
 
+    const onMembers = document.body.dataset.page === "members";
     const cg = $("#divCore");
-    if (cg) cg.innerHTML = `<div class="divcore-grid">` + (M.core || []).map(c =>
-      `<div class="divcore-cell"><div class="divcore-tk">${c.name}</div>` +
-      `<div class="divcore-yoc">${nf(c.yield_on_cost_pct, 1)}%<span> ${t("div.core.yoc")}</span></div>` +
-      `<div class="divcore-yld">${c.yield_pct != null ? nf(c.yield_pct, 1) + "% " + t("div.core.yld") : ""}</div></div>`).join("") + `</div>`;
+    if (cg) {
+      if (M.core && M.core.length) {
+        cg.innerHTML = `<div class="divcore-grid">` + M.core.map(c =>
+          `<div class="divcore-cell"><div class="divcore-tk">${c.name}</div>` +
+          `<div class="divcore-yoc">${nf(c.yield_on_cost_pct, 1)}%<span> ${t("div.core.yoc")}</span></div>` +
+          `<div class="divcore-yld">${c.yield_pct != null ? nf(c.yield_pct, 1) + "% " + t("div.core.yld") : ""}</div></div>`).join("") + `</div>`;
+      } else if (!onMembers) {   // público: os tickers e a zona de compra são só p/ membros
+        cg.innerHTML = `<div class="div-siglock" style="max-width:640px"><p>${t("div.coreMembers")}</p><a class="btn btn-primary" href="plans.html">${t("div.sig.upgrade")}</a></div>`;
+      } else { cg.innerHTML = ""; }
+    }
     const zone = $("#divZone");
-    if (zone) zone.textContent = interp(t("div.zone"), { n: M.buy_zone_now, total: M.core_count });
+    if (zone) zone.textContent = (M.buy_zone_now != null) ? interp(t("div.zone"), { n: M.buy_zone_now, total: M.core_count }) : "";
 
     const how = [["1t", "1d"], ["2t", "2d"], ["3t", "3d"], ["4t", "4d"]];
     const hw = $("#divHow");
