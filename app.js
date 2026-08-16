@@ -487,11 +487,11 @@
       tier: "ELITE", monthly: 79, disc: 0.25, featured: false,
       cycleFeat: {
         annual: [
-          [true, { en: "Full strategy revealed on subscription", pt: "Estratégia completa revelada na assinatura" }, "hot"],
+          [true, { en: "Full methodology revealed on subscription (Markov Chain)", pt: "Metodologia Completa revelada na assinatura (Markov Chain)" }, "hot"],
           [true, { en: "Automated MT5 robot — trades the signals for you", pt: "Robô automatizado em MT5 — opera os sinais sozinho" }],
         ],
         monthly: [
-          [true, { en: "Full strategy revealed after 6 months", pt: "Estratégia completa revelada após 6 meses de plano" }, "hot"],
+          [true, { en: "Full methodology revealed after 6 months (Markov Chain)", pt: "Metodologia Completa revelada após 6 meses de plano (Markov Chain)" }, "hot"],
           [false, { en: "Automated MT5 robot — annual plan only", pt: "Robô automatizado em MT5 — só no plano anual" }],
         ],
       },
