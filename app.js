@@ -269,6 +269,8 @@
     "div.sig.hYield": { en: "Yield (12m)", pt: "Yield (12m)" },
     "div.sig.hYoc": { en: "Yield on cost", pt: "Yield on cost" },
     "div.sig.tv": { en: "Chart ↗", pt: "Gráfico ↗" },
+    "div.addTitle": { en: "Add to portfolio (Dividends)", pt: "Adicionar ao portfólio (Dividendos)" },
+    "div.addPrompt": { en: "% of your deposit to allocate to {tk}?", pt: "% do seu depósito para alocar em {tk}?" },
     "div.sig.count": { en: "{a} in the buy zone · {m} monitoring", pt: "{a} na zona de compra · {m} monitorando" },
     "div.howKicker": { en: "HOW IT WORKS", pt: "COMO FUNCIONA" },
     "div.howH": { en: "Simple, disciplined, hands-off", pt: "Simples, disciplinado, sem esforço" },
@@ -398,6 +400,10 @@
     "pf.pending": { en: "PENDING", pt: "PENDENTE" },
     "pf.remove": { en: "Remove", pt: "Remover" },
     "pf.computing": { en: "Full metrics (drawdown, vol drag, benchmark curve) are computed daily — they'll appear after the next update.", pt: "As métricas completas (drawdown, vol drag, curva comparativa) são calculadas diariamente — aparecem após a próxima atualização." },
+    "pf.curveSoon": { en: "Drawdown, vol drag and the benchmark curve for this view are computed daily — they appear after the next update.", pt: "O drawdown, o vol drag e a curva comparativa desta visão são calculados diariamente — aparecem após a próxima atualização." },
+    "pf.stratAll": { en: "Combined", pt: "Conjunto" },
+    "pf.stratPo3": { en: "Markov 3", pt: "Markov 3" },
+    "pf.stratDiv": { en: "Dividends", pt: "Dividendos" },
     "pf.emptyT": { en: "Your portfolio is empty", pt: "Seu portfólio está vazio" },
     "pf.emptyS": { en: "Add a signal to your portfolio to track it — deposit, allocation, P&L, drawdown, all vs SPY & BOVA11.", pt: "Adicione um sinal ao portfólio para acompanhar — depósito, alocação, resultado, drawdown, tudo vs SPY e BOVA11." },
     "pf.emptyCta": { en: "Go to Signals", pt: "Ir para Sinais" },
@@ -1103,6 +1109,36 @@
   }
 
   /* ---- portfolio page ---- */
+  let PF_STRAT = "all";
+  function pfClientStats(pos, deposit) {
+    let curPnl = 0, won = 0, lost = 0, open = 0, alloc = 0;
+    pos.forEach(p => {
+      alloc += Number(p.alloc_pct) || 0;
+      const s = p.status;
+      if (s === "won") won++; else if (s === "lost") lost++; else if (s !== "pending") open++;
+      curPnl += deposit * ((Number(p.alloc_pct) || 0) / 100) * ((Number(p.ret_pct) || 0) / 100);
+    });
+    const closed = won + lost, value = deposit + curPnl;
+    return { value, total_return: (value / deposit - 1) * 100, win_rate: closed ? won / closed * 100 : null, n_open: open, alloc };
+  }
+  function previewPortfolio() {
+    const mkCurve = g => { const a = []; for (let i = 0; i <= 24; i++) { const f = i / 24, yr = 2024 + Math.floor(i / 12), mo = (i % 12) + 1; a.push({ d: yr + "-" + String(mo).padStart(2, "0") + "-01", p: 1 + g * f + 0.015 * Math.sin(i), spy: 1 + 0.10 * f, bova: 1 + 0.05 * f }); } return a; };
+    const positions = [
+      { id: "p1", ticker: "NVDA", market: "US", tv_symbol: "NVDA", entry: 120, current_price: 140, alloc_pct: 8, status: "open", ret_pct: 16.7, added_at: "2025-11-01", strategy: "po3" },
+      { id: "p2", ticker: "AAPL", market: "US", tv_symbol: "AAPL", entry: 210, current_price: 205, alloc_pct: 6, status: "lost", ret_pct: -2.4, added_at: "2025-10-15", strategy: "po3" },
+      { id: "p3", ticker: "KMLM", market: "US", tv_symbol: "AMEX:KMLM", entry: 28.8, current_price: 29.5, alloc_pct: 15, status: "open", ret_pct: 2.4, added_at: "2025-09-01", strategy: "po3" },
+      { id: "p4", ticker: "TAEE11", market: "BR", tv_symbol: "BMFBOVESPA:TAEE11", entry: 34, current_price: 36, alloc_pct: 10, status: "open", ret_pct: 5.9, added_at: "2025-08-01", strategy: "dividends" },
+      { id: "p5", ticker: "BBSE3", market: "BR", tv_symbol: "BMFBOVESPA:BBSE3", entry: 38, current_price: 40, alloc_pct: 7, status: "open", ret_pct: 5.3, added_at: "2025-07-01", strategy: "dividends" },
+    ];
+    const stats = {
+      max_dd: 9.2, vol_drag: 1.1, spy_return: 10, bova_return: 5, curve: mkCurve(0.18),
+      by_strategy: {
+        po3: { max_dd: 11.0, vol_drag: 1.4, spy_return: 10, bova_return: 5, curve: mkCurve(0.12) },
+        dividends: { max_dd: 5.0, vol_drag: 0.5, spy_return: 10, bova_return: 5, curve: mkCurve(0.26) },
+      },
+    };
+    return { deposit: 10000, cur: "USD", positions, stats };
+  }
   async function renderPortfolio() {
     const host = $("#portfolioHost"); if (!host || !["portfolio", "members"].includes(document.body.dataset.page)) return;
     if (!USER) {
@@ -1110,11 +1146,18 @@
       return;
     }
     host.innerHTML = `<p class="muted-note">${t("sig.loading")}</p>`;
-    const [pr, po, st] = await Promise.all([
-      sb.from("profiles").select("portfolio_deposit,portfolio_currency").eq("id", USER.id).maybeSingle(),
-      sb.from("portfolio_positions").select("*").order("added_at", { ascending: false }),
-      sb.from("portfolio_stats").select("data").eq("user_id", USER.id).maybeSingle(),
-    ]);
+    let pr, po, st;
+    if (sb && USER && USER.id !== "preview") {
+      [pr, po, st] = await Promise.all([
+        sb.from("profiles").select("portfolio_deposit,portfolio_currency").eq("id", USER.id).maybeSingle(),
+        sb.from("portfolio_positions").select("*").order("added_at", { ascending: false }),
+        sb.from("portfolio_stats").select("data").eq("user_id", USER.id).maybeSingle(),
+      ]);
+    } else if (PREVIEW) {
+      const pv = previewPortfolio();
+      pr = { data: { portfolio_deposit: pv.deposit, portfolio_currency: pv.cur } };
+      po = { data: pv.positions }; st = { data: { data: pv.stats } };
+    } else { pr = po = st = { data: null }; }
     const deposit = (pr.data && pr.data.portfolio_deposit) || 10000;
     const cur = (pr.data && pr.data.portfolio_currency) || "USD";
     const positions = po.data || [];
@@ -1122,6 +1165,16 @@
     const sym = cur === "BRL" ? "R$" : "$";
     const money = v => v == null ? "—" : sym + Number(v).toLocaleString(locale(), { maximumFractionDigits: 0 });
     const isElite = PROFILE && PROFILE.plan === "elite";
+    positions.forEach(p => { if (!p.strategy) p.strategy = "po3"; });
+    const hasPo3 = positions.some(p => p.strategy === "po3");
+    const hasDiv = positions.some(p => p.strategy === "dividends");
+    if (PF_STRAT !== "all" && !((PF_STRAT === "po3" && hasPo3) || (PF_STRAT === "dividends" && hasDiv))) PF_STRAT = "all";
+    const viewPos = PF_STRAT === "all" ? positions : positions.filter(p => p.strategy === PF_STRAT);
+    const eng = PF_STRAT === "all" ? d : (d && d.by_strategy && d.by_strategy[PF_STRAT]) || null;
+    const cs = pfClientStats(viewPos, deposit);
+    const you = viewPos.length ? cs.total_return : null;
+    const spy = eng ? eng.spy_return : null, bova = eng ? eng.bova_return : null;
+    const curve = eng && eng.curve;
 
     let html = `<div class="pf-deposit">
       <label>${t("pf.deposit")}</label>
@@ -1130,32 +1183,44 @@
       ${isElite && positions.length ? `<button class="btn btn-ghost" id="pfExport">⇩ ${t("pf.export")}</button>` : ""}
       <span class="add-msg" id="pfDepMsg"></span></div>`;
 
+    if (hasPo3 && hasDiv) {
+      html += `<div class="seg pf-stratseg" id="pfStratSeg">
+        <button data-s="all" class="${PF_STRAT === "all" ? "on" : ""}">${t("pf.stratAll")}</button>
+        <button data-s="po3" class="${PF_STRAT === "po3" ? "on" : ""}">${t("pf.stratPo3")}</button>
+        <button data-s="dividends" class="${PF_STRAT === "dividends" ? "on" : ""}">${t("pf.stratDiv")}</button>
+      </div>`;
+    }
+
     if (!positions.length) {
       html += `<div class="pf-empty"><div class="pf-empty-ic">📈</div><div class="pf-empty-t">${t("pf.emptyT")}</div>
         <div class="pf-empty-s">${t("pf.emptyS")}</div><a class="btn btn-primary" href="signals.html">${t("pf.emptyCta")}</a></div>`;
     } else {
-      const you = d ? d.total_return : null, spy = d ? d.spy_return : null, bova = d ? d.bova_return : null;
       html += `<div class="pf-tiles">
-        <div class="stat"><div class="v">${money(d ? d.value : deposit)}</div><div class="l">${t("pf.value")}</div></div>
+        <div class="stat"><div class="v">${money(cs.value)}</div><div class="l">${t("pf.value")}</div></div>
         <div class="stat"><div class="v ${you >= 0 ? "pos" : "neg"}">${you == null ? "—" : fmtPct(you)}</div><div class="l">${t("pf.return")}</div></div>
-        <div class="stat"><div class="v">${d && d.win_rate != null ? nf(d.win_rate, 0) + "%" : "—"}</div><div class="l">${t("pf.win")}</div></div>
-        <div class="stat"><div class="v neg">${d ? "-" + nf(d.max_dd, 1) + "%" : "—"}</div><div class="l">${t("pf.dd")}</div></div>
-        <div class="stat"><div class="v">${d ? nf(d.vol_drag, 2) + "%" : "—"}</div><div class="l">${t("pf.drag")}</div></div>
-        <div class="stat"><div class="v">${d ? d.n_open : positions.filter(p => p.status === "open").length}</div><div class="l">${t("pf.open")}</div></div>
+        <div class="stat"><div class="v">${cs.win_rate != null ? nf(cs.win_rate, 0) + "%" : "—"}</div><div class="l">${t("pf.win")}</div></div>
+        <div class="stat"><div class="v neg">${eng && eng.max_dd != null ? "-" + nf(eng.max_dd, 1) + "%" : "—"}</div><div class="l">${t("pf.dd")}</div></div>
+        <div class="stat"><div class="v">${eng && eng.vol_drag != null ? nf(eng.vol_drag, 2) + "%" : "—"}</div><div class="l">${t("pf.drag")}</div></div>
+        <div class="stat"><div class="v">${cs.n_open}</div><div class="l">${t("pf.open")}</div></div>
       </div>`;
       // benchmark headline + chart
       html += `<div class="pf-vs">
         <span class="pf-vs-you">${t("pf.you")}: <b class="${you >= 0 ? "pos" : "neg"}">${you == null ? "—" : fmtPct(you)}</b></span>
         <span>SPY: <b>${spy == null ? "—" : fmtPct(spy)}</b></span>
-        <span>BOVA11: <b>${bova == null ? "—" : fmtPct(bova)}</b></span></div>
-      <div class="chart-card"><div class="chart-head"><div class="chart-title">${t("pf.chart")}</div>
-        <div class="legend"><span class="lg"><span class="sw" style="background:var(--series)"></span>${t("pf.you")}</span><span class="lg"><span class="sw" style="background:var(--bench)"></span>SPY</span><span class="lg"><span class="sw" style="background:var(--warn)"></span>BOVA11</span></div></div>
-        <div class="chart-body" id="pfChart"></div></div>`;
+        <span>BOVA11: <b>${bova == null ? "—" : fmtPct(bova)}</b></span></div>`;
+      if (curve && curve.length > 1) {
+        html += `<div class="chart-card"><div class="chart-head"><div class="chart-title">${t("pf.chart")}</div>
+          <div class="legend"><span class="lg"><span class="sw" style="background:var(--series)"></span>${t("pf.you")}</span><span class="lg"><span class="sw" style="background:var(--bench)"></span>SPY</span><span class="lg"><span class="sw" style="background:var(--warn)"></span>BOVA11</span></div></div>
+          <div class="chart-body" id="pfChart"></div></div>`;
+      } else {
+        html += `<p class="hedge-note">${t("pf.curveSoon")}</p>`;
+      }
       // positions table
       const smap = { won: ["pos", "active", t("pf.won")], lost: ["neg", "flat", t("pf.lost")], open: ["", "wait", t("pf.openst")], pending: ["", "flat", t("pf.pending")] };
-      const rows = positions.map(p => {
+      const stag = p => PF_STRAT === "all" ? ` <span class="pf-stag ${p.strategy}">${p.strategy === "dividends" ? "DIV" : "M3"}</span>` : "";
+      const rows = viewPos.map(p => {
         const [retc, stcls, stl] = smap[p.status] || smap.open;
-        return `<tr><td class="tk-cell">${p.ticker} <span class="mkt">${p.market}</span></td>
+        return `<tr><td class="tk-cell">${p.ticker} <span class="mkt">${p.market}</span>${stag(p)}</td>
           <td>${p.added_at}</td><td class="num">${nf(p.alloc_pct, 1)}%</td>
           <td class="num">${fmtNum(p.entry)}</td><td class="num">${fmtNum(p.current_price ?? p.entry)}</td>
           <td><span class="st ${stcls}">${stl}</span></td>
@@ -1164,11 +1229,12 @@
       }).join("");
       html += `<div class="table-wrap blotter-scroll" style="margin-top:18px"><table class="sig-table"><thead><tr>
         <th>${t("sig.ticker")}</th><th>${t("pf.added")}</th><th class="num">${t("pf.alloc")}</th><th class="num">${t("sig.entry")}</th><th class="num">${t("pf.current")}</th><th>${t("sig.state")}</th><th class="num">${t("pf.pl")}</th><th></th>
-        </tr></thead><tbody>${rows}</tbody></table></div>
-        ${d ? "" : `<p class="hedge-note">${t("pf.computing")}</p>`}`;
+        </tr></thead><tbody>${rows}</tbody></table></div>`;
     }
     host.innerHTML = html;
 
+    const seg = $("#pfStratSeg");
+    if (seg) seg.querySelectorAll("button").forEach(b => b.onclick = () => { PF_STRAT = b.dataset.s; renderPortfolio(); });
     const save = $("#pfSaveDep");
     if (save) save.onclick = async () => {
       const val = Math.max(0, parseFloat($("#pfDeposit").value) || 0);
@@ -1179,9 +1245,9 @@
       await sb.from("portfolio_positions").delete().eq("id", b.dataset.id); renderPortfolio();
     });
     const exp = $("#pfExport");
-    if (exp) exp.onclick = () => exportPortfolioCSV(positions, d, deposit, cur);
-    if (d && d.curve && d.curve.length > 1) {
-      lineChart($("#pfChart"), d.curve, { keys: ["p", "spy", "bova"], colors: ["var(--series)", "var(--bench)", "var(--warn)"], labels: [t("pf.you"), "SPY", "BOVA11"], dash: [false, true, true], asPctGrowth: true });
+    if (exp) exp.onclick = () => exportPortfolioCSV(viewPos, eng, deposit, cur);
+    if (curve && curve.length > 1) {
+      lineChart($("#pfChart"), curve, { keys: ["p", "spy", "bova"], colors: ["var(--series)", "var(--bench)", "var(--warn)"], labels: [t("pf.you"), "SPY", "BOVA11"], dash: [false, true, true], asPctGrowth: true });
     }
   }
 
@@ -1445,14 +1511,33 @@
         `<td class="num">${fmtP(r.price)}</td>` +
         `<td class="num pos">${r.trailing_yield_pct != null ? nf(r.trailing_yield_pct, 1) + "%" : "—"}</td>` +
         `<td class="num">${r.yield_on_cost_pct != null ? nf(r.yield_on_cost_pct, 1) + "%" : "—"}</td>` +
-        `<td><a class="dsig-tv" href="https://www.tradingview.com/chart/?symbol=${encodeURIComponent(r.tv_symbol || r.ticker)}" target="_blank" rel="noopener">${t("div.sig.tv")}</a></td>` +
+        `<td class="dsig-actions"><button class="pf-addbtn" title="${t("div.addTitle")}" data-tk="${r.ticker}" data-mkt="${r.market}" data-px="${r.price}" data-tv="${encodeURIComponent(r.tv_symbol || r.ticker)}">＋</button>` +
+        `<a class="dsig-tv" href="https://www.tradingview.com/chart/?symbol=${encodeURIComponent(r.tv_symbol || r.ticker)}" target="_blank" rel="noopener">${t("div.sig.tv")}</a></td>` +
         `</tr>`).join("") +
       `</tbody></table></div>`;
+    host.querySelectorAll(".pf-addbtn").forEach(b => b.onclick = () => addDivPosition(b));
     host.querySelectorAll(".th-sort").forEach(el => el.onclick = () => {
       const cc = el.dataset.c;
       if (DIV_SIGSORT.c === cc) DIV_SIGSORT.d *= -1; else DIV_SIGSORT = { c: cc, d: (cc === "ticker" || cc === "state") ? 1 : -1 };
       paintDivSignals();
     });
+  }
+  async function addDivPosition(btn) {
+    if (!sb || !USER) { location.href = "login.html"; return; }
+    if (!isMember()) { location.href = "plans.html"; return; }
+    const tk = btn.dataset.tk;
+    const raw = prompt(interp(t("div.addPrompt"), { tk }), "5");
+    if (raw == null) return;
+    const pct = parseFloat(String(raw).replace(",", "."));
+    if (!(pct > 0)) return;
+    btn.disabled = true;
+    const { error } = await sb.from("portfolio_positions").insert({
+      ticker: tk, tv_symbol: decodeURIComponent(btn.dataset.tv), market: btn.dataset.mkt,
+      entry: Number(btn.dataset.px), stop: null, tp: null, alloc_pct: pct, strategy: "dividends",
+    });
+    btn.textContent = error ? "✕" : "✓";
+    setTimeout(() => { btn.textContent = "＋"; btn.disabled = false; }, 1500);
+    if (!error && document.body.dataset.page === "members") renderPortfolio();
   }
   /* ---- members area ---- */
   function renderMembers() {
