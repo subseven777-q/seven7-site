@@ -223,8 +223,8 @@
     "div.kicker": { en: "DIVIDENDS · INCOME-FIRST", pt: "DIVIDENDOS · INCOME-FIRST" },
     "div.h1": { en: "Your growing <span class='accent'>dividend salary</span>", pt: "Seu <span class='accent'>salário de dividendos</span> crescente" },
     "div.sub": { en: "A long-term income portfolio built from the most consistent dividend payers — bought only on weakness, <b>never sold</b>, every payout reinvested. Brazil (Beginner) and the US (Pro). Real, auditable data over 10 years.", pt: "Uma carteira de renda de longo prazo com as pagadoras de dividendos mais consistentes — compradas só na queda, <b>nunca vendidas</b>, cada provento reinvestido. Brasil (Beginner) e EUA (Pro). Dados reais e auditáveis de 10 anos." },
-    "div.mkt.BR": { en: "🇧🇷 Brazil", pt: "🇧🇷 Brasil" },
-    "div.mkt.US": { en: "🇺🇸 United States", pt: "🇺🇸 Estados Unidos" },
+    "div.mkt.BR": { en: "Brazil", pt: "Brasil" },
+    "div.mkt.US": { en: "United States", pt: "Estados Unidos" },
     "div.tier.beginner": { en: "Included from Beginner", pt: "Incluído a partir do Beginner" },
     "div.tier.pro": { en: "Included from Pro", pt: "Incluído a partir do Pro" },
     "div.tile.yoc": { en: "Yield on cost", pt: "Yield on cost" },
@@ -447,8 +447,8 @@
     "cherry.teaserCta": { en: "See the cherry →", pt: "Ver a cereja →" },
     "tick.buy": { en: "BUY", pt: "COMPRA" },
     "tick.live": { en: "LIVE", pt: "AO VIVO" },
-    "book.us": { en: "🇺🇸 US · S&P 100", pt: "🇺🇸 EUA · S&P 100" },
-    "book.br": { en: "🇧🇷 Brazil · Ibovespa", pt: "🇧🇷 Brasil · Ibovespa" },
+    "book.us": { en: "US · S&P 100", pt: "EUA · S&P 100" },
+    "book.br": { en: "Brazil · Ibovespa", pt: "Brasil · Ibovespa" },
     "book.global": { en: "🌐 Global 50/50", pt: "🌐 Global 50/50" },
     "disclaimer": { en: "Simulated results over 10 years of real data. A mostly-bull-market window; the Sharpe is optimistic. Software and market information — not investment advice. Past performance does not guarantee future results.", pt: "Resultados simulados sobre 10 anos de dados reais. Janela majoritariamente de bull market; o Sharpe é otimista. Software e informação de mercado — não é recomendação de investimento. Rentabilidade passada não garante resultado futuro." },
     "footer.copy": { en: "© 2026 Seven7 · Quantified Investing. All rights reserved.", pt: "© 2026 Seven7 · Investimentos Quantificados. Todos os direitos reservados." },
@@ -947,7 +947,7 @@
     const { data, error } = await sb.from("signals").select("*");
     if (error) { host.innerHTML = `<p class="muted-note">${t("sig.err")}</p>`; return; }
     SIGNALS = (data || []).filter(s => !s.ticker.startsWith("__")).sort((a, b) => a.ticker.localeCompare(b.ticker));  // ordem alfabética; exclui meta (__HEDGE__)
-    const filters = [["ALL", t("sig.all")], ["US", "🇺🇸 US"], ["BR", "🇧🇷 BR"]];
+    const filters = [["ALL", t("sig.all")], ["US", "US"], ["BR", "BR"]];
     if (tabsHost) {
       tabsHost.innerHTML = filters.map(f => `<button class="book-tab ${SIG_FILTER === f[0] ? "on" : ""}" data-f="${f[0]}">${f[1]}</button>`).join("");
       tabsHost.querySelectorAll(".book-tab").forEach(b => b.onclick = () => {
@@ -1565,7 +1565,7 @@
     host.innerHTML = `
       <div class="term-bar">
         <div class="term-seg"><span class="term-dot live"></span><span class="term-mkt">${k}</span><span class="term-mktsub">${mktName}</span></div>
-        <div class="term-seg"><span class="term-k">${t("term.strat")}</span><span class="term-v">Power-of-Three</span></div>
+        <div class="term-seg"><span class="term-k">${t("term.strat")}</span><span class="term-v">Markov 3</span></div>
         <div class="term-seg"><span class="term-k">${t("term.universe")}</span><span class="term-v">${nTk} ${t("term.tickers")}</span></div>
         <div class="term-seg"><span class="term-k">${t("term.trades")}</span><span class="term-v">${trades.length}</span></div>
         <div class="term-seg"><span class="term-k">${t("term.window")}</span><span class="term-v">${(spanFrom || "").slice(0, 7)} → ${(spanTo || "").slice(0, 7)}</span></div>
