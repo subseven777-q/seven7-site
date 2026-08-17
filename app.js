@@ -1556,7 +1556,9 @@
     const h = b.headline, tr = b.track_record || {};
     const trades = TRADES[k] || [];
     const kpi = (v, l, c) => `<div class="kpi"><div class="kpi-v ${c || ""}">${v}</div><div class="kpi-l">${l}</div></div>`;
-    const expR = tr.expectancy_r != null ? (tr.expectancy_r > 0 ? "+" : "") + nf(tr.expectancy_r, 2) + "R" : "—";
+    const expPct = tr.expectancy_r != null ? tr.expectancy_r
+      : (tr.total_pnl_pct != null && tr.total_trades) ? tr.total_pnl_pct / tr.total_trades : null;
+    const expR = expPct != null ? (expPct > 0 ? "+" : "") + nf(expPct, 2) + "%" : "—";
     const tkAgg = po3TickerAgg(k);
     const nTk = tkAgg.length;
     const spanFrom = trades.length ? trades.reduce((m, z) => z.in < m ? z.in : m, trades[0].in) : "";
@@ -1576,7 +1578,7 @@
         ${kpi(h.sharpe, "Sharpe")}
         ${kpi(nf(tr.win_rate) + "%", t("stat.win"), "")}
         ${kpi(tr.profit_factor ?? "—", t("stat.pf"))}
-        ${kpi(expR, t("mem.expectancy"), tr.expectancy_r >= 0 ? "pos" : "neg")}
+        ${kpi(expR, t("mem.expectancy"), expPct == null ? "" : expPct >= 0 ? "pos" : "neg")}
         ${kpi(tr.total_trades ?? trades.length, t("stat.trades"))}
         ${kpi("-" + nf(Math.abs(h.max_dd)) + "%", t("m.maxDD"), "neg")}
         ${kpi(fmtPct(h.total_return), t("m.totalRet"), h.total_return >= 0 ? "pos" : "neg")}

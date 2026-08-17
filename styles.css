@@ -502,6 +502,7 @@ h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.02em;font-weight:680}
 .term-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:0 0 auto}
 .term-dot.live{background:var(--pos);box-shadow:0 0 0 0 color-mix(in srgb,var(--pos) 70%,transparent);animation:termpulse 2s infinite}
 @keyframes termpulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--pos) 60%,transparent)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.po3-tabrow{margin-bottom:16px}
 .term-card{margin-top:18px}
 .term-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .term-mode.seg,.term-mode{display:inline-flex}
