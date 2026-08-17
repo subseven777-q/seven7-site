@@ -487,6 +487,42 @@ h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.02em;font-weight:680}
 .blotter-scroll table{margin:0}
 .blotter-scroll thead th{position:sticky;top:0;z-index:2;background:var(--surface);box-shadow:0 1px 0 var(--border)}
 
+/* --- Members terminal --- */
+.term-bar{display:flex;flex-wrap:wrap;align-items:stretch;gap:0;margin-bottom:18px;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 8%,var(--surface)),var(--surface));
+  border:1px solid var(--border);border-radius:12px;overflow:hidden;font-variant-numeric:tabular-nums}
+.term-seg{display:flex;align-items:center;gap:8px;padding:11px 16px;border-right:1px solid var(--border);white-space:nowrap}
+.term-seg:last-child{border-right:0}
+.term-clock{margin-left:auto}
+.term-k{font-size:10px;letter-spacing:.09em;color:var(--muted);font-weight:700}
+.term-v{font-size:14px;font-weight:700}
+.term-v.pos{color:var(--pos)}
+.term-mkt{font-size:16px;font-weight:800;letter-spacing:.03em}
+.term-mktsub{font-size:11px;color:var(--muted);font-weight:600}
+.term-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:0 0 auto}
+.term-dot.live{background:var(--pos);box-shadow:0 0 0 0 color-mix(in srgb,var(--pos) 70%,transparent);animation:termpulse 2s infinite}
+@keyframes termpulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--pos) 60%,transparent)}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.term-card{margin-top:18px}
+.term-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.term-mode.seg,.term-mode{display:inline-flex}
+.term-treemap{display:flex;flex-wrap:wrap;gap:5px;padding:6px 2px 2px}
+.tm-tile{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px;
+  min-width:62px;min-height:58px;padding:8px 6px;border-radius:8px;cursor:pointer;
+  border:1px solid transparent;transition:transform .08s,border-color .08s;color:#0b0f14}
+.tm-tile:hover{transform:translateY(-2px);border-color:var(--fg)}
+.tm-tile.sel{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 55%,transparent)}
+.tm-tk{font-weight:800;font-size:12px;letter-spacing:.02em}
+.tm-v{font-weight:700;font-size:12px;opacity:.9}
+.tm-live{color:#0b7a3b;font-size:9px;vertical-align:middle}
+.term-scroll{max-height:460px;overflow-y:auto}
+.term-scroll table{margin:0}
+.term-scroll thead th{position:sticky;top:0;z-index:2;background:var(--surface);box-shadow:0 1px 0 var(--border)}
+.term-screener .scr-row{cursor:pointer}
+.term-screener .scr-row:hover td{background:color-mix(in srgb,var(--accent) 9%,transparent)}
+.term-screener .scr-row.sel td{background:color-mix(in srgb,var(--accent) 16%,transparent)}
+.term-screener .mkt{font-size:10px;color:var(--muted);font-weight:600}
+@media(max-width:640px){.term-clock{margin-left:0}.term-seg{padding:9px 12px}}
+
 /* --- KMLM hedge card --- */
 .kmlm-card{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 14%,var(--surface)),var(--surface));
   border:1px solid color-mix(in srgb,var(--accent) 40%,var(--border));border-radius:16px;padding:20px 22px;margin-bottom:20px;box-shadow:var(--shadow)}

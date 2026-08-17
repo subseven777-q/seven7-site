@@ -25,11 +25,25 @@
 
   /* Preencha quando o Stripe estiver pronto: links de checkout hospedado.
      Ex.: STRIPE_LINKS.PRO.monthly = "https://buy.stripe.com/xxxx". Vazio => vai ao registro. */
-  const STRIPE_LINKS = {
+  const STRIPE_LINKS = {   // USD (site em EN)
     BEGINNER: { monthly: "https://buy.stripe.com/bJeaEZfcDfWL3Lw3jC8Ra05", annual: "https://buy.stripe.com/4gM3cxe8z5i795Q8DW8Ra02" },
     PRO:      { monthly: "https://buy.stripe.com/14A3cxfcD11R0zk3jC8Ra04", annual: "https://buy.stripe.com/fZu8wR0hJeSH2HsdYg8Ra06" },
     ELITE:    { monthly: "https://buy.stripe.com/eVq6oJaWncKzeqadYg8Ra08", annual: "https://buy.stripe.com/3cIfZjd4v7qf3Lw5rK8Ra07" },
   };
+  const STRIPE_LINKS_BRL = {   // BRL (site em PT)
+    BEGINNER: { monthly: "https://buy.stripe.com/eVqaEZ1lNdODdm6bQ88Ra09", annual: "https://buy.stripe.com/6oU00l6G7bGv5TE9I08Ra0a" },
+    PRO:      { monthly: "https://buy.stripe.com/dRmdRbggHcKz2Hs07q8Ra0c", annual: "https://buy.stripe.com/4gM4gB3tV39Z2Hsf2k8Ra0b" },
+    ELITE:    { monthly: "https://buy.stripe.com/4gM9AVfcDh0Pfue4nG8Ra0e", annual: "https://buy.stripe.com/cNi14pggH39Zdm63jC8Ra0d" },
+  };
+  /* Preços em R$ p/ o site em PT — PREENCHER com os valores dos links BRL (mensal e
+     anual cobrado/ano). Enquanto null, PT continua em US$ (evita mostrar $ e cobrar R$). */
+  const BRL_PRICES = {
+    BEGINNER: { monthly: null, annual: null },
+    PRO:      { monthly: null, annual: null },
+    ELITE:    { monthly: null, annual: null },
+  };
+  const brlOn = () => LANG === "pt" && BRL_PRICES.BEGINNER.monthly != null;
+  const stripeLinks = () => (brlOn() ? STRIPE_LINKS_BRL : STRIPE_LINKS);
   /* Link "no-code" do Portal do Cliente Stripe (Settings -> Billing -> Customer portal).
      Formato https://billing.stripe.com/p/login/... — deixe vazio p/ cair no suporte por e-mail. */
   const STRIPE_PORTAL = "https://billing.stripe.com/p/login/6oU3cxaWndOD95Q4nG8Ra00";
@@ -295,6 +309,21 @@
     "mem.noTradesMonth": { en: "No closed trades this month.", pt: "Nenhum trade fechado neste mês." },
     "mem.monthSummary": { en: "{n} trades · {w} wins ({p}%)", pt: "{n} trades · {w} ganhos ({p}%)" },
     "mem.avgShort": { en: "avg", pt: "méd" },
+    "term.strat": { en: "STRATEGY", pt: "ESTRATÉGIA" },
+    "term.universe": { en: "UNIVERSE", pt: "UNIVERSO" },
+    "term.tickers": { en: "tickers", pt: "ativos" },
+    "term.open": { en: "OPEN", pt: "ABERTAS" },
+    "term.trades": { en: "TRADES", pt: "TRADES" },
+    "term.window": { en: "WINDOW", pt: "PERÍODO" },
+    "term.mapTitle": { en: "Ticker performance map", pt: "Mapa de desempenho por ativo" },
+    "term.mapHint": { en: "Tile size = weight in P&L · click to drill in", pt: "Tamanho do bloco = peso no P&L · clique para detalhar" },
+    "term.byR": { en: "By R", pt: "Por R" },
+    "term.byWin": { en: "By win%", pt: "Por acerto%" },
+    "term.screener": { en: "Ticker screener", pt: "Screener de ativos" },
+    "term.totR": { en: "Total R", pt: "R total" },
+    "term.avgR": { en: "Avg R", pt: "R méd" },
+    "term.best": { en: "Best", pt: "Melhor" },
+    "term.worst": { en: "Worst", pt: "Pior" },
     "mem.window": { en: "Window", pt: "Janela" },
     "mem.hold": { en: "Hold", pt: "Duração" },
     "mem.outcome": { en: "Outcome", pt: "Resultado" },
@@ -795,7 +824,7 @@
   /* ---- pricing (USD, Stripe-ready) ---- */
   let CYCLE = "monthly";
   function subscribe(tier) {
-    const link = STRIPE_LINKS[tier] && STRIPE_LINKS[tier][CYCLE];
+    const link = stripeLinks()[tier] && stripeLinks()[tier][CYCLE];
     if (!USER) { localStorage.setItem("seven7-intent", tier + ":" + CYCLE); location.href = "register.html"; return; }
     if (!link) { location.href = "account.html"; return; }          // checkout ainda não configurado
     const u = new URL(link);
@@ -804,10 +833,15 @@
     location.href = u.toString();
   }
   function renderPricing() {
+    const brl = brlOn();
+    const cur = brl ? "R$" : "$";
     $("#pricingGrid").innerHTML = PLANS.map(p => {
-      const annualMo = Math.round(p.monthly * (1 - p.disc));
-      const price = CYCLE === "annual" ? annualMo : p.monthly;
-      const sub = CYCLE === "annual" ? `<span class="price-strike">$${p.monthly}</span> ${t("price.billed")} $${annualMo * 12}/${t("price.year")}` : t("price.cancel");
+      const bp = brl ? BRL_PRICES[p.tier] : null;
+      const mo = brl ? bp.monthly : p.monthly;
+      const annualBilled = brl ? bp.annual : Math.round(p.monthly * (1 - p.disc)) * 12;
+      const annualMo = Math.round(annualBilled / 12);
+      const price = CYCLE === "annual" ? annualMo : mo;
+      const sub = CYCLE === "annual" ? `<span class="price-strike">${cur}${mo}</span> ${t("price.billed")} ${cur}${annualBilled}/${t("price.year")}` : t("price.cancel");
       const save = CYCLE === "annual" ? `<div class="price-save">−${Math.round(p.disc * 100)}%</div>` : "";
       let featList = p.feats.slice();
       if (p.cycleFeat) featList = [featList[0], ...p.cycleFeat[CYCLE], ...featList.slice(1)];
@@ -815,7 +849,7 @@
       return `<div class="price-card ${p.featured ? "featured" : ""}">
         ${p.badge ? `<div class="price-badge">${p.badge[LANG]}</div>` : ""}${save}
         <div class="price-tier">${p.tier}</div>
-        <div class="price-amt">$${price} <span>${t("price.perMonth")}</span></div>
+        <div class="price-amt">${cur}${price} <span>${t("price.perMonth")}</span></div>
         <div class="price-sub">${sub}</div>
         <ul class="price-feats">${feats}</ul>
         <a class="btn ${p.featured ? "btn-primary" : "btn-ghost"} btn-block" data-tier="${p.tier}" href="#">${p.cta[LANG]}</a>
@@ -1337,6 +1371,9 @@
   /* ---- members area ---- */
   function renderMembers() {
     const gate = $("#memberGate"); if (!gate) return;
+    if (/[?&]preview=1/.test(location.search) && /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
+      USER = USER || { id: "preview" }; PROFILE = PROFILE || { status: "active", plan: "elite" };
+    }
     const content = $("#memberContent");
     const teaser = (msgKey, btnKey, href) =>
       `<section class="section"><div class="div-siglock" style="max-width:640px;margin:0 auto"><p>${t(msgKey)}</p><a class="btn btn-primary" href="${href}">${t(btnKey)}</a></div></section>`;
@@ -1416,6 +1453,7 @@
     </div>`;
   }
   let PO3_CUR = null, PO3_FILTER = "ALL", PO3_SEARCH = "", PO3_SORT = { c: "out", d: -1 }, PO3_MONTH = null;
+  let PO3_TK = null, PO3_TKSORT = { c: "totR", d: -1 }, PO3_TKSEARCH = "", PO3_HEATMODE = "totR";
   const rColor = r => (r == null ? "" : r > 0 ? "pos" : "neg");
   function renderPO3Panel(k) {
     const host = $("#po3Panel"); if (!host) return;
@@ -1426,13 +1464,26 @@
         .catch(() => { TRADES = {}; renderPO3Panel(k); });
       return;
     }
-    if (PO3_CUR !== k) { PO3_MONTH = null; PO3_FILTER = "ALL"; PO3_SEARCH = ""; PO3_SORT = { c: "out", d: -1 }; }
+    if (PO3_CUR !== k) { PO3_MONTH = null; PO3_FILTER = "ALL"; PO3_SEARCH = ""; PO3_SORT = { c: "out", d: -1 }; PO3_TK = null; PO3_TKSEARCH = ""; PO3_TKSORT = { c: "totR", d: -1 }; }
     PO3_CUR = k;
     const h = b.headline, tr = b.track_record || {};
     const trades = TRADES[k] || [];
     const kpi = (v, l, c) => `<div class="kpi"><div class="kpi-v ${c || ""}">${v}</div><div class="kpi-l">${l}</div></div>`;
     const expR = tr.expectancy_r != null ? (tr.expectancy_r > 0 ? "+" : "") + nf(tr.expectancy_r, 2) + "R" : "—";
+    const tkAgg = po3TickerAgg(k);
+    const nTk = tkAgg.length;
+    const spanFrom = trades.length ? trades.reduce((m, z) => z.in < m ? z.in : m, trades[0].in) : "";
+    const spanTo = trades.length ? trades.reduce((m, z) => z.out > m ? z.out : m, trades[0].out) : "";
+    const mktName = k === "US" ? "S&P 100" : "IBrX / Ibovespa";
     host.innerHTML = `
+      <div class="term-bar">
+        <div class="term-seg"><span class="term-dot live"></span><span class="term-mkt">${k}</span><span class="term-mktsub">${mktName}</span></div>
+        <div class="term-seg"><span class="term-k">${t("term.strat")}</span><span class="term-v">Power-of-Three</span></div>
+        <div class="term-seg"><span class="term-k">${t("term.universe")}</span><span class="term-v">${nTk} ${t("term.tickers")}</span></div>
+        <div class="term-seg"><span class="term-k">${t("term.trades")}</span><span class="term-v">${trades.length}</span></div>
+        <div class="term-seg"><span class="term-k">${t("term.window")}</span><span class="term-v">${(spanFrom || "").slice(0, 7)} → ${(spanTo || "").slice(0, 7)}</span></div>
+        <div class="term-seg term-clock"><span class="term-dot live"></span><span class="term-v" id="po3Clock">${nowClock()}</span></div>
+      </div>
       <div class="desk-kpis">
         ${kpi(fmtPct(h.cagr), "CAGR", h.cagr >= 0 ? "pos" : "neg")}
         ${kpi(h.sharpe, "Sharpe")}
@@ -1453,6 +1504,24 @@
           <div class="chart-body" id="po3Dd"></div></div>
       </div>
       <div id="po3Drill"></div>
+      <div class="chart-card term-card">
+        <div class="chart-head term-head">
+          <div><div class="chart-title">${t("term.mapTitle")}</div><div class="chart-sub">${t("term.mapHint")}</div></div>
+          <div class="seg term-mode" id="po3HeatMode">
+            <button data-m="totR" class="${PO3_HEATMODE === "totR" ? "on" : ""}">${t("term.byR")}</button>
+            <button data-m="win" class="${PO3_HEATMODE === "win" ? "on" : ""}">${t("term.byWin")}</button>
+          </div>
+        </div>
+        <div class="term-treemap" id="po3TkHeat"></div>
+      </div>
+      <div class="chart-card term-card">
+        <div class="chart-head term-head">
+          <div class="chart-title">${t("term.screener")} <span class="blotter-count" id="po3ScrCount"></span></div>
+          <input id="po3TkSearch" class="blotter-search" placeholder="${t("mem.searchTk")}" value="${PO3_TKSEARCH}">
+        </div>
+        <div class="table-wrap term-scroll"><table class="sig-table term-screener" id="po3Screener"></table></div>
+      </div>
+      <div id="po3TkDrill"></div>
       <div class="desk-2col">
         <div class="chart-card"><div class="chart-head"><div class="chart-title">🟢 ${t("mem.leadersWin")}</div></div><div id="po3LeadWin" class="lead-list"></div></div>
         <div class="chart-card"><div class="chart-head"><div class="chart-title">🔴 ${t("mem.leadersLose")}</div></div><div id="po3LeadLose" class="lead-list"></div></div>
@@ -1497,6 +1566,112 @@
     const srch = $("#po3Search");
     if (srch) srch.oninput = () => { PO3_SEARCH = srch.value; paintBlotter(k); };
     paintBlotter(k);
+    drawTickerHeat(k, tkAgg);
+    paintScreener(k, tkAgg);
+    renderTickerDrill(k);
+    const hm = $("#po3HeatMode");
+    if (hm) hm.querySelectorAll("button").forEach(bt => bt.onclick = () => {
+      PO3_HEATMODE = bt.dataset.m;
+      hm.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === bt));
+      drawTickerHeat(k, po3TickerAgg(k));
+    });
+    const ts = $("#po3TkSearch");
+    if (ts) ts.oninput = () => { PO3_TKSEARCH = ts.value; paintScreener(k, po3TickerAgg(k)); };
+    if (PO3_CLOCK) clearInterval(PO3_CLOCK);
+    PO3_CLOCK = setInterval(() => { const c = $("#po3Clock"); if (c) c.textContent = nowClock(); else clearInterval(PO3_CLOCK); }, 1000);
+  }
+  let PO3_CLOCK = null;
+  function nowClock() {
+    const d = new Date();
+    const p = n => String(n).padStart(2, "0");
+    return p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
+  }
+  function po3TickerAgg(k) {
+    const trades = (TRADES && TRADES[k]) || [];
+    const agg = {};
+    trades.forEach(z => {
+      const a = agg[z.tk] || (agg[z.tk] = { tk: z.tk, mkt: z.mkt, n: 0, wins: 0, totR: 0, best: -Infinity, worst: Infinity, lastOut: "", lastRes: "" });
+      a.n++; if (z.r > 0) a.wins++; a.totR += z.r;
+      a.best = Math.max(a.best, z.r); a.worst = Math.min(a.worst, z.r);
+      if (z.out > a.lastOut) { a.lastOut = z.out; a.lastRes = z.res; }
+    });
+    return Object.values(agg).map(a => ({
+      ...a, win: a.n ? a.wins / a.n * 100 : 0, avgR: a.n ? a.totR / a.n : 0,
+      open: a.lastRes === "OPEN" || a.lastRes === "ACTIVE",
+    }));
+  }
+  function drawTickerHeat(k, agg) {
+    const host = $("#po3TkHeat"); if (!host) return;
+    const mode = PO3_HEATMODE;
+    const arr = agg.slice().sort((a, b) => Math.abs(b.totR) - Math.abs(a.totR));
+    if (!arr.length) { host.innerHTML = `<p class="muted-note">—</p>`; return; }
+    const maxAbs = Math.max(1, ...arr.map(a => Math.abs(a.totR)));
+    host.innerHTML = arr.map(a => {
+      const v = mode === "win" ? a.win : a.totR;
+      const pos = mode === "win" ? v >= 50 : v >= 0;
+      const mag = mode === "win"
+        ? Math.min(1, Math.abs(v - 50) / 50) * 74 + 10
+        : Math.min(1, Math.abs(a.totR) / maxAbs) * 74 + 10;
+      const base = pos ? "var(--heat-pos)" : "var(--heat-neg)";
+      const flex = (2 + Math.abs(a.totR) / maxAbs * 6).toFixed(2);
+      const label = mode === "win" ? nf(a.win, 0) + "%" : (a.totR > 0 ? "+" : "") + nf(a.totR, 1) + "R";
+      return `<div class="tm-tile ${PO3_TK === a.tk ? "sel" : ""}" data-tk="${a.tk}" style="flex:${flex} 1 62px;background:color-mix(in srgb, ${base} ${mag.toFixed(0)}%, var(--heat-mid))" title="${a.tk} · ${a.n} ${t("stat.trades")} · ${nf(a.win, 0)}% · ${(a.totR > 0 ? "+" : "") + nf(a.totR, 1)}R">
+        <span class="tm-tk">${a.tk}${a.open ? ' <span class="tm-live">●</span>' : ""}</span><span class="tm-v">${label}</span></div>`;
+    }).join("");
+    host.querySelectorAll(".tm-tile").forEach(el => el.onclick = () => {
+      PO3_TK = (PO3_TK === el.dataset.tk ? null : el.dataset.tk);
+      drawTickerHeat(k, agg); paintScreener(k, agg); renderTickerDrill(k);
+    });
+  }
+  function paintScreener(k, agg) {
+    const host = $("#po3Screener"); if (!host) return;
+    let rows = agg.slice();
+    const q = PO3_TKSEARCH.trim().toUpperCase();
+    if (q) rows = rows.filter(a => a.tk.toUpperCase().includes(q));
+    const c = PO3_TKSORT.c, dir = PO3_TKSORT.d;
+    rows.sort((a, b) => { const x = a[c], y = b[c]; return (x < y ? -1 : x > y ? 1 : 0) * dir; });
+    const cnt = $("#po3ScrCount"); if (cnt) cnt.textContent = interp(t("mem.showing"), { n: rows.length, total: agg.length });
+    const th = (c2, lbl, num) => `<th class="${num ? "num" : ""} th-sort ${PO3_TKSORT.c === c2 ? "on" : ""}" data-c="${c2}">${lbl}${PO3_TKSORT.c === c2 ? (PO3_TKSORT.d < 0 ? " ↓" : " ↑") : ""}</th>`;
+    const head = `<thead><tr>${th("tk", t("sig.ticker"))}${th("n", t("stat.trades"), 1)}${th("win", t("stat.win"), 1)}${th("totR", t("term.totR"), 1)}${th("avgR", t("term.avgR"), 1)}${th("best", t("term.best"), 1)}${th("worst", t("term.worst"), 1)}${th("lastOut", t("mem.exit"), 1)}</tr></thead>`;
+    const body = rows.map(a => `<tr class="scr-row ${PO3_TK === a.tk ? "sel" : ""}" data-tk="${a.tk}">
+      <td class="tk-cell">${a.tk}${a.open ? ' <span class="tm-live">●</span>' : ""} <span class="mkt">${a.mkt}</span></td>
+      <td class="num">${a.n}</td>
+      <td class="num ${a.win >= 50 ? "pos" : "neg"}">${nf(a.win, 0)}%</td>
+      <td class="num ${rColor(a.totR)}">${a.totR > 0 ? "+" : ""}${nf(a.totR, 1)}R</td>
+      <td class="num ${rColor(a.avgR)}">${a.avgR > 0 ? "+" : ""}${nf(a.avgR, 2)}R</td>
+      <td class="num pos">+${nf(a.best, 1)}R</td>
+      <td class="num neg">${nf(a.worst, 1)}R</td>
+      <td class="num muted-note">${(a.lastOut || "").slice(0, 7)}</td></tr>`).join("");
+    host.innerHTML = head + `<tbody>${body}</tbody>`;
+    host.querySelectorAll(".th-sort").forEach(el => el.onclick = () => {
+      const cc = el.dataset.c;
+      if (PO3_TKSORT.c === cc) PO3_TKSORT.d *= -1; else PO3_TKSORT = { c: cc, d: cc === "tk" ? 1 : -1 };
+      paintScreener(k, agg);
+    });
+    host.querySelectorAll(".scr-row").forEach(el => el.onclick = () => {
+      PO3_TK = (PO3_TK === el.dataset.tk ? null : el.dataset.tk);
+      drawTickerHeat(k, agg); paintScreener(k, agg); renderTickerDrill(k);
+    });
+  }
+  function renderTickerDrill(k) {
+    const host = $("#po3TkDrill"); if (!host) return;
+    if (!PO3_TK) { host.innerHTML = ""; return; }
+    const rows = ((TRADES && TRADES[k]) || []).filter(z => z.tk === PO3_TK).sort((a, b) => (a.out < b.out ? 1 : -1));
+    if (!rows.length) { host.innerHTML = ""; return; }
+    const n = rows.length, wins = rows.filter(z => z.r > 0).length;
+    const totR = rows.reduce((s, z) => s + z.r, 0), avgR = totR / n;
+    const body = rows.map(z => `<tr>
+        <td class="num muted-note">${z.in} → ${z.out}</td>
+        <td class="num">${z.bars}d</td>
+        <td class="num ${rColor(z.r)}">${z.r > 0 ? "+" : ""}${nf(z.r, 2)}R</td>
+        <td class="num ${rColor(z.ret)}">${z.ret == null ? "—" : (z.ret > 0 ? "+" : "") + nf(z.ret, 1) + "%"}</td>
+        <td><span class="tr-badge ${z.r > 0 ? "win" : "loss"}">${z.res}</span></td></tr>`).join("");
+    host.innerHTML = `<div class="drill-card">
+      <div class="drill-head"><div><b>${PO3_TK}</b> <span class="mkt">${rows[0].mkt}</span> — ${interp(t("mem.monthSummary"), { n, w: wins, p: Math.round(wins / n * 100) })} · <span class="${rColor(totR)}">${totR > 0 ? "+" : ""}${nf(totR, 1)}R</span> · <span class="${rColor(avgR)}">${avgR > 0 ? "+" : ""}${nf(avgR, 2)}R ${t("mem.avgShort")}</span></div>
+        <button class="drill-close" id="tkDrillClose">✕</button></div>
+      <div class="table-wrap blotter-scroll"><table class="sig-table"><thead><tr><th class="num">${t("mem.window")}</th><th class="num">${t("mem.hold")}</th><th class="num">R</th><th class="num">${t("m.totalRet")}</th><th>${t("mem.outcome")}</th></tr></thead><tbody>${body}</tbody></table></div></div>`;
+    const cl = $("#tkDrillClose"); if (cl) cl.onclick = () => { PO3_TK = null; renderTickerDrill(k); drawTickerHeat(k, po3TickerAgg(k)); paintScreener(k, po3TickerAgg(k)); };
+    host.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
   function memberHeatmap(host, mr, selYm, onClick) {
     host.innerHTML = ""; if (!mr || !mr.years) return;
