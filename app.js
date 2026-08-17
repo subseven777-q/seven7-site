@@ -11,7 +11,7 @@
   // Supabase (chaves PÚBLICAS — seguras no cliente; a segurança vem das regras RLS)
   const SUPABASE_URL = "https://ehqxuveyprrmjfcqmkhs.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocXh1dmV5cHJybWpmY3Fta2hzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1ODcwNDgsImV4cCI6MjEwMTE2MzA0OH0.KB2mXvqiFgc7SgKDLQU4uvplC-UGcFgE9SaauCQDAhU";
-  let sb = null, USER = null, PROFILE = null;
+  let sb = null, USER = null, PROFILE = null, PREVIEW = false;
   const isMember = () => PROFILE && PROFILE.status === "active";
 
   let LANG = localStorage.getItem("seven7-lang") || "en";
@@ -324,6 +324,13 @@
     "term.avgR": { en: "Avg R", pt: "R méd" },
     "term.best": { en: "Best", pt: "Melhor" },
     "term.worst": { en: "Worst", pt: "Pior" },
+    "divterm.stratName": { en: "Dividends · DRIP", pt: "Dividendos · DRIP" },
+    "divterm.holdings": { en: "holdings", pt: "ativos" },
+    "divterm.mapTitle": { en: "Holdings yield map", pt: "Mapa de yield dos ativos" },
+    "divterm.mapHint": { en: "Tile size = yield · green = in buy zone now · click to open chart", pt: "Tamanho do bloco = yield · verde = em zona de compra · clique p/ abrir o gráfico" },
+    "divterm.byYoc": { en: "By yield-on-cost", pt: "Por yield-on-cost" },
+    "divterm.byYld": { en: "By current yield", pt: "Por yield atual" },
+    "divterm.benchTitle": { en: "You vs benchmarks", pt: "Você vs benchmarks" },
     "mem.window": { en: "Window", pt: "Janela" },
     "mem.hold": { en: "Hold", pt: "Duração" },
     "mem.outcome": { en: "Outcome", pt: "Resultado" },
@@ -1253,7 +1260,7 @@
   }
 
   /* ================= SVG CHARTS ================= */
-  let DIV_MKT = null;
+  let DIV_MKT = null, DIV_HEATMODE = "yoc", DIV_SIGSORT = { c: "state", d: 1 }, DIV_ROWS = null;
   function renderDividends() {
     const host = $("#divTiles"); if (!host) return;
     if (!DIVDATA) {
@@ -1280,6 +1287,22 @@
     const h = M.headline || {}, cur = M.currency || "$";
     const money0 = v => cur + " " + Number(v || 0).toLocaleString(locale(), { maximumFractionDigits: 0 });
     const tier = $("#divTier"); if (tier) tier.textContent = t("div.tier." + M.min_tier);
+
+    const bar = $("#divTermBar");
+    if (bar) {
+      const years = Object.keys(M.salary_by_year || {}).sort();
+      const winFrom = years[0] || "", winTo = years[years.length - 1] || "";
+      const mktName = DIV_MKT === "BR" ? "Ibovespa · B3" : "S&P 500 · income";
+      bar.innerHTML = `<div class="term-bar">
+        <div class="term-seg"><span class="term-dot live"></span><span class="term-mkt">${DIV_MKT}</span><span class="term-mktsub">${mktName}</span></div>
+        <div class="term-seg"><span class="term-k">${t("term.strat")}</span><span class="term-v">${t("divterm.stratName")}</span></div>
+        <div class="term-seg"><span class="term-k">${t("term.universe")}</span><span class="term-v">${M.core_count != null ? M.core_count : "—"} ${t("divterm.holdings")}</span></div>
+        <div class="term-seg"><span class="term-k">${t("div.tile.yoc")}</span><span class="term-v pos">${nf(h.yield_on_cost_pct, 1)}%</span></div>
+        <div class="term-seg"><span class="term-k">${t("term.window")}</span><span class="term-v">${winFrom} → ${winTo}</span></div>
+        <div class="term-seg term-clock"><span class="term-dot live"></span><span class="term-v term-clock-v">${nowClock()}</span></div>
+      </div>`;
+      ensureClocks();
+    }
 
     const tiles = [
       { v: nf(h.yield_on_cost_pct, 1) + "%", l: t("div.tile.yoc"), d: t("div.tile.yocD"), c: "pos" },
@@ -1335,29 +1358,86 @@
     const host = $("#divSignals"); if (!host) return;
     const teaser = (msgKey, btnKey, href) =>
       `<div class="div-siglock"><p>${t(msgKey)}</p><a class="btn btn-primary" href="${href}">${t(btnKey)}</a></div>`;
-    if (!sb || !USER) { host.innerHTML = teaser("div.sig.loginTeaser", "div.sig.login", "login.html"); return; }
-    if (!isMember()) { host.innerHTML = teaser("div.sig.upgradeTeaser", "div.sig.upgrade", "plans.html"); return; }
-    host.innerHTML = `<p class="muted-note">${t("div.sig.loading")}</p>`;
-    const { data, error } = await sb.from("dividend_signals").select("*");
+    if ((!sb || !USER) && !PREVIEW) { host.innerHTML = teaser("div.sig.loginTeaser", "div.sig.login", "login.html"); return; }
+    if (!isMember() && !PREVIEW) { host.innerHTML = teaser("div.sig.upgradeTeaser", "div.sig.upgrade", "plans.html"); return; }
+    let data, error;
+    const realAuth = sb && USER && USER.id !== "preview";
+    if (realAuth) {
+      host.innerHTML = `<p class="muted-note">${t("div.sig.loading")}</p>`;
+      ({ data, error } = await sb.from("dividend_signals").select("*"));
+    } else if (PREVIEW) { data = previewDivRows(); }
     if (error) { host.innerHTML = `<p class="muted-note">${t("sig.err")}</p>`; return; }
     let rows = (data || []).filter(r => !DIV_MKT || r.market === DIV_MKT);
     if (!rows.length) {
+      DIV_ROWS = []; const hh = $("#divHeat"); if (hh) hh.innerHTML = `<p class="muted-note">—</p>`;
       const plan = (PROFILE && PROFILE.plan) || "";
       if (DIV_MKT === "US" && plan === "beginner") { host.innerHTML = teaser("div.sig.proTeaser", "div.sig.upgrade", "plans.html"); return; }
       host.innerHTML = `<p class="muted-note">${t("div.sig.none")}</p>`; return;
     }
-    rows.sort((a, b) => (a.state !== "ACTIVE") - (b.state !== "ACTIVE") || (b.yield_on_cost_pct || 0) - (a.yield_on_cost_pct || 0));
+    DIV_ROWS = rows;
+    drawDivHeat();
+    paintDivSignals();
+    const hm = $("#divHeatMode");
+    if (hm) hm.querySelectorAll("button").forEach(bt => bt.onclick = () => {
+      DIV_HEATMODE = bt.dataset.m;
+      hm.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === bt));
+      drawDivHeat();
+    });
+  }
+  function previewDivRows() {
+    // localhost preview only — synthetic holdings so the terminal renders without Supabase
+    const mk = (ticker, market, tv, state, price, tyld, yoc) =>
+      ({ ticker, market, tv_symbol: tv, state, price, trailing_yield_pct: tyld, yield_on_cost_pct: yoc });
+    return [
+      mk("JNJ", "US", "JNJ", "MONITORING", 162.4, 3.1, 4.8), mk("PG", "US", "PG", "MONITORING", 168.9, 2.5, 5.2),
+      mk("KO", "US", "KO", "ACTIVE", 61.2, 3.0, 6.1), mk("PEP", "US", "PEP", "ACTIVE", 148.3, 3.6, 7.0),
+      mk("ABBV", "US", "ABBV", "MONITORING", 191.7, 3.3, 9.4), mk("VZ", "US", "VZ", "ACTIVE", 41.8, 6.5, 8.2),
+      mk("MO", "US", "MO", "ACTIVE", 51.6, 7.8, 11.3), mk("XOM", "US", "XOM", "MONITORING", 118.2, 3.2, 6.6),
+      mk("TAEE11", "BR", "BMFBOVESPA:TAEE11", "ACTIVE", 34.1, 8.9, 13.7), mk("BBSE3", "BR", "BMFBOVESPA:BBSE3", "ACTIVE", 38.4, 8.1, 12.4),
+      mk("ITSA4", "BR", "BMFBOVESPA:ITSA4", "MONITORING", 10.9, 6.2, 9.8), mk("EGIE3", "BR", "BMFBOVESPA:EGIE3", "MONITORING", 41.7, 6.9, 10.5),
+      mk("CPLE6", "BR", "BMFBOVESPA:CPLE6", "ACTIVE", 9.8, 7.4, 11.0), mk("VIVT3", "BR", "BMFBOVESPA:VIVT3", "MONITORING", 52.3, 5.4, 8.1),
+    ];
+  }
+  function drawDivHeat() {
+    const host = $("#divHeat"); if (!host) return;
+    const rows = (DIV_ROWS || []).slice();
+    if (!rows.length) { host.innerHTML = `<p class="muted-note">—</p>`; return; }
+    const mode = DIV_HEATMODE;
+    const val = r => mode === "yld" ? (r.trailing_yield_pct || 0) : (r.yield_on_cost_pct || 0);
+    rows.sort((a, b) => val(b) - val(a));
+    const maxV = Math.max(1, ...rows.map(val));
+    host.innerHTML = rows.map(r => {
+      const v = val(r), active = r.state === "ACTIVE";
+      const mag = Math.min(1, v / maxV) * 70 + 14;
+      const base = active ? "var(--heat-pos)" : "var(--accent)";
+      const flex = (2 + v / maxV * 6).toFixed(2);
+      return `<div class="tm-tile ${active ? "dz" : ""}" data-tv="${encodeURIComponent(r.tv_symbol || r.ticker)}" style="flex:${flex} 1 62px;background:color-mix(in srgb, ${base} ${mag.toFixed(0)}%, var(--heat-mid))" title="${r.ticker} · ${active ? t("div.sig.buyzone") : t("div.sig.watch")} · YoC ${nf(r.yield_on_cost_pct, 1)}% · ${t("div.sig.hYield")} ${nf(r.trailing_yield_pct, 1)}%">
+        <span class="tm-tk">${r.ticker}${active ? ' <span class="tm-live">●</span>' : ""}</span><span class="tm-v">${nf(v, 1)}%</span></div>`;
+    }).join("");
+    host.querySelectorAll(".tm-tile").forEach(el => el.onclick = () =>
+      window.open("https://www.tradingview.com/chart/?symbol=" + el.dataset.tv, "_blank", "noopener"));
+  }
+  function paintDivSignals() {
+    const host = $("#divSignals"); if (!host) return;
+    const rows = (DIV_ROWS || []).slice();
+    if (!rows.length) return;
     const nA = rows.filter(r => r.state === "ACTIVE").length, nM = rows.length - nA;
+    const c = DIV_SIGSORT.c, dir = DIV_SIGSORT.d;
+    const key = r => c === "state" ? (r.state === "ACTIVE" ? 0 : 1)
+      : c === "ticker" ? r.ticker
+      : (r[c] == null ? -Infinity : r[c]);
+    rows.sort((a, b) => { const x = key(a), y = key(b); return (x < y ? -1 : x > y ? 1 : 0) * dir; });
     const stBadge = s => s === "ACTIVE"
       ? `<span class="dsig-badge buy">● ${t("div.sig.buyzone")}</span>`
       : `<span class="dsig-badge watch">${t("div.sig.watch")}</span>`;
     const fmtP = v => v == null ? "—" : (DIV_MKT === "BR" ? "R$ " : "$") + nf(v, 2);
+    const th = (c2, lbl, num) => `<th class="${num ? "num" : ""} th-sort ${DIV_SIGSORT.c === c2 ? "on" : ""}" data-c="${c2}">${lbl}${DIV_SIGSORT.c === c2 ? (DIV_SIGSORT.d < 0 ? " ↓" : " ↑") : ""}</th>`;
     host.innerHTML =
       `<div class="dsig-count">${interp(t("div.sig.count"), { a: nA, m: nM })}</div>` +
-      `<div class="sig-tablewrap"><table class="sig-table dsig-table"><thead><tr>` +
-      `<th>${t("div.sig.hTicker")}</th><th>${t("div.sig.hState")}</th>` +
-      `<th class="num">${t("div.sig.hPrice")}</th><th class="num">${t("div.sig.hYield")}</th>` +
-      `<th class="num">${t("div.sig.hYoc")}</th><th></th></tr></thead><tbody>` +
+      `<div class="table-wrap term-scroll"><table class="sig-table dsig-table term-screener"><thead><tr>` +
+      th("ticker", t("div.sig.hTicker")) + th("state", t("div.sig.hState")) +
+      th("price", t("div.sig.hPrice"), 1) + th("trailing_yield_pct", t("div.sig.hYield"), 1) +
+      th("yield_on_cost_pct", t("div.sig.hYoc"), 1) + `<th></th></tr></thead><tbody>` +
       rows.map(r => `<tr class="${r.state === "ACTIVE" ? "dsig-on" : ""}">` +
         `<td class="tk-cell">${r.ticker} <span class="mkt">${r.market}</span></td>` +
         `<td>${stBadge(r.state)}</td>` +
@@ -1367,11 +1447,17 @@
         `<td><a class="dsig-tv" href="https://www.tradingview.com/chart/?symbol=${encodeURIComponent(r.tv_symbol || r.ticker)}" target="_blank" rel="noopener">${t("div.sig.tv")}</a></td>` +
         `</tr>`).join("") +
       `</tbody></table></div>`;
+    host.querySelectorAll(".th-sort").forEach(el => el.onclick = () => {
+      const cc = el.dataset.c;
+      if (DIV_SIGSORT.c === cc) DIV_SIGSORT.d *= -1; else DIV_SIGSORT = { c: cc, d: (cc === "ticker" || cc === "state") ? 1 : -1 };
+      paintDivSignals();
+    });
   }
   /* ---- members area ---- */
   function renderMembers() {
     const gate = $("#memberGate"); if (!gate) return;
     if (/[?&]preview=1/.test(location.search) && /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
+      PREVIEW = true;
       USER = USER || { id: "preview" }; PROFILE = PROFILE || { status: "active", plan: "elite" };
     }
     const content = $("#memberContent");
@@ -1482,7 +1568,7 @@
         <div class="term-seg"><span class="term-k">${t("term.universe")}</span><span class="term-v">${nTk} ${t("term.tickers")}</span></div>
         <div class="term-seg"><span class="term-k">${t("term.trades")}</span><span class="term-v">${trades.length}</span></div>
         <div class="term-seg"><span class="term-k">${t("term.window")}</span><span class="term-v">${(spanFrom || "").slice(0, 7)} → ${(spanTo || "").slice(0, 7)}</span></div>
-        <div class="term-seg term-clock"><span class="term-dot live"></span><span class="term-v" id="po3Clock">${nowClock()}</span></div>
+        <div class="term-seg term-clock"><span class="term-dot live"></span><span class="term-v term-clock-v">${nowClock()}</span></div>
       </div>
       <div class="desk-kpis">
         ${kpi(fmtPct(h.cagr), "CAGR", h.cagr >= 0 ? "pos" : "neg")}
@@ -1577,14 +1663,22 @@
     });
     const ts = $("#po3TkSearch");
     if (ts) ts.oninput = () => { PO3_TKSEARCH = ts.value; paintScreener(k, po3TickerAgg(k)); };
-    if (PO3_CLOCK) clearInterval(PO3_CLOCK);
-    PO3_CLOCK = setInterval(() => { const c = $("#po3Clock"); if (c) c.textContent = nowClock(); else clearInterval(PO3_CLOCK); }, 1000);
+    ensureClocks();
   }
-  let PO3_CLOCK = null;
+  let CLOCK_TIMER = null;
   function nowClock() {
     const d = new Date();
     const p = n => String(n).padStart(2, "0");
     return p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
+  }
+  function ensureClocks() {
+    const tick = () => {
+      const els = document.querySelectorAll(".term-clock-v");
+      if (!els.length) { if (CLOCK_TIMER) { clearInterval(CLOCK_TIMER); CLOCK_TIMER = null; } return; }
+      const s = nowClock(); els.forEach(e => e.textContent = s);
+    };
+    tick();
+    if (!CLOCK_TIMER) CLOCK_TIMER = setInterval(tick, 1000);
   }
   function po3TickerAgg(k) {
     const trades = (TRADES && TRADES[k]) || [];

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Members — Seven7</title>
-<link rel="stylesheet" href="styles.css?v=31">
+<link rel="stylesheet" href="styles.css?v=32">
 </head>
 <body data-page="members">
 <div id="nav-root"></div>
@@ -54,16 +54,30 @@
       <p class="sub" data-i18n="mem.p2sub"></p>
     </div>
     <div class="div-markethead"><div class="book-tabs" id="divMarketTabs"></div><span class="div-tier" id="divTier"></span></div>
+    <div id="divTermBar"></div>
     <div class="quant-grid" id="divTiles"></div>
-    <div class="chart-card">
-      <div class="chart-head"><div class="chart-title" data-i18n="div.salaryTitle"></div></div>
-      <div class="chart-body" id="divSalary"></div>
+    <div class="chart-card term-card">
+      <div class="chart-head term-head">
+        <div><div class="chart-title" data-i18n="divterm.mapTitle"></div><div class="chart-sub" data-i18n="divterm.mapHint"></div></div>
+        <div class="seg term-mode" id="divHeatMode">
+          <button data-m="yoc" class="on" data-i18n="divterm.byYoc"></button>
+          <button data-m="yld" data-i18n="divterm.byYld"></button>
+        </div>
+      </div>
+      <div class="term-treemap" id="divHeat"></div>
     </div>
-    <div id="divBench"></div>
-    <div class="mem-subhead" data-i18n="div.coreH"></div>
-    <div id="divCore"></div>
     <div class="mem-subhead" data-i18n="div.sigH"></div>
     <div id="divSignals"></div>
+    <div class="desk-2col">
+      <div class="chart-card">
+        <div class="chart-head"><div class="chart-title" data-i18n="div.salaryTitle"></div></div>
+        <div class="chart-body" id="divSalary"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-head"><div class="chart-title" data-i18n="divterm.benchTitle"></div></div>
+        <div id="divBench" style="padding:12px 6px"></div>
+      </div>
+    </div>
   </section>
 
   <section class="section">
@@ -79,6 +93,6 @@
 
 <div id="footer-root"></div>
 <div class="tooltip" id="tooltip" hidden></div>
-<script src="app.js?v=31"></script>
+<script src="app.js?v=32"></script>
 </body>
 </html>

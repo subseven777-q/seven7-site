@@ -511,6 +511,7 @@ h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.02em;font-weight:680}
   border:1px solid transparent;transition:transform .08s,border-color .08s;color:#0b0f14}
 .tm-tile:hover{transform:translateY(-2px);border-color:var(--fg)}
 .tm-tile.sel{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 55%,transparent)}
+.tm-tile.dz{border-color:color-mix(in srgb,var(--pos) 70%,transparent)}
 .tm-tk{font-weight:800;font-size:12px;letter-spacing:.02em}
 .tm-v{font-weight:700;font-size:12px;opacity:.9}
 .tm-live{color:#0b7a3b;font-size:9px;vertical-align:middle}
