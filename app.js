@@ -38,9 +38,9 @@
   /* Preços em R$ p/ o site em PT — PREENCHER com os valores dos links BRL (mensal e
      anual cobrado/ano). Enquanto null, PT continua em US$ (evita mostrar $ e cobrar R$). */
   const BRL_PRICES = {
-    BEGINNER: { monthly: null, annual: null },
-    PRO:      { monthly: null, annual: null },
-    ELITE:    { monthly: null, annual: null },
+    BEGINNER: { monthly: 45, annual: 450 },
+    PRO:      { monthly: 150, annual: 1300 },
+    ELITE:    { monthly: 400, annual: 3500 },
   };
   const brlOn = () => LANG === "pt" && BRL_PRICES.BEGINNER.monthly != null;
   const stripeLinks = () => (brlOn() ? STRIPE_LINKS_BRL : STRIPE_LINKS);
@@ -848,8 +848,9 @@
       const annualBilled = brl ? bp.annual : Math.round(p.monthly * (1 - p.disc)) * 12;
       const annualMo = Math.round(annualBilled / 12);
       const price = CYCLE === "annual" ? annualMo : mo;
-      const sub = CYCLE === "annual" ? `<span class="price-strike">${cur}${mo}</span> ${t("price.billed")} ${cur}${annualBilled}/${t("price.year")}` : t("price.cancel");
-      const save = CYCLE === "annual" ? `<div class="price-save">−${Math.round(p.disc * 100)}%</div>` : "";
+      const discPct = mo > 0 ? Math.round((1 - annualBilled / (mo * 12)) * 100) : 0;
+      const sub = CYCLE === "annual" ? `<span class="price-strike">${cur}${mo}</span> ${t("price.billed")} ${cur}${annualBilled.toLocaleString(locale())}/${t("price.year")}` : t("price.cancel");
+      const save = CYCLE === "annual" ? `<div class="price-save">−${discPct}%</div>` : "";
       let featList = p.feats.slice();
       if (p.cycleFeat) featList = [featList[0], ...p.cycleFeat[CYCLE], ...featList.slice(1)];
       const feats = featList.map(f => `<li class="${f[0] ? "" : "off"} ${f[2] || ""}">${f[1][LANG]}</li>`).join("");
