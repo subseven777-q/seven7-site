@@ -1252,6 +1252,7 @@
         </tr></thead><tbody>${rows}</tbody></table></div>`;
     }
     host.innerHTML = html;
+    cardify(host.querySelector(".blotter-scroll table"));
 
     const seg = $("#pfStratSeg");
     if (seg) seg.querySelectorAll("button").forEach(b => b.onclick = () => { PF_STRAT = b.dataset.s; renderPortfolio(); });
@@ -1535,6 +1536,7 @@
         `<a class="dsig-tv" href="https://www.tradingview.com/chart/?symbol=${encodeURIComponent(r.tv_symbol || r.ticker)}" target="_blank" rel="noopener">${t("div.sig.tv")}</a></td>` +
         `</tr>`).join("") +
       `</tbody></table></div>`;
+    cardify(host.querySelector("table"));
     host.querySelectorAll(".pf-addbtn").forEach(b => b.onclick = () => addDivPosition(b));
     host.querySelectorAll(".th-sort").forEach(el => el.onclick = () => {
       const cc = el.dataset.c;
@@ -1851,6 +1853,16 @@
       drawTickerHeat(k, agg); paintScreener(k, agg); renderTickerDrill(k);
     });
   }
+  function cardify(table) {   // no celular: tabela vira cartões (usa o thead como rótulo de cada célula)
+    if (!table) return;
+    const heads = [...table.querySelectorAll("thead th")].map(th => th.textContent.replace(/[↑↓]/g, "").trim());
+    table.classList.add("cardable");
+    table.querySelectorAll("tbody tr").forEach(tr => {
+      const tds = [...tr.children];
+      if (tds.length === 1 && tds[0].hasAttribute("colspan")) return;
+      tds.forEach((td, i) => { if (heads[i] != null) td.setAttribute("data-label", heads[i]); });
+    });
+  }
   function paintScreener(k, agg) {
     const host = $("#po3Screener"); if (!host) return;
     let rows = agg.slice();
@@ -1871,6 +1883,7 @@
       <td class="num neg">${nf(a.worst, 1)}R</td>
       <td class="num muted-note">${(a.lastOut || "").slice(0, 7)}</td></tr>`).join("");
     host.innerHTML = head + `<tbody>${body}</tbody>`;
+    cardify(host);
     host.querySelectorAll(".th-sort").forEach(el => el.onclick = () => {
       const cc = el.dataset.c;
       if (PO3_TKSORT.c === cc) PO3_TKSORT.d *= -1; else PO3_TKSORT = { c: cc, d: cc === "tk" ? 1 : -1 };
@@ -1898,6 +1911,7 @@
       <div class="drill-head"><div><b>${PO3_TK}</b> <span class="mkt">${rows[0].mkt}</span> — ${interp(t("mem.monthSummary"), { n, w: wins, p: Math.round(wins / n * 100) })} · <span class="${rColor(totR)}">${totR > 0 ? "+" : ""}${nf(totR, 1)}R</span> · <span class="${rColor(avgR)}">${avgR > 0 ? "+" : ""}${nf(avgR, 2)}R ${t("mem.avgShort")}</span></div>
         <button class="drill-close" id="tkDrillClose">✕</button></div>
       <div class="table-wrap blotter-scroll"><table class="sig-table"><thead><tr><th class="num">${t("mem.window")}</th><th class="num">${t("mem.hold")}</th><th class="num">R</th><th class="num">${t("m.totalRet")}</th><th>${t("mem.outcome")}</th></tr></thead><tbody>${body}</tbody></table></div></div>`;
+    cardify(host.querySelector("table"));
     const cl = $("#tkDrillClose"); if (cl) cl.onclick = () => { PO3_TK = null; renderTickerDrill(k); drawTickerHeat(k, po3TickerAgg(k)); paintScreener(k, po3TickerAgg(k)); };
     host.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
@@ -1941,6 +1955,7 @@
       <div class="drill-head"><div><b>${label}</b> — ${interp(t("mem.monthSummary"), { n: rows.length, w: wins, p: rows.length ? Math.round(wins / rows.length * 100) : 0 })} · <span class="${rColor(avgR)}">${avgR > 0 ? "+" : ""}${nf(avgR, 2)}R ${t("mem.avgShort")}</span></div>
         <button class="drill-close" id="drillClose">✕</button></div>
       <div class="table-wrap blotter-scroll"><table class="sig-table"><thead><tr><th>${t("sig.ticker")}</th><th class="num">${t("mem.window")}</th><th class="num">${t("mem.hold")}</th><th class="num">R</th><th class="num">${t("m.totalRet")}</th><th>${t("mem.outcome")}</th></tr></thead><tbody>${body}</tbody></table></div></div>`;
+    cardify(host.querySelector("table"));
     const cl = $("#drillClose"); if (cl) cl.onclick = () => { PO3_MONTH = null; renderPO3Panel(k); };
     host.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
@@ -1977,6 +1992,7 @@
       <td class="num ${rColor(z.ret)}">${z.ret == null ? "—" : (z.ret > 0 ? "+" : "") + nf(z.ret, 1) + "%"}</td>
       <td><span class="tr-badge ${z.r > 0 ? "win" : "loss"}">${z.res}</span></td></tr>`).join("");
     host.innerHTML = head + `<tbody>${body}</tbody>`;
+    cardify(host);
     host.querySelectorAll(".th-sort").forEach(el => el.onclick = () => {
       const cc = el.dataset.c;
       if (PO3_SORT.c === cc) PO3_SORT.d *= -1; else PO3_SORT = { c: cc, d: (cc === "tk" || cc === "in" || cc === "out" || cc === "mkt") ? 1 : -1 };
@@ -1995,38 +2011,57 @@
     const years = Object.keys(data).sort(), vals = years.map(y => data[y]);
     if (!years.length) return;
     const maxV = Math.max(...vals, 1);
-    const w = 1000, h = 300, pl = 12, pr = 12, pb = 30, pt = 24;
+    const w = chartW(host), mob = w < 560, h = 300, pl = 12, pr = 12, pb = 30, pt = 24;
     const svg = svgEl(w, h);
     const n = years.length, slot = (w - pl - pr) / n, bw = Math.min(slot * 0.6, 80);
+    const showVal = !mob || n <= 6;                    // valor no topo só se couber
+    const yrEvery = (mob && n > 7) ? 2 : 1;            // anos alternados no mobile
     vals.forEach((v, i) => {
       const bh = (v / maxV) * (h - pt - pb);
       const x = pl + i * slot + (slot - bw) / 2, y = h - pb - bh;
       svg.appendChild(mk("rect", { x: x.toFixed(1), y: y.toFixed(1), width: bw.toFixed(1), height: bh.toFixed(1), rx: 4, fill: "var(--accent)" }));
-      const vt = mk("text", { x: (x + bw / 2).toFixed(1), y: (y - 7).toFixed(1), "text-anchor": "middle", class: "axis-label" });
-      vt.textContent = (opt && opt.fmt) ? opt.fmt(v) : nf(v, 0); svg.appendChild(vt);
-      const yt = mk("text", { x: (x + bw / 2).toFixed(1), y: h - 9, "text-anchor": "middle", class: "axis-label" });
-      yt.textContent = years[i]; svg.appendChild(yt);
+      if (showVal) {
+        const vt = mk("text", { x: (x + bw / 2).toFixed(1), y: (y - 7).toFixed(1), "text-anchor": "middle", class: "axis-label" });
+        vt.textContent = (opt && opt.fmt) ? opt.fmt(v) : nf(v, 0); svg.appendChild(vt);
+      }
+      if (i % yrEvery === 0) {
+        const yt = mk("text", { x: (x + bw / 2).toFixed(1), y: h - 9, "text-anchor": "middle", class: "axis-label" });
+        yt.textContent = years[i]; svg.appendChild(yt);
+      }
     });
     host.appendChild(svg);
+    observeChart(host, () => barChart(host, data, opt));
   }
 
   const W = 1000, H = 340, PAD = { t: 16, r: 16, b: 26, l: 46 };
   const NS = "http://www.w3.org/2000/svg";
   const mk = (tag, a) => { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); return e; };
   function svgEl(w, h) { const s = document.createElementNS(NS, "svg"); s.setAttribute("viewBox", `0 0 ${w} ${h}`); s.setAttribute("preserveAspectRatio", "none"); s.style.width = "100%"; s.style.height = h + "px"; return s; }
-  function scaleXY(pts, keys) {
+  const chartW = host => Math.max(300, Math.round((host && host.clientWidth) || W));   // largura real do container (px) = escala 1:1 (sem distorção)
+  let _chartRO;   // redesenha gráficos quando o container muda de largura (rotação/resize)
+  function observeChart(host, draw) {
+    host._draw = draw; host._lastCW = Math.round(host.clientWidth || 0);
+    if (!_chartRO) _chartRO = new ResizeObserver(es => es.forEach(e => {
+      const h = e.target, w = Math.round(h.clientWidth || 0);
+      if (h._draw && Math.abs(w - (h._lastCW || 0)) >= 8) { h._lastCW = w; clearTimeout(h._rzT); h._rzT = setTimeout(() => h._draw(), 160); }
+    }));
+    _chartRO.observe(host);
+  }
+  function scaleXY(pts, keys, Wd) {
     let lo = Infinity, hi = -Infinity;
     pts.forEach(p => keys.forEach(k => { if (p[k] != null) { lo = Math.min(lo, p[k]); hi = Math.max(hi, p[k]); } }));
     if (lo === hi) { hi += 1; lo -= 1; }
     const pad = (hi - lo) * 0.06; lo -= pad; hi += pad;
-    return { x: i => PAD.l + (i / (pts.length - 1)) * (W - PAD.l - PAD.r), y: v => PAD.t + (1 - (v - lo) / (hi - lo)) * (H - PAD.t - PAD.b), lo, hi };
+    return { x: i => PAD.l + (i / (pts.length - 1)) * (Wd - PAD.l - PAD.r), y: v => PAD.t + (1 - (v - lo) / (hi - lo)) * (H - PAD.t - PAD.b), lo, hi };
   }
   function lineChart(host, pts, opt) {
     host.innerHTML = ""; if (!pts || pts.length < 2) return;
-    const keys = opt.keys, { x, y, lo, hi } = scaleXY(pts, keys), svg = svgEl(W, H);
+    const Wd = chartW(host), mob = Wd < 560;
+    const keys = opt.keys, { x, y, lo, hi } = scaleXY(pts, keys, Wd), svg = svgEl(Wd, H);
     const fmt = opt.asPctGrowth ? (v => nf((v - 1) * 100, 0) + "%") : (v => nf(v, 2));
-    for (let i = 0; i <= 5; i++) { const v = lo + (hi - lo) * i / 5; svg.appendChild(mk("line", { x1: PAD.l, x2: W - PAD.r, y1: y(v), y2: y(v), class: "gridline" })); const tx = mk("text", { x: PAD.l - 8, y: y(v) + 4, class: "axis-label", "text-anchor": "end" }); tx.textContent = fmt(v); svg.appendChild(tx); }
-    const step = Math.max(1, Math.floor(pts.length / 6));
+    const yN = mob ? 3 : 5;
+    for (let i = 0; i <= yN; i++) { const v = lo + (hi - lo) * i / yN; svg.appendChild(mk("line", { x1: PAD.l, x2: Wd - PAD.r, y1: y(v), y2: y(v), class: "gridline" })); const tx = mk("text", { x: PAD.l - 8, y: y(v) + 4, class: "axis-label", "text-anchor": "end" }); tx.textContent = fmt(v); svg.appendChild(tx); }
+    const step = Math.max(1, Math.floor(pts.length / (mob ? 3 : 6)));
     for (let i = 0; i < pts.length; i += step) { const tx = mk("text", { x: x(i), y: H - 6, class: "axis-label", "text-anchor": "middle" }); tx.textContent = pts[i].d.slice(0, 4); svg.appendChild(tx); }
     keys.forEach((k, ki) => {
       let d = ""; pts.forEach((p, i) => { if (p[k] == null) return; d += (d ? "L" : "M") + x(i).toFixed(1) + " " + y(p[k]).toFixed(1); });
@@ -2036,12 +2071,12 @@
     });
     const cross = mk("line", { class: "crosshair", y1: PAD.t, y2: H - PAD.b, x1: 0, x2: 0, opacity: 0 });
     const dot0 = mk("circle", { r: 3.5, fill: opt.colors[0], opacity: 0 });
-    const hit = mk("rect", { x: 0, y: 0, width: W, height: H, fill: "transparent" });
+    const hit = mk("rect", { x: 0, y: 0, width: Wd, height: H, fill: "transparent" });
     svg.appendChild(cross); svg.appendChild(dot0); svg.appendChild(hit);
     const tip = $("#tooltip");
     hit.addEventListener("pointermove", ev => {
-      const r = svg.getBoundingClientRect(), px = (ev.clientX - r.left) / r.width * W;
-      let i = Math.round((px - PAD.l) / (W - PAD.l - PAD.r) * (pts.length - 1)); i = Math.max(0, Math.min(pts.length - 1, i));
+      const r = svg.getBoundingClientRect(), px = (ev.clientX - r.left) / r.width * Wd;
+      let i = Math.round((px - PAD.l) / (Wd - PAD.l - PAD.r) * (pts.length - 1)); i = Math.max(0, Math.min(pts.length - 1, i));
       const p = pts[i];
       cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("opacity", 1);
       dot0.setAttribute("cx", x(i)); dot0.setAttribute("cy", y(p[keys[0]])); dot0.setAttribute("opacity", 1);
@@ -2051,18 +2086,21 @@
     });
     hit.addEventListener("pointerleave", () => { if (tip) tip.hidden = true; cross.setAttribute("opacity", 0); dot0.setAttribute("opacity", 0); });
     host.appendChild(svg);
+    observeChart(host, () => lineChart(host, pts, opt));
   }
   function areaChart(host, pts, opt) {
     host.innerHTML = ""; if (!pts || pts.length < 2) return;
+    const Wd = chartW(host), mob = Wd < 560;
     const h2 = 200, minV = Math.min(...pts.map(p => p.e), -0.001);
     const yD = v => PAD.t + (1 - (v - minV) / (0 - minV)) * (h2 - PAD.t - PAD.b);
-    const xD = i => PAD.l + (i / (pts.length - 1)) * (W - PAD.l - PAD.r), svg = svgEl(W, h2);
-    [0, .25, .5, .75, 1].forEach(f => { const v = minV * f; svg.appendChild(mk("line", { x1: PAD.l, x2: W - PAD.r, y1: yD(v), y2: yD(v), class: "gridline" })); const tx = mk("text", { x: PAD.l - 8, y: yD(v) + 4, class: "axis-label", "text-anchor": "end" }); tx.textContent = nf(v * 100, 0) + "%"; svg.appendChild(tx); });
+    const xD = i => PAD.l + (i / (pts.length - 1)) * (Wd - PAD.l - PAD.r), svg = svgEl(Wd, h2);
+    (mob ? [0, .5, 1] : [0, .25, .5, .75, 1]).forEach(f => { const v = minV * f; svg.appendChild(mk("line", { x1: PAD.l, x2: Wd - PAD.r, y1: yD(v), y2: yD(v), class: "gridline" })); const tx = mk("text", { x: PAD.l - 8, y: yD(v) + 4, class: "axis-label", "text-anchor": "end" }); tx.textContent = nf(v * 100, 0) + "%"; svg.appendChild(tx); });
     let d = "M" + xD(0) + " " + yD(0); pts.forEach((p, i) => d += "L" + xD(i).toFixed(1) + " " + yD(p.e).toFixed(1)); d += "L" + xD(pts.length - 1) + " " + yD(0) + "Z";
     svg.appendChild(mk("path", { d, fill: opt.color, "fill-opacity": .18, stroke: opt.color, "stroke-width": 1.6, "vector-effect": "non-scaling-stroke" }));
-    const step = Math.max(1, Math.floor(pts.length / 6));
+    const step = Math.max(1, Math.floor(pts.length / (mob ? 3 : 6)));
     for (let i = 0; i < pts.length; i += step) { const tx = mk("text", { x: xD(i), y: h2 - 6, class: "axis-label", "text-anchor": "middle" }); tx.textContent = pts[i].d.slice(0, 4); svg.appendChild(tx); }
     host.appendChild(svg);
+    observeChart(host, () => areaChart(host, pts, opt));
   }
   function heatmap(host, mr) {
     host.innerHTML = "";

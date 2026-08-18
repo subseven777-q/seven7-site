@@ -527,6 +527,25 @@ h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.02em;font-weight:680}
 .term-screener .mkt{font-size:10px;color:var(--muted);font-weight:600}
 @media(max-width:640px){.term-clock{margin-left:0}.term-seg{padding:9px 12px}}
 
+/* --- Tabelas densas viram cartões no celular --- */
+@media(max-width:640px){
+  table.cardable thead{display:none}
+  table.cardable,table.cardable tbody{display:block;width:100%}
+  table.cardable tr{display:block;background:var(--surface);border:1px solid var(--border);
+    border-radius:11px;padding:6px 13px;margin-bottom:10px}
+  table.cardable tr.dsig-on,table.cardable tr.scr-row.sel{border-color:color-mix(in srgb,var(--accent) 45%,var(--border))}
+  table.cardable td{display:flex;justify-content:space-between;align-items:center;gap:14px;
+    border:none;padding:6px 0;text-align:right;white-space:normal;font-size:13.5px}
+  table.cardable td::before{content:attr(data-label);color:var(--muted);font-size:11px;
+    font-weight:600;letter-spacing:.02em;text-align:left;flex:0 0 auto}
+  table.cardable td[data-label=""]{justify-content:flex-end}
+  table.cardable td[data-label=""]::before{display:none}
+  table.cardable td.tk-cell{justify-content:flex-start;font-size:15.5px;font-weight:700;
+    border-bottom:1px solid var(--border);padding:2px 0 8px;margin-bottom:4px}
+  table.cardable td.tk-cell::before{display:none}
+  .term-scroll,.blotter-scroll{max-height:76vh;overflow-x:hidden}
+}
+
 /* --- Monitor (admin) — estilo VERU --- */
 .mon-tiles{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:16px}
 .mon-tile{background:#111a24;border:1px solid #1e2b38;border-radius:12px;padding:14px 16px}
