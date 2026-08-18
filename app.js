@@ -333,6 +333,11 @@
     "divterm.byYoc": { en: "By yield-on-cost", pt: "Por yield-on-cost" },
     "divterm.byYld": { en: "By current yield", pt: "Por yield atual" },
     "divterm.benchTitle": { en: "You vs benchmarks", pt: "Você vs benchmarks" },
+    "mon.login": { en: "Sign in to access the monitor.", pt: "Entre para acessar o monitor." },
+    "mon.restricted": { en: "🔒 Restricted area — this monitor is private to the account owner.", pt: "🔒 Área restrita — este monitor é privado do dono da conta." },
+    "mon.nodata": { en: "Monitor data not available yet.", pt: "Dados do monitor ainda não disponíveis." },
+    "mon.bannerH": { en: "CONTINUOUS STRATEGY MONITORING", pt: "MONITORAÇÃO CONTÍNUA DA ESTRATÉGIA" },
+    "mon.foot": { en: "Strategy = Markov 3 daily managed composite. Benchmark = daily close. GARCH(1,1) Gaussian MLE. Updated {updated}.", pt: "Estratégia = composto diário gerido da Markov 3. Benchmark = fechamento diário. GARCH(1,1) gaussiano (MLE). Atualizado {updated}." },
     "mem.window": { en: "Window", pt: "Janela" },
     "mem.hold": { en: "Hold", pt: "Duração" },
     "mem.outcome": { en: "Outcome", pt: "Resultado" },
@@ -615,6 +620,7 @@
     }
     guard("#divTiles", renderDividends);
     guard("#memberGate", renderMembers);
+    guard("#monitorGate", renderMonitor);
     guard("#pricingGrid", () => { renderPricing(); initBilling(); });
     initAuth();
     const cp = $("#copy"); if (cp) cp.textContent = t("footer.copy");
@@ -886,9 +892,9 @@
       const { data } = await sb.auth.getSession();
       USER = data?.session?.user || null;
       await loadProfile();
-      updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio(); renderDivSignals(); renderMembers(); renderKmlmCard();
+      updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio(); renderDivSignals(); renderMembers(); renderKmlmCard(); renderMonitor();
       sb.auth.onAuthStateChange(async (_ev, session) => {
-        USER = session?.user || null; await loadProfile(); updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio(); renderDivSignals(); renderMembers(); renderKmlmCard();
+        USER = session?.user || null; await loadProfile(); updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio(); renderDivSignals(); renderMembers(); renderKmlmCard(); renderMonitor();
       });
     } catch (e) { console.error("auth init failed", e); renderAccount(); }
     wireAuthForms();
@@ -1538,6 +1544,37 @@
     btn.textContent = error ? "✕" : "✓";
     setTimeout(() => { btn.textContent = "＋"; btn.disabled = false; }, 1500);
     if (!error && document.body.dataset.page === "members") renderPortfolio();
+  }
+  /* ---- monitor (admin-only) ---- */
+  async function renderMonitor() {
+    const gate = $("#monitorGate"), host = $("#monitorHost"); if (!gate) return;
+    if (/[?&]preview=1/.test(location.search) && /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
+      PREVIEW = true; USER = USER || { id: "preview" };
+      PROFILE = PROFILE || { status: "active", plan: "elite", is_admin: true };
+    }
+    const isAdmin = (PROFILE && PROFILE.is_admin) || PREVIEW;
+    const lock = (msg, btn, href) =>
+      `<section class="section"><div class="div-siglock" style="max-width:640px;margin:0 auto"><p>${msg}</p>${btn ? `<a class="btn btn-primary" href="${href}">${btn}</a>` : ""}</div></section>`;
+    if (!USER) { gate.innerHTML = lock(t("mon.login"), t("mem.login"), "login.html"); if (host) host.hidden = true; return; }
+    if (!isAdmin) { gate.innerHTML = lock(t("mon.restricted"), "", ""); if (host) host.hidden = true; return; }
+    gate.innerHTML = ""; if (host) host.hidden = false;
+    host.innerHTML = `<section class="section mon"><p class="muted-note">${t("sig.loading")}</p></section>`;
+    let d;
+    try { d = await (await fetch("data/monitor.json?d=" + new Date().toISOString().slice(0, 10))).json(); }
+    catch (e) { host.innerHTML = `<section class="section mon"><p class="muted-note">${t("mon.nodata")}</p></section>`; return; }
+    const sub = $("#monSub"); if (sub) sub.textContent = d.sub || "";
+    const tiles = (d.tiles || []).map(x =>
+      `<div class="mon-tile"><div class="k">${x[0]}</div><div class="v ${x[3] || ""}">${x[1]}</div><div class="dd">${x[2]}</div></div>`).join("");
+    const panels = (d.figs || []).map(f =>
+      `<div class="mon-panel"><h2>${f.title}</h2><div class="mon-pd">${f.desc}</div><div id="mon_${f.id}" style="height:${f.height}px;width:100%"></div></div>`).join("");
+    host.innerHTML = `<section class="section mon">
+      <div class="mon-tiles">${tiles}</div>
+      <div class="mon-banner"><h3>${t("mon.bannerH")}</h3><p>${d.banner}</p></div>
+      ${panels}
+      <p class="mon-foot">${interp(t("mon.foot"), { updated: d.updated || "" })}</p></section>`;
+    if (window.Plotly) (d.figs || []).forEach(f => {
+      try { Plotly.newPlot("mon_" + f.id, f.data, f.layout, { displayModeBar: false, responsive: true }); } catch (e) {}
+    });
   }
   /* ---- members area ---- */
   function renderMembers() {

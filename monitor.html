@@ -3,20 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Account — Seven7</title>
+<meta name="robots" content="noindex,nofollow">
+<title>Monitor — Seven7</title>
 <link rel="stylesheet" href="styles.css?v=38">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 </head>
-<body data-page="account">
+<body data-page="monitor">
 <div id="nav-root"></div>
 
 <div class="page-hero">
-  <div class="kicker" data-i18n="acct.kicker"></div>
-  <h1 data-i18n="acct.title"></h1>
+  <div class="kicker">MONITORAÇÃO</div>
+  <h1>Markov 3 · Monitor</h1>
+  <p class="sub" id="monSub"></p>
 </div>
 
-<section class="section">
-  <div id="accountHost"></div>
-</section>
+<div id="monitorGate"></div>
+<div id="monitorHost" hidden></div>
 
 <div id="footer-root"></div>
 <script src="app.js?v=38"></script>

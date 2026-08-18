@@ -525,6 +525,22 @@ h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.02em;font-weight:680}
 .term-screener .mkt{font-size:10px;color:var(--muted);font-weight:600}
 @media(max-width:640px){.term-clock{margin-left:0}.term-seg{padding:9px 12px}}
 
+/* --- Monitor (admin) — estilo VERU --- */
+.mon-tiles{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:16px}
+.mon-tile{background:#111a24;border:1px solid #1e2b38;border-radius:12px;padding:14px 16px}
+.mon-tile .k{font-size:10px;color:#8a97a6;letter-spacing:.6px;font-weight:600}
+.mon-tile .v{font-size:24px;font-weight:800;margin-top:5px}
+.mon-tile .dd{font-size:11px;color:#8a97a6;margin-top:4px}
+.mon .g{color:#34d8bf}.mon .b{color:#6ea8fe}.mon .r{color:#c85a54}.mon .o{color:#e6c34a}
+.mon-banner{background:rgba(230,195,74,.06);border:1px solid rgba(230,195,74,.4);border-radius:12px;padding:16px 20px;margin-bottom:16px}
+.mon-banner h3{color:#e6c34a;font-size:13px;letter-spacing:.5px;margin-bottom:6px}
+.mon-banner p{font-size:14px;line-height:1.6;color:#c9d4de}
+.mon-panel{background:#111a24;border:1px solid #1e2b38;border-radius:12px;padding:16px 16px 8px;margin-bottom:16px}
+.mon-panel h2{font-size:16px;margin-bottom:2px}
+.mon-pd{color:#8a97a6;font-size:12px;margin-bottom:8px}
+.mon-foot{color:#8a97a6;font-size:11px;margin-top:8px}
+@media(max-width:900px){.mon-tiles{grid-template-columns:repeat(2,1fr)}}
+
 /* --- KMLM hedge card --- */
 .kmlm-card{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 14%,var(--surface)),var(--surface));
   border:1px solid color-mix(in srgb,var(--accent) 40%,var(--border));border-radius:16px;padding:20px 22px;margin-bottom:20px;box-shadow:var(--shadow)}
