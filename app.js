@@ -563,25 +563,28 @@
         <span class="brand-mark">${MARK_SVG}</span>
         <span class="brand-wrap"><span class="brand-name">Seven7</span><span class="brand-tag" data-i18n="brand.tag"></span></span>
       </a>
-      <nav class="nav-links">
-        <a href="performance.html" data-page="performance" data-i18n="nav.perf"></a>
-        <a href="metrics.html" data-page="metrics" data-i18n="nav.metrics"></a>
-        <a href="signals.html" data-page="signals" data-i18n="nav.signals"></a>
-        <a href="dividends.html" data-page="dividends" data-i18n="nav.dividends"></a>
-        <a href="members.html" data-page="members" data-i18n="nav.members"></a>
-        <a href="replay.html" data-page="replay" data-i18n="nav.replay"></a>
-        <a href="plans.html" data-page="plans" data-i18n="nav.plans"></a>
-      </nav>
-      <div class="nav-cta">
-        <div class="lang-toggle" id="langToggle">
-          <button class="lang-opt" data-lang="en">EN</button>
-          <button class="lang-opt" data-lang="pt">PT</button>
+      <button class="nav-burger" id="navBurger" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
+      <div class="nav-collapse" id="navCollapse">
+        <nav class="nav-links">
+          <a href="performance.html" data-page="performance" data-i18n="nav.perf"></a>
+          <a href="metrics.html" data-page="metrics" data-i18n="nav.metrics"></a>
+          <a href="signals.html" data-page="signals" data-i18n="nav.signals"></a>
+          <a href="dividends.html" data-page="dividends" data-i18n="nav.dividends"></a>
+          <a href="members.html" data-page="members" data-i18n="nav.members"></a>
+          <a href="replay.html" data-page="replay" data-i18n="nav.replay"></a>
+          <a href="plans.html" data-page="plans" data-i18n="nav.plans"></a>
+        </nav>
+        <div class="nav-cta">
+          <div class="lang-toggle" id="langToggle">
+            <button class="lang-opt" data-lang="en">EN</button>
+            <button class="lang-opt" data-lang="pt">PT</button>
+          </div>
+          <button class="theme-toggle" id="themeToggle" title="Theme" aria-label="Theme">◐</button>
+          <span class="nav-auth" id="navAuth">
+            <a class="btn btn-ghost" href="login.html" data-i18n="nav.login"></a>
+            <a class="btn btn-primary" href="register.html" data-i18n="nav.trial"></a>
+          </span>
         </div>
-        <button class="theme-toggle" id="themeToggle" title="Theme" aria-label="Theme">◐</button>
-        <span class="nav-auth" id="navAuth">
-          <a class="btn btn-ghost" href="login.html" data-i18n="nav.login"></a>
-          <a class="btn btn-primary" href="register.html" data-i18n="nav.trial"></a>
-        </span>
       </div>
     </header>`;
   const FOOTER_HTML = `
@@ -632,6 +635,17 @@
     const f = $("#footer-root"); if (f) f.innerHTML = FOOTER_HTML;
     const page = document.body.dataset.page;
     $$(".nav-links a[data-page]").forEach(a => a.classList.toggle("active", a.dataset.page === page));
+    const burger = $("#navBurger"), nav = n && n.querySelector(".nav");
+    if (burger && nav) {
+      const close = () => { nav.classList.remove("open"); burger.setAttribute("aria-expanded", "false"); };
+      burger.onclick = e => {
+        e.stopPropagation();
+        const open = nav.classList.toggle("open");
+        burger.setAttribute("aria-expanded", open ? "true" : "false");
+      };
+      nav.querySelectorAll(".nav-links a").forEach(a => a.addEventListener("click", close));
+      document.addEventListener("click", e => { if (nav.classList.contains("open") && !nav.contains(e.target)) close(); });
+    }
   }
   function applyStatic() {
     $$("[data-i18n]").forEach(el => { const v = t(el.getAttribute("data-i18n")); if (v != null) el.textContent = v; });

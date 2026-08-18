@@ -46,6 +46,8 @@ h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.02em;font-weight:680}
 .brand-wrap{display:flex;flex-direction:column;line-height:1}
 .brand-name{font-size:19px;letter-spacing:-.01em;font-weight:750}
 .brand-tag{font-size:8px;letter-spacing:.2em;color:var(--muted);margin-top:4px}
+.nav-collapse{display:flex;align-items:center;gap:28px;flex:1;min-width:0}
+.nav-burger{display:none}
 .nav-links{display:flex;gap:22px;margin-left:8px;font-size:14px;color:var(--ink-2)}
 .nav-links a:hover{color:var(--ink)}
 .nav-links a.active{color:var(--ink);font-weight:600}
@@ -668,6 +670,29 @@ h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.02em;font-weight:680}
 .crosshair{stroke:var(--border-2);stroke-width:1;stroke-dasharray:3 3}
 
 @media(max-width:760px){
-  .nav-links{display:none}
   .hero-stats{grid-template-columns:repeat(2,1fr)}
+  .nav{gap:12px}
+  .nav-burger{display:inline-flex;flex-direction:column;justify-content:center;gap:5px;
+    margin-left:auto;width:44px;height:44px;background:none;border:1px solid var(--border);
+    border-radius:10px;cursor:pointer;padding:0}
+  .nav-burger span{display:block;height:2px;width:20px;margin:0 auto;background:var(--ink);border-radius:2px;transition:.22s}
+  .nav.open .nav-burger span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+  .nav.open .nav-burger span:nth-child(2){opacity:0}
+  .nav.open .nav-burger span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+  .nav-collapse{display:none;position:absolute;top:100%;left:0;right:0;flex-direction:column;
+    align-items:stretch;gap:4px;padding:10px;background:var(--surface);
+    border-bottom:1px solid var(--border);box-shadow:0 14px 34px rgba(0,0,0,.4)}
+  .nav.open .nav-collapse{display:flex}
+  .nav-links{flex-direction:column;gap:2px;margin:0;font-size:15.5px}
+  .nav-links a{padding:12px 14px;border-radius:9px}
+  .nav-links a.active{background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--ink)}
+  .nav-links a.active::after{display:none}
+  .nav-cta{margin:6px 0 2px;flex-direction:column;align-items:stretch;gap:12px;
+    border-top:1px solid var(--border);padding-top:12px}
+  .lang-toggle,.theme-toggle{align-self:flex-start}
+  .lang-opt{padding:8px 18px;font-size:14px}
+  .theme-toggle{width:44px;height:44px}
+  .nav-auth{flex-direction:column;align-items:stretch;gap:8px}
+  .nav-auth .btn{width:100%;text-align:center;padding:12px}
+  .nav-user{max-width:none}
 }
