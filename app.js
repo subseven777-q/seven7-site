@@ -2038,14 +2038,22 @@
   const mk = (tag, a) => { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); return e; };
   function svgEl(w, h) { const s = document.createElementNS(NS, "svg"); s.setAttribute("viewBox", `0 0 ${w} ${h}`); s.setAttribute("preserveAspectRatio", "none"); s.style.width = "100%"; s.style.height = h + "px"; return s; }
   const chartW = host => Math.max(300, Math.round((host && host.clientWidth) || W));   // largura real do container (px) = escala 1:1 (sem distorção)
-  let _chartRO;   // redesenha gráficos quando o container muda de largura (rotação/resize)
+  const _chartHosts = new Set();   // redesenha gráficos quando a largura muda (rotação/resize)
+  let _chartRzBound = false;
   function observeChart(host, draw) {
     host._draw = draw; host._lastCW = Math.round(host.clientWidth || 0);
-    if (!_chartRO) _chartRO = new ResizeObserver(es => es.forEach(e => {
-      const h = e.target, w = Math.round(h.clientWidth || 0);
-      if (h._draw && Math.abs(w - (h._lastCW || 0)) >= 8) { h._lastCW = w; clearTimeout(h._rzT); h._rzT = setTimeout(() => h._draw(), 160); }
-    }));
-    _chartRO.observe(host);
+    _chartHosts.add(host);
+    if (!_chartRzBound) {
+      _chartRzBound = true;
+      window.addEventListener("resize", () => {
+        clearTimeout(window.__crz);
+        window.__crz = setTimeout(() => _chartHosts.forEach(h => {
+          if (!h.isConnected) { _chartHosts.delete(h); return; }
+          const w = Math.round(h.clientWidth || 0);
+          if (h._draw && Math.abs(w - (h._lastCW || 0)) >= 8) { h._lastCW = w; h._draw(); }
+        }), 180);
+      });
+    }
   }
   function scaleXY(pts, keys, Wd) {
     let lo = Infinity, hi = -Infinity;
