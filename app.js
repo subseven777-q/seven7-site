@@ -173,6 +173,8 @@
     "mt.vol.d": { en: "How much returns swing in a year — lower means a smoother ride.", pt: "O quanto os retornos oscilam no ano — menor significa trajetória mais suave." },
     "mt.drag.l": { en: "Vol drag / year", pt: "Vol drag / ano" },
     "mt.drag.d": { en: "Return quietly lost to volatility — choppier returns compound to less. Lower is better.", pt: "Retorno perdido silenciosamente para a volatilidade — retornos mais irregulares compõem menos. Menor é melhor." },
+    "mt.beta.l": { en: "Beta (market)", pt: "Beta (mercado)" },
+    "mt.beta.d": { en: "Sensitivity of the book to the {bench}. Below 1 = moves less than the market.", pt: "Sensibilidade do livro ao {bench}. Abaixo de 1 = oscila menos que o mercado." },
     "mt.pct.v": { en: "top {x}%", pt: "top {x}%" },
     "mt.pct.l": { en: "vs. 10,000 random", pt: "vs. 10 mil aleatórias" },
     "mt.pct.d": { en: "Beats {y}% of random strategies — evidence it's skill, not luck.", pt: "Supera {y}% de estratégias aleatórias — evidência de skill, não sorte." },
@@ -326,6 +328,7 @@
     "term.avgR": { en: "Avg R", pt: "R méd" },
     "term.best": { en: "Best", pt: "Melhor" },
     "term.worst": { en: "Worst", pt: "Pior" },
+    "term.beta": { en: "β 5y", pt: "β 5a" },
     "divterm.stratName": { en: "Dividends · DRIP", pt: "Dividendos · DRIP" },
     "divterm.holdings": { en: "holdings", pt: "ativos" },
     "divterm.mapTitle": { en: "Holdings yield map", pt: "Mapa de yield dos ativos" },
@@ -392,6 +395,7 @@
     "pf.win": { en: "Win rate", pt: "Win rate" },
     "pf.dd": { en: "Max drawdown", pt: "Max drawdown" },
     "pf.drag": { en: "Vol drag", pt: "Vol drag" },
+    "pf.beta": { en: "Beta (5y)", pt: "Beta (5a)" },
     "pf.open": { en: "Open positions", pt: "Posições abertas" },
     "pf.you": { en: "You", pt: "Você" },
     "pf.chart": { en: "You vs Buy & Hold (SPY · BOVA11)", pt: "Você vs Buy & Hold (SPY · BOVA11)" },
@@ -600,13 +604,21 @@
       <p class="copy" id="copy"></p>
     </footer>`;
 
-  let DATA = null, DIVDATA = null, TRADES = null;
+  let DATA = null, DIVDATA = null, TRADES = null, BETAS = null;
+  function loadBetas(cb) {
+    if (BETAS) { if (cb) cb(); return; }
+    fetch("data/betas.json?d=" + new Date().toISOString().slice(0, 10))
+      .then(r => r.json()).then(d => { BETAS = d; if (cb) cb(); })
+      .catch(() => { BETAS = {}; if (cb) cb(); });
+  }
+  const betaOf = (mkt, tk) => (BETAS && BETAS[mkt] && BETAS[mkt][tk] != null) ? BETAS[mkt][tk] : null;
   const boot = window.__DATA__ ? Promise.resolve(window.__DATA__) : fetch("data/metrics.json?d=" + new Date().toISOString().slice(0, 10)).then(r => r.json());
   boot.then(d => { DATA = d; render(); }).catch(e => { render(); console.error(e); });
 
   function render() {
     injectChrome();
     applyStatic();
+    loadBetas();
     initToggles();
     if (DATA) {
       buildTicker(); buildHero();
@@ -735,6 +747,7 @@
       { v: nf(tr.win_rate) + "%", l: t("mt.win.l"), d: t("mt.win.d") },
       { v: nf(h.ann_vol) + "%", l: t("mt.vol.l"), d: t("mt.vol.d") },
       { v: nf(h.vol_drag, 2) + "%", l: t("mt.drag.l"), d: t("mt.drag.d") },
+      { v: h.beta_mkt != null ? nf(h.beta_mkt, 2) : "—", l: t("mt.beta.l"), d: interp(t("mt.beta.d"), { bench: k === "BR" ? "Ibovespa" : "S&P 500" }) },
       { v: interp(t("mt.pct.v"), { x: Math.max(1, Math.round(100 - vp.pf_percentile)) }), l: t("mt.pct.l"), d: interp(t("mt.pct.d"), { y: nf(vp.pf_percentile, 0) }) },
       { v: "-" + nf(vp.mc_p95_dd) + "%", l: t("mt.adv.l"), d: t("mt.adv.d") },
     ];
@@ -1191,10 +1204,15 @@
     if (PF_STRAT !== "all" && !((PF_STRAT === "po3" && hasPo3) || (PF_STRAT === "dividends" && hasDiv))) PF_STRAT = "all";
     const viewPos = PF_STRAT === "all" ? positions : positions.filter(p => p.strategy === PF_STRAT);
     const eng = PF_STRAT === "all" ? d : (d && d.by_strategy && d.by_strategy[PF_STRAT]) || null;
+    await new Promise(res => loadBetas(res));
     const cs = pfClientStats(viewPos, deposit);
     const you = viewPos.length ? cs.total_return : null;
     const spy = eng ? eng.spy_return : null, bova = eng ? eng.bova_return : null;
     const curve = eng && eng.curve;
+    // beta do portfólio (ponderado por alocação) da visão atual, betas 5a por ativo
+    let bW = 0, bA = 0;
+    viewPos.forEach(p => { const bt = betaOf(p.market, p.ticker); if (bt != null) { const a = Number(p.alloc_pct) || 0; bA += a; bW += a * bt; } });
+    const pfBeta = bA > 0 ? bW / bA : null;
 
     let html = `<div class="pf-deposit">
       <label>${t("pf.deposit")}</label>
@@ -1221,6 +1239,7 @@
         <div class="stat"><div class="v">${cs.win_rate != null ? nf(cs.win_rate, 0) + "%" : "—"}</div><div class="l">${t("pf.win")}</div></div>
         <div class="stat"><div class="v neg">${eng && eng.max_dd != null ? "-" + nf(eng.max_dd, 1) + "%" : "—"}</div><div class="l">${t("pf.dd")}</div></div>
         <div class="stat"><div class="v">${eng && eng.vol_drag != null ? nf(eng.vol_drag, 2) + "%" : "—"}</div><div class="l">${t("pf.drag")}</div></div>
+        <div class="stat"><div class="v">${pfBeta != null ? nf(pfBeta, 2) : "—"}</div><div class="l">${t("pf.beta")}</div></div>
         <div class="stat"><div class="v">${cs.n_open}</div><div class="l">${t("pf.open")}</div></div>
       </div>`;
       // benchmark headline + chart
@@ -1790,6 +1809,7 @@
     paintBlotter(k);
     drawTickerHeat(k, tkAgg);
     paintScreener(k, tkAgg);
+    loadBetas(() => { if (PO3_CUR === k) paintScreener(k, po3TickerAgg(k)); });
     renderTickerDrill(k);
     const hm = $("#po3HeatMode");
     if (hm) hm.querySelectorAll("button").forEach(bt => bt.onclick = () => {
@@ -1828,6 +1848,7 @@
     return Object.values(agg).map(a => ({
       ...a, win: a.n ? a.wins / a.n * 100 : 0, avgR: a.n ? a.totR / a.n : 0,
       open: a.lastRes === "OPEN" || a.lastRes === "ACTIVE",
+      beta: betaOf(a.mkt, a.tk),
     }));
   }
   function drawTickerHeat(k, agg) {
@@ -1872,7 +1893,7 @@
     rows.sort((a, b) => { const x = a[c], y = b[c]; return (x < y ? -1 : x > y ? 1 : 0) * dir; });
     const cnt = $("#po3ScrCount"); if (cnt) cnt.textContent = interp(t("mem.showing"), { n: rows.length, total: agg.length });
     const th = (c2, lbl, num) => `<th class="${num ? "num" : ""} th-sort ${PO3_TKSORT.c === c2 ? "on" : ""}" data-c="${c2}">${lbl}${PO3_TKSORT.c === c2 ? (PO3_TKSORT.d < 0 ? " ↓" : " ↑") : ""}</th>`;
-    const head = `<thead><tr>${th("tk", t("sig.ticker"))}${th("n", t("stat.trades"), 1)}${th("win", t("stat.win"), 1)}${th("totR", t("term.totR"), 1)}${th("avgR", t("term.avgR"), 1)}${th("best", t("term.best"), 1)}${th("worst", t("term.worst"), 1)}${th("lastOut", t("mem.exit"), 1)}</tr></thead>`;
+    const head = `<thead><tr>${th("tk", t("sig.ticker"))}${th("n", t("stat.trades"), 1)}${th("win", t("stat.win"), 1)}${th("totR", t("term.totR"), 1)}${th("avgR", t("term.avgR"), 1)}${th("best", t("term.best"), 1)}${th("worst", t("term.worst"), 1)}${th("beta", t("term.beta"), 1)}${th("lastOut", t("mem.exit"), 1)}</tr></thead>`;
     const body = rows.map(a => `<tr class="scr-row ${PO3_TK === a.tk ? "sel" : ""}" data-tk="${a.tk}">
       <td class="tk-cell">${a.tk}${a.open ? ' <span class="tm-live">●</span>' : ""} <span class="mkt">${a.mkt}</span></td>
       <td class="num">${a.n}</td>
@@ -1881,6 +1902,7 @@
       <td class="num ${rColor(a.avgR)}">${a.avgR > 0 ? "+" : ""}${nf(a.avgR, 2)}R</td>
       <td class="num pos">+${nf(a.best, 1)}R</td>
       <td class="num neg">${nf(a.worst, 1)}R</td>
+      <td class="num">${a.beta != null ? nf(a.beta, 2) : "—"}</td>
       <td class="num muted-note">${(a.lastOut || "").slice(0, 7)}</td></tr>`).join("");
     host.innerHTML = head + `<tbody>${body}</tbody>`;
     cardify(host);
