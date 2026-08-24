@@ -400,6 +400,8 @@
     "pf.resetAll": { en: "Reset portfolio", pt: "Zerar portfólio" },
     "pf.clearConfirm": { en: "Remove ALL {n} positions? Your deposit is kept. This cannot be undone.", pt: "Remover TODAS as {n} posições? O depósito é mantido. Isso não pode ser desfeito." },
     "pf.resetConfirm": { en: "Full reset: remove all positions, clear history, and reset the deposit to the default. This cannot be undone. Continue?", pt: "Reinício total: remove todas as posições, limpa o histórico e volta o depósito ao padrão. Isso não pode ser desfeito. Continuar?" },
+    "pf.frozenNote": { en: "Positions cleared — the metrics below are kept from your portfolio history. Use “Reset portfolio” to zero everything.", pt: "Posições zeradas — as métricas abaixo são mantidas do histórico do portfólio. Use “Zerar portfólio” para zerar tudo." },
+    "pf.noOpenPos": { en: "No open positions.", pt: "Nenhuma posição aberta." },
     "pf.open": { en: "Open positions", pt: "Posições abertas" },
     "pf.you": { en: "You", pt: "Você" },
     "pf.chart": { en: "You vs Buy & Hold (SPY · BOVA11)", pt: "Você vs Buy & Hold (SPY · BOVA11)" },
@@ -1168,12 +1170,13 @@
       { id: "p5", ticker: "BBSE3", market: "BR", tv_symbol: "BMFBOVESPA:BBSE3", entry: 38, current_price: 40, alloc_pct: 7, status: "open", ret_pct: 5.3, added_at: "2025-07-01", strategy: "dividends" },
     ];
     const stats = {
-      max_dd: 9.2, vol_drag: 1.1, spy_return: 10, bova_return: 5, curve: mkCurve(0.18),
+      value: 11800, total_return: 18.0, win_rate: 62, max_dd: 9.2, vol_drag: 1.1, spy_return: 10, bova_return: 5, curve: mkCurve(0.18),
       by_strategy: {
         po3: { max_dd: 11.0, vol_drag: 1.4, spy_return: 10, bova_return: 5, curve: mkCurve(0.12) },
         dividends: { max_dd: 5.0, vol_drag: 0.5, spy_return: 10, bova_return: 5, curve: mkCurve(0.26) },
       },
     };
+    if (/[?&]pfempty=1/.test(location.search)) return { deposit: 10000, cur: "USD", positions: [], stats };  // testa "posições zeradas, métricas mantidas"
     return { deposit: 10000, cur: "USD", positions, stats };
   }
   async function renderPortfolio() {
@@ -1217,13 +1220,19 @@
     let bW = 0, bA = 0;
     viewPos.forEach(p => { const bt = betaOf(p.market, p.ticker); if (bt != null) { const a = Number(p.alloc_pct) || 0; bA += a; bW += a * bt; } });
     const pfBeta = bA > 0 ? bW / bA : null;
+    // posições zeradas, mas métricas do motor mantidas ("Zerar posições" preserva o histórico)
+    const frozen = positions.length === 0 && d && d.value != null;
+    const dispVal = frozen ? d.value : cs.value;
+    const dispRet = frozen ? d.total_return : you;
+    const dispWin = frozen ? d.win_rate : cs.win_rate;
 
     let html = `<div class="pf-deposit">
       <label>${t("pf.deposit")}</label>
       <div class="pf-dep-in"><span>${sym}</span><input id="pfDeposit" type="number" value="${deposit}" min="0" step="100"></div>
       <button class="btn btn-ghost" id="pfSaveDep">${t("pf.save")}</button>
       ${isElite && positions.length ? `<button class="btn btn-ghost" id="pfExport">⇩ ${t("pf.export")}</button>` : ""}
-      ${positions.length ? `<button class="btn btn-danger" id="pfClear">${t("pf.clearPos")}</button><button class="btn btn-danger" id="pfReset">${t("pf.resetAll")}</button>` : ""}
+      ${positions.length ? `<button class="btn btn-danger" id="pfClear">${t("pf.clearPos")}</button>` : ""}
+      ${(positions.length || frozen) ? `<button class="btn btn-danger" id="pfReset">${t("pf.resetAll")}</button>` : ""}
       <span class="add-msg" id="pfDepMsg"></span></div>`;
 
     if (hasPo3 && hasDiv) {
@@ -1234,14 +1243,15 @@
       </div>`;
     }
 
-    if (!positions.length) {
+    if (!positions.length && !frozen) {
       html += `<div class="pf-empty"><div class="pf-empty-ic">📈</div><div class="pf-empty-t">${t("pf.emptyT")}</div>
         <div class="pf-empty-s">${t("pf.emptyS")}</div><a class="btn btn-primary" href="signals.html">${t("pf.emptyCta")}</a></div>`;
     } else {
+      if (frozen) html += `<div class="hedge-note" style="margin-bottom:14px">${t("pf.frozenNote")}</div>`;
       html += `<div class="pf-tiles">
-        <div class="stat"><div class="v">${money(cs.value)}</div><div class="l">${t("pf.value")}</div></div>
-        <div class="stat"><div class="v ${you >= 0 ? "pos" : "neg"}">${you == null ? "—" : fmtPct(you)}</div><div class="l">${t("pf.return")}</div></div>
-        <div class="stat"><div class="v">${cs.win_rate != null ? nf(cs.win_rate, 0) + "%" : "—"}</div><div class="l">${t("pf.win")}</div></div>
+        <div class="stat"><div class="v">${money(dispVal)}</div><div class="l">${t("pf.value")}</div></div>
+        <div class="stat"><div class="v ${dispRet >= 0 ? "pos" : "neg"}">${dispRet == null ? "—" : fmtPct(dispRet)}</div><div class="l">${t("pf.return")}</div></div>
+        <div class="stat"><div class="v">${dispWin != null ? nf(dispWin, 0) + "%" : "—"}</div><div class="l">${t("pf.win")}</div></div>
         <div class="stat"><div class="v neg">${eng && eng.max_dd != null ? "-" + nf(eng.max_dd, 1) + "%" : "—"}</div><div class="l">${t("pf.dd")}</div></div>
         <div class="stat"><div class="v">${eng && eng.vol_drag != null ? nf(eng.vol_drag, 2) + "%" : "—"}</div><div class="l">${t("pf.drag")}</div></div>
         <div class="stat"><div class="v">${pfBeta != null ? nf(pfBeta, 2) : "—"}</div><div class="l">${t("pf.beta")}</div></div>
@@ -1249,7 +1259,7 @@
       </div>`;
       // benchmark headline + chart
       html += `<div class="pf-vs">
-        <span class="pf-vs-you">${t("pf.you")}: <b class="${you >= 0 ? "pos" : "neg"}">${you == null ? "—" : fmtPct(you)}</b></span>
+        <span class="pf-vs-you">${t("pf.you")}: <b class="${dispRet >= 0 ? "pos" : "neg"}">${dispRet == null ? "—" : fmtPct(dispRet)}</b></span>
         <span>SPY: <b>${spy == null ? "—" : fmtPct(spy)}</b></span>
         <span>BOVA11: <b>${bova == null ? "—" : fmtPct(bova)}</b></span></div>`;
       if (curve && curve.length > 1) {
@@ -1259,21 +1269,25 @@
       } else {
         html += `<p class="hedge-note">${t("pf.curveSoon")}</p>`;
       }
-      // positions table
-      const smap = { won: ["pos", "active", t("pf.won")], lost: ["neg", "flat", t("pf.lost")], open: ["", "wait", t("pf.openst")], pending: ["", "flat", t("pf.pending")] };
-      const stag = p => PF_STRAT === "all" ? ` <span class="pf-stag ${p.strategy}">${p.strategy === "dividends" ? "DIV" : "M3"}</span>` : "";
-      const rows = viewPos.map(p => {
-        const [retc, stcls, stl] = smap[p.status] || smap.open;
-        return `<tr><td class="tk-cell">${p.ticker} <span class="mkt">${p.market}</span>${stag(p)}</td>
-          <td>${p.added_at}</td><td class="num">${nf(p.alloc_pct, 1)}%</td>
-          <td class="num">${fmtNum(p.entry)}</td><td class="num">${fmtNum(p.current_price ?? p.entry)}</td>
-          <td><span class="st ${stcls}">${stl}</span></td>
-          <td class="num ${retc}">${p.status === "pending" ? "—" : (p.ret_pct == null ? "—" : fmtPct(p.ret_pct))}</td>
-          <td><button class="pf-del" data-id="${p.id}" title="${t("pf.remove")}">✕</button></td></tr>`;
-      }).join("");
-      html += `<div class="table-wrap blotter-scroll" style="margin-top:18px"><table class="sig-table"><thead><tr>
-        <th>${t("sig.ticker")}</th><th>${t("pf.added")}</th><th class="num">${t("pf.alloc")}</th><th class="num">${t("sig.entry")}</th><th class="num">${t("pf.current")}</th><th>${t("sig.state")}</th><th class="num">${t("pf.pl")}</th><th></th>
-        </tr></thead><tbody>${rows}</tbody></table></div>`;
+      // positions table (ou nota quando as posições foram zeradas mas as métricas ficaram)
+      if (frozen) {
+        html += `<p class="hedge-note" style="margin-top:16px">${t("pf.noOpenPos")}</p>`;
+      } else {
+        const smap = { won: ["pos", "active", t("pf.won")], lost: ["neg", "flat", t("pf.lost")], open: ["", "wait", t("pf.openst")], pending: ["", "flat", t("pf.pending")] };
+        const stag = p => PF_STRAT === "all" ? ` <span class="pf-stag ${p.strategy}">${p.strategy === "dividends" ? "DIV" : "M3"}</span>` : "";
+        const rows = viewPos.map(p => {
+          const [retc, stcls, stl] = smap[p.status] || smap.open;
+          return `<tr><td class="tk-cell">${p.ticker} <span class="mkt">${p.market}</span>${stag(p)}</td>
+            <td>${p.added_at}</td><td class="num">${nf(p.alloc_pct, 1)}%</td>
+            <td class="num">${fmtNum(p.entry)}</td><td class="num">${fmtNum(p.current_price ?? p.entry)}</td>
+            <td><span class="st ${stcls}">${stl}</span></td>
+            <td class="num ${retc}">${p.status === "pending" ? "—" : (p.ret_pct == null ? "—" : fmtPct(p.ret_pct))}</td>
+            <td><button class="pf-del" data-id="${p.id}" title="${t("pf.remove")}">✕</button></td></tr>`;
+        }).join("");
+        html += `<div class="table-wrap blotter-scroll" style="margin-top:18px"><table class="sig-table"><thead><tr>
+          <th>${t("sig.ticker")}</th><th>${t("pf.added")}</th><th class="num">${t("pf.alloc")}</th><th class="num">${t("sig.entry")}</th><th class="num">${t("pf.current")}</th><th>${t("sig.state")}</th><th class="num">${t("pf.pl")}</th><th></th>
+          </tr></thead><tbody>${rows}</tbody></table></div>`;
+      }
     }
     host.innerHTML = html;
     cardify(host.querySelector(".blotter-scroll table"));
@@ -1311,8 +1325,9 @@
       PF_STRAT = "all";
       renderPortfolio();
     };
-    if (curve && curve.length > 1) {
-      lineChart($("#pfChart"), curve, { keys: ["p", "spy", "bova"], colors: ["var(--series)", "var(--bench)", "var(--warn)"], labels: [t("pf.you"), "SPY", "BOVA11"], dash: [false, true, true], asPctGrowth: true });
+    const pc = $("#pfChart");
+    if (pc && curve && curve.length > 1) {
+      lineChart(pc, curve, { keys: ["p", "spy", "bova"], colors: ["var(--series)", "var(--bench)", "var(--warn)"], labels: [t("pf.you"), "SPY", "BOVA11"], dash: [false, true, true], asPctGrowth: true });
     }
   }
 
