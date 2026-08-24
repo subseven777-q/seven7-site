@@ -396,6 +396,10 @@
     "pf.dd": { en: "Max drawdown", pt: "Max drawdown" },
     "pf.drag": { en: "Vol drag", pt: "Vol drag" },
     "pf.beta": { en: "Beta (5y)", pt: "Beta (5a)" },
+    "pf.clearPos": { en: "Clear positions", pt: "Zerar posições" },
+    "pf.resetAll": { en: "Reset portfolio", pt: "Zerar portfólio" },
+    "pf.clearConfirm": { en: "Remove ALL {n} positions? Your deposit is kept. This cannot be undone.", pt: "Remover TODAS as {n} posições? O depósito é mantido. Isso não pode ser desfeito." },
+    "pf.resetConfirm": { en: "Full reset: remove all positions, clear history, and reset the deposit to the default. This cannot be undone. Continue?", pt: "Reinício total: remove todas as posições, limpa o histórico e volta o depósito ao padrão. Isso não pode ser desfeito. Continuar?" },
     "pf.open": { en: "Open positions", pt: "Posições abertas" },
     "pf.you": { en: "You", pt: "Você" },
     "pf.chart": { en: "You vs Buy & Hold (SPY · BOVA11)", pt: "Você vs Buy & Hold (SPY · BOVA11)" },
@@ -1219,6 +1223,7 @@
       <div class="pf-dep-in"><span>${sym}</span><input id="pfDeposit" type="number" value="${deposit}" min="0" step="100"></div>
       <button class="btn btn-ghost" id="pfSaveDep">${t("pf.save")}</button>
       ${isElite && positions.length ? `<button class="btn btn-ghost" id="pfExport">⇩ ${t("pf.export")}</button>` : ""}
+      ${positions.length ? `<button class="btn btn-danger" id="pfClear">${t("pf.clearPos")}</button><button class="btn btn-danger" id="pfReset">${t("pf.resetAll")}</button>` : ""}
       <span class="add-msg" id="pfDepMsg"></span></div>`;
 
     if (hasPo3 && hasDiv) {
@@ -1286,6 +1291,26 @@
     });
     const exp = $("#pfExport");
     if (exp) exp.onclick = () => exportPortfolioCSV(viewPos, eng, deposit, cur);
+    const clearBtn = $("#pfClear");
+    if (clearBtn) clearBtn.onclick = async () => {
+      if (!sb || !USER || USER.id === "preview") return;
+      if (!confirm(interp(t("pf.clearConfirm"), { n: positions.length }))) return;
+      clearBtn.disabled = true;
+      const { error } = await sb.from("portfolio_positions").delete().eq("user_id", USER.id);
+      if (error) { clearBtn.disabled = false; const m = $("#pfDepMsg"); if (m) { m.textContent = t("sig.addErr"); m.className = "add-msg err"; } return; }
+      renderPortfolio();
+    };
+    const resetBtn = $("#pfReset");
+    if (resetBtn) resetBtn.onclick = async () => {
+      if (!sb || !USER || USER.id === "preview") return;
+      if (!confirm(t("pf.resetConfirm"))) return;
+      resetBtn.disabled = true;
+      await sb.from("portfolio_positions").delete().eq("user_id", USER.id);
+      await sb.from("portfolio_stats").delete().eq("user_id", USER.id);
+      await sb.from("profiles").update({ portfolio_deposit: 10000 }).eq("id", USER.id);
+      PF_STRAT = "all";
+      renderPortfolio();
+    };
     if (curve && curve.length > 1) {
       lineChart($("#pfChart"), curve, { keys: ["p", "spy", "bova"], colors: ["var(--series)", "var(--bench)", "var(--warn)"], labels: [t("pf.you"), "SPY", "BOVA11"], dash: [false, true, true], asPctGrowth: true });
     }

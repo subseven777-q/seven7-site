@@ -68,6 +68,9 @@ h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.02em;font-weight:680}
 .btn-primary:hover{filter:brightness(1.06);transform:translateY(-1px)}
 .btn-ghost{border-color:var(--border-2);color:var(--ink)}
 .btn-ghost:hover{background:var(--surface-2)}
+.btn-danger{border-color:color-mix(in srgb,var(--neg) 45%,var(--border));color:var(--neg);background:none}
+.btn-danger:hover{background:color-mix(in srgb,var(--neg) 12%,transparent)}
+.btn-danger:disabled{opacity:.5;cursor:default}
 .btn-lg{padding:13px 24px;font-size:15px;border-radius:11px}
 .btn-block{width:100%}
 
