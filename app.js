@@ -402,6 +402,26 @@
     "pf.resetConfirm": { en: "Full reset: remove all positions, clear history, and reset the deposit to the default. This cannot be undone. Continue?", pt: "Reinício total: remove todas as posições, limpa o histórico e volta o depósito ao padrão. Isso não pode ser desfeito. Continuar?" },
     "pf.frozenNote": { en: "Positions cleared — the metrics below are kept from your portfolio history. Use “Reset portfolio” to zero everything.", pt: "Posições zeradas — as métricas abaixo são mantidas do histórico do portfólio. Use “Zerar portfólio” para zerar tudo." },
     "pf.noOpenPos": { en: "No open positions.", pt: "Nenhuma posição aberta." },
+    "beta.title": { en: "Beta control (KMLM)", pt: "Controle de Beta (KMLM)" },
+    "beta.sub": { en: "Neutralize the portfolio's systematic (market) risk with KMLM — Markov 3 + Dividends included.", pt: "Neutralize o risco sistemático (de mercado) do portfólio com KMLM — inclui Markov 3 + Dividendos." },
+    "beta.net": { en: "Net beta now", pt: "β líquido atual" },
+    "beta.book": { en: "Equity book β", pt: "β do book de ações" },
+    "beta.kmlm": { en: "KMLM β", pt: "β do KMLM" },
+    "beta.curk": { en: "KMLM now", pt: "KMLM atual" },
+    "beta.neutro": { en: "Neutral (0)", pt: "Neutro (0)" },
+    "beta.half": { en: "Half", pt: "Metade" },
+    "beta.moderate": { en: "Moderate", pt: "Moderado" },
+    "beta.custom": { en: "Custom", pt: "Personalizado" },
+    "beta.note": { en: "Reallocation model: KMLM (β≈−0.14) is a weak beta hedge, so full neutrality needs a large KMLM sleeve. β is measured over 5 years and updated daily.", pt: "Modelo de realocação: o KMLM (β≈−0,14) é um hedge de beta fraco, então neutro total exige uma fatia grande de KMLM. β medido em 5 anos, atualizado diariamente." },
+    "beta.recLine": { en: "For β-target <b>{b}</b>: KMLM should be <b>{pct}%</b> of the portfolio (equities ~{eq}%).", pt: "Para β-alvo <b>{b}</b>: o KMLM deve ser <b>{pct}%</b> do portfólio (ações ~{eq}%)." },
+    "beta.addLine": { en: "→ add {d} percentage points of KMLM.", pt: "→ adicionar {d} pontos percentuais de KMLM." },
+    "beta.trimLine": { en: "→ trim {d} percentage points of KMLM.", pt: "→ reduzir {d} pontos percentuais de KMLM." },
+    "beta.onTarget": { en: "→ already at target.", pt: "→ já está no alvo." },
+    "beta.aggressive": { en: "Aggressive: this KMLM weight heavily dilutes the strategy's return.", pt: "Agressivo: esse peso de KMLM dilui muito o retorno da estratégia." },
+    "beta.apply": { en: "Set KMLM to {pct}%", pt: "Definir KMLM em {pct}%" },
+    "beta.applyConfirm": { en: "Set your KMLM position to {pct}% of the deposit? (Trim your equity positions to make room.)", pt: "Definir a posição de KMLM em {pct}% do depósito? (Reduza as posições de ações para abrir espaço.)" },
+    "beta.applied": { en: "KMLM updated.", pt: "KMLM atualizado." },
+    "beta.noPrice": { en: "KMLM price unavailable — run the daily update first.", pt: "Preço do KMLM indisponível — rode o update diário primeiro." },
     "pf.open": { en: "Open positions", pt: "Posições abertas" },
     "pf.you": { en: "You", pt: "Você" },
     "pf.chart": { en: "You vs Buy & Hold (SPY · BOVA11)", pt: "Você vs Buy & Hold (SPY · BOVA11)" },
@@ -1179,6 +1199,92 @@
     if (/[?&]pfempty=1/.test(location.search)) return { deposit: 10000, cur: "USD", positions: [], stats };  // testa "posições zeradas, métricas mantidas"
     return { deposit: 10000, cur: "USD", positions, stats };
   }
+  /* ---- controle de beta via KMLM (neutralização de risco sistemático) ---- */
+  let BETA_MODE = "half", BETA_CUSTOM = null;
+  function betaTargetVal(betaL) {
+    if (BETA_MODE === "neutro") return 0;
+    if (BETA_MODE === "moderate") return Math.min(0.5, betaL);
+    if (BETA_MODE === "custom" && BETA_CUSTOM != null) return BETA_CUSTOM;
+    return betaL / 2;   // "metade" (padrão)
+  }
+  async function renderBetaControl(positions, deposit) {
+    const host = $("#betaCtrlHost"); if (!host) return;
+    await new Promise(res => loadBetas(res));
+    const bK = betaOf("US", "KMLM"); const betaK = bK != null ? bK : -0.137;
+    const eq = positions.filter(p => p.ticker !== "KMLM");
+    const kml = positions.filter(p => p.ticker === "KMLM");
+    let we = 0, wbe = 0;
+    eq.forEach(p => { const b = betaOf(p.market, p.ticker); const a = Number(p.alloc_pct) || 0; if (b != null) { we += a; wbe += a * b; } });
+    if (we <= 0) { host.innerHTML = ""; return; }
+    const betaL = wbe / we;
+    const kAlloc = kml.reduce((s, p) => s + (Number(p.alloc_pct) || 0), 0);
+    const sleeve = we + kAlloc;
+    const betaNet = (wbe + kAlloc * betaK) / sleeve;
+    const curKmlmPct = sleeve > 0 ? kAlloc / sleeve * 100 : 0;
+    const presets = [["neutro", t("beta.neutro")], ["half", t("beta.half")], ["moderate", t("beta.moderate")], ["custom", t("beta.custom")]];
+    host.innerHTML = `<div class="chart-card beta-card">
+      <div class="chart-head"><div><div class="chart-title">${t("beta.title")}</div><div class="chart-sub">${t("beta.sub")}</div></div></div>
+      <div class="beta-now">
+        <div class="beta-metric"><div class="bm-v">${nf(betaNet, 2)}</div><div class="bm-l">${t("beta.net")}</div></div>
+        <div class="beta-metric"><div class="bm-v">${nf(betaL, 2)}</div><div class="bm-l">${t("beta.book")}</div></div>
+        <div class="beta-metric"><div class="bm-v">${nf(betaK, 2)}</div><div class="bm-l">${t("beta.kmlm")}</div></div>
+        <div class="beta-metric"><div class="bm-v">${nf(curKmlmPct, 0)}%</div><div class="bm-l">${t("beta.curk")}</div></div>
+      </div>
+      <div class="beta-eq">| Σ βᵢ·wᵢ | = <b>${nf(Math.abs(betaNet), 2)}</b></div>
+      <div class="seg beta-presets" id="betaPresets">${presets.map(p => `<button data-m="${p[0]}" class="${BETA_MODE === p[0] ? "on" : ""}">${p[1]}</button>`).join("")}</div>
+      <div class="beta-slider ${BETA_MODE === "custom" ? "" : "off"}" id="betaSliderWrap">
+        <input type="range" id="betaSlider" min="0" max="${Math.max(0.1, betaL).toFixed(2)}" step="0.01" value="${(BETA_CUSTOM != null ? BETA_CUSTOM : betaL / 2).toFixed(2)}">
+        <span class="beta-slider-v" id="betaSliderV"></span>
+      </div>
+      <div id="betaRec"></div>
+      <div class="beta-note">${t("beta.note")}</div>
+    </div>`;
+    const rec = () => paintBetaRec(betaL, betaK, curKmlmPct, deposit);
+    $("#betaPresets").querySelectorAll("button").forEach(b => b.onclick = () => {
+      BETA_MODE = b.dataset.m;
+      $("#betaPresets").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+      $("#betaSliderWrap").classList.toggle("off", BETA_MODE !== "custom");
+      rec();
+    });
+    const sl = $("#betaSlider");
+    if (sl) sl.oninput = () => {
+      BETA_MODE = "custom"; BETA_CUSTOM = parseFloat(sl.value);
+      $("#betaPresets").querySelectorAll("button").forEach(x => x.classList.toggle("on", x.dataset.m === "custom"));
+      $("#betaSliderWrap").classList.remove("off"); rec();
+    };
+    rec();
+  }
+  function paintBetaRec(betaL, betaK, curKmlmPct, deposit) {
+    const host = $("#betaRec"); if (!host) return;
+    const tgt = Math.max(betaK, Math.min(betaL, betaTargetVal(betaL)));
+    const w = betaL > betaK ? (betaL - tgt) / (betaL - betaK) : 0;   // fração do sleeve em KMLM (realocação)
+    const kmlmPct = Math.max(0, Math.min(100, w * 100));
+    const delta = kmlmPct - curKmlmPct;
+    const sv = $("#betaSliderV"); if (sv) sv.textContent = "β-alvo " + nf(tgt, 2);
+    host.innerHTML = `<div class="beta-rec">
+      <div class="br-line">${interp(t("beta.recLine"), { pct: nf(kmlmPct, 0), eq: nf(100 - kmlmPct, 0), b: nf(tgt, 2) })}</div>
+      ${Math.abs(delta) < 1 ? `<div class="br-ok">${t("beta.onTarget")}</div>`
+        : delta > 0 ? `<div class="br-add">${interp(t("beta.addLine"), { d: nf(delta, 0) })}</div>`
+          : `<div class="br-add">${interp(t("beta.trimLine"), { d: nf(-delta, 0) })}</div>`}
+      ${kmlmPct > 55 ? `<div class="br-warn">⚠ ${t("beta.aggressive")}</div>` : ""}
+      <button class="btn btn-primary" id="betaApply">${interp(t("beta.apply"), { pct: nf(kmlmPct, 0) })}</button>
+      <span class="add-msg" id="betaMsg"></span>
+    </div>`;
+    const apply = $("#betaApply");
+    if (apply) apply.onclick = () => applyBetaKmlm(kmlmPct);
+  }
+  async function applyBetaKmlm(kmlmPct) {
+    if (!sb || !USER || USER.id === "preview") return;
+    if (!confirm(interp(t("beta.applyConfirm"), { pct: nf(kmlmPct, 0) }))) return;
+    const msg = $("#betaMsg"); const apply = $("#betaApply"); if (apply) apply.disabled = true;
+    let price = null;
+    try { const { data } = await sb.from("signals").select("price").eq("ticker", "__HEDGE__").maybeSingle(); price = data && data.price; } catch (e) {}
+    if (!price) { if (msg) { msg.textContent = t("beta.noPrice"); msg.className = "add-msg err"; } if (apply) apply.disabled = false; return; }
+    await sb.from("portfolio_positions").delete().eq("user_id", USER.id).eq("ticker", "KMLM");
+    const { error } = await sb.from("portfolio_positions").insert({ ticker: "KMLM", tv_symbol: "AMEX:KMLM", market: "US", entry: price, stop: null, tp: null, alloc_pct: Math.round(kmlmPct * 10) / 10 });
+    if (msg) { msg.textContent = error ? t("sig.addErr") : t("beta.applied"); msg.className = "add-msg " + (error ? "err" : "ok"); }
+    if (!error) renderPortfolio();
+  }
   async function renderPortfolio() {
     const host = $("#portfolioHost"); if (!host || !["portfolio", "members"].includes(document.body.dataset.page)) return;
     if (!USER) {
@@ -1269,6 +1375,7 @@
       } else {
         html += `<p class="hedge-note">${t("pf.curveSoon")}</p>`;
       }
+      if (!frozen) html += `<div id="betaCtrlHost"></div>`;
       // positions table (ou nota quando as posições foram zeradas mas as métricas ficaram)
       if (frozen) {
         html += `<p class="hedge-note" style="margin-top:16px">${t("pf.noOpenPos")}</p>`;
@@ -1291,6 +1398,7 @@
     }
     host.innerHTML = html;
     cardify(host.querySelector(".blotter-scroll table"));
+    if (!frozen && positions.length) renderBetaControl(positions, deposit);
 
     const seg = $("#pfStratSeg");
     if (seg) seg.querySelectorAll("button").forEach(b => b.onclick = () => { PF_STRAT = b.dataset.s; renderPortfolio(); });

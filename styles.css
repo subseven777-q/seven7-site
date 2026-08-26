@@ -549,6 +549,28 @@ h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.02em;font-weight:680}
   .term-scroll,.blotter-scroll{max-height:76vh;overflow-x:hidden}
 }
 
+/* --- Controle de Beta (KMLM) --- */
+.beta-card{margin-top:18px}
+.beta-now{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:6px 0 12px}
+.beta-metric{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:11px 12px;text-align:center}
+.beta-metric .bm-v{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
+.beta-metric .bm-l{font-size:10.5px;color:var(--muted);margin-top:3px;letter-spacing:.02em}
+.beta-eq{font-family:ui-monospace,monospace;font-size:15px;text-align:center;color:var(--ink-2);margin:6px 0 12px}
+.beta-eq b{color:var(--accent)}
+.beta-presets{display:flex;margin:0 auto 10px;width:fit-content;flex-wrap:wrap}
+.beta-slider{display:flex;align-items:center;gap:12px;margin:2px 0 12px}
+.beta-slider.off{display:none}
+.beta-slider input[type=range]{flex:1;accent-color:var(--accent)}
+.beta-slider-v{font-size:12.5px;font-weight:700;color:var(--accent);min-width:78px;text-align:right;font-variant-numeric:tabular-nums}
+.beta-rec{background:color-mix(in srgb,var(--accent) 7%,var(--surface-2));border:1px solid color-mix(in srgb,var(--accent) 30%,var(--border));border-radius:11px;padding:13px 15px;margin-bottom:10px}
+.beta-rec .br-line{font-size:14px;line-height:1.5}
+.beta-rec .br-add{font-size:12.5px;color:var(--ink-2);margin-top:3px}
+.beta-rec .br-ok{font-size:12.5px;color:var(--pos);margin-top:3px}
+.beta-rec .br-warn{font-size:12px;color:var(--warn);margin-top:6px}
+.beta-rec .btn{margin-top:10px}
+.beta-note{font-size:11.5px;color:var(--muted);line-height:1.5}
+@media(max-width:640px){.beta-now{grid-template-columns:repeat(2,1fr)}}
+
 /* --- Monitor (admin) — estilo VERU --- */
 .mon-tiles{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:16px}
 .mon-tile{background:#111a24;border:1px solid #1e2b38;border-radius:12px;padding:14px 16px}
