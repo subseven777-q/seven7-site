@@ -271,6 +271,22 @@
     "div.sig.hYield": { en: "Yield (12m)", pt: "Yield (12m)" },
     "div.sig.hYoc": { en: "Yield on cost", pt: "Yield on cost" },
     "div.sig.hF": { en: "F-Score", pt: "F-Score" },
+    "fs.clickHint": { en: "click for detail", pt: "clique p/ detalhe" },
+    "fs.title": { en: "Piotroski F-Score (9 signals)", pt: "F-Score de Piotroski (9 sinais)" },
+    "fs.financial": { en: "financial · some signals N/A", pt: "financeira · alguns sinais N/A" },
+    "fs.asof": { en: "From annual statements · fiscal year {d}.", pt: "Das demonstrações anuais · exercício {d}." },
+    "fs.gProf": { en: "PROFITABILITY", pt: "RENTABILIDADE" },
+    "fs.gLev": { en: "LEVERAGE & LIQUIDITY", pt: "ALAVANCAGEM & LIQUIDEZ" },
+    "fs.gEff": { en: "EFFICIENCY", pt: "EFICIÊNCIA" },
+    "fs.roa": { en: "Positive return on assets (ROA > 0)", pt: "Retorno sobre ativos positivo (ROA > 0)" },
+    "fs.cfo": { en: "Positive operating cash flow", pt: "Fluxo de caixa operacional positivo" },
+    "fs.droa": { en: "ROA improved vs last year", pt: "ROA melhorou vs ano anterior" },
+    "fs.accr": { en: "Earnings backed by cash (CFO > net income)", pt: "Lucro lastreado em caixa (FCO > lucro líquido)" },
+    "fs.dlev": { en: "Leverage did not increase", pt: "Alavancagem não aumentou" },
+    "fs.dliq": { en: "Current ratio improved", pt: "Liquidez corrente melhorou" },
+    "fs.dshr": { en: "No new shares issued", pt: "Não emitiu novas ações" },
+    "fs.dgm": { en: "Gross margin improved", pt: "Margem bruta melhorou" },
+    "fs.dturn": { en: "Asset turnover improved", pt: "Giro do ativo melhorou" },
     "div.sig.tv": { en: "Chart ↗", pt: "Gráfico ↗" },
     "div.addTitle": { en: "Add to portfolio (Dividends)", pt: "Adicionar ao portfólio (Dividendos)" },
     "div.addPrompt": { en: "% of your deposit to allocate to {tk}?", pt: "% do seu depósito para alocar em {tk}?" },
@@ -653,8 +669,29 @@
     return { txt: `${fs.f}/${fs.avail}${fs.fin ? "*" : ""}`, cls, pct: fs.pct };
   }
   function fsBadge(mkt, tk) {
-    const ft = fscoreTier(fscoreOf(mkt, tk));
-    return `<span class="fscore-badge ${ft.cls}" title="F-Score de Piotroski${ft.pct != null ? " · " + ft.pct + "%" : ""}">${ft.txt}</span>`;
+    const fs = fscoreOf(mkt, tk);
+    const ft = fscoreTier(fs);
+    if (!fs || !fs.signals) return `<span class="fscore-badge ${ft.cls}">${ft.txt}</span>`;
+    return `<span class="fscore-badge ${ft.cls} fs-clk" data-fs-mkt="${mkt}" data-fs-tk="${tk}" title="F-Score ${ft.pct}% · ${t("fs.clickHint")}">${ft.txt}</span>`;
+  }
+  let FS_SEL = null;
+  function renderFDrill(mkt, tk) {
+    const host = $("#divFDrill"); if (!host) return;
+    const key = mkt + ":" + tk;
+    if (FS_SEL === key) { FS_SEL = null; host.innerHTML = ""; return; }   // toggle
+    const fs = fscoreOf(mkt, tk);
+    if (!fs || !fs.signals) { FS_SEL = null; host.innerHTML = ""; return; }
+    FS_SEL = key;
+    const sg = fs.signals, ft = fscoreTier(fs);
+    const item = k => { const v = sg[k]; const ic = v == null ? "—" : v ? "✓" : "✗"; const cls = v == null ? "na" : v ? "yes" : "no";
+      return `<div class="fs-item ${cls}"><span class="fs-ic">${ic}</span><span class="fs-lbl">${t("fs." + k)}</span></div>`; };
+    const groups = [["fs.gProf", ["roa", "cfo", "droa", "accr"]], ["fs.gLev", ["dlev", "dliq", "dshr"]], ["fs.gEff", ["dgm", "dturn"]]];
+    host.innerHTML = `<div class="drill-card fs-drill">
+      <div class="drill-head"><div><b>${tk}</b> <span class="mkt">${mkt}</span> · <span class="fscore-badge ${ft.cls}">${ft.txt}</span> <span class="muted-note">${t("fs.title")}</span>${fs.fin ? ` · <span class="o">${t("fs.financial")}</span>` : ""}</div><button class="drill-close" id="fsDrillClose">✕</button></div>
+      <div class="fs-groups">${groups.map(g => `<div class="fs-group"><div class="fs-gh">${t(g[0])}</div>${g[1].map(item).join("")}</div>`).join("")}</div>
+      <div class="foot fs-foot">${interp(t("fs.asof"), { d: fs.asof })}</div></div>`;
+    const cl = $("#fsDrillClose"); if (cl) cl.onclick = () => { FS_SEL = null; host.innerHTML = ""; };
+    host.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
   const boot = window.__DATA__ ? Promise.resolve(window.__DATA__) : fetch("data/metrics.json?d=" + new Date().toISOString().slice(0, 10)).then(r => r.json());
   boot.then(d => { DATA = d; render(); }).catch(e => { render(); console.error(e); });
@@ -1728,8 +1765,10 @@
         `<td class="dsig-actions"><button class="pf-addbtn" title="${t("div.addTitle")}" data-tk="${r.ticker}" data-mkt="${r.market}" data-px="${r.price}" data-tv="${encodeURIComponent(r.tv_symbol || r.ticker)}">＋</button>` +
         `<a class="dsig-tv" href="https://www.tradingview.com/chart/?symbol=${encodeURIComponent(r.tv_symbol || r.ticker)}" target="_blank" rel="noopener">${t("div.sig.tv")}</a></td>` +
         `</tr>`).join("") +
-      `</tbody></table></div>`;
+      `</tbody></table></div><div id="divFDrill"></div>`;
     cardify(host.querySelector("table"));
+    host.querySelectorAll(".fs-clk").forEach(el => el.onclick = () => renderFDrill(el.dataset.fsMkt, el.dataset.fsTk));
+    if (FS_SEL) { const [mk, tk] = FS_SEL.split(":"); FS_SEL = null; renderFDrill(mk, tk); }   // preserva o detalhe aberto no repaint
     host.querySelectorAll(".pf-addbtn").forEach(b => b.onclick = () => addDivPosition(b));
     host.querySelectorAll(".th-sort").forEach(el => el.onclick = () => {
       const cc = el.dataset.c;

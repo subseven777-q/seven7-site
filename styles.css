@@ -554,6 +554,19 @@ h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.02em;font-weight:680}
 .fscore-badge.pos{color:var(--pos);border-color:color-mix(in srgb,var(--pos) 40%,var(--border))}
 .fscore-badge.neg{color:var(--neg);border-color:color-mix(in srgb,var(--neg) 40%,var(--border))}
 .fscore-badge.o{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 40%,var(--border))}
+.fscore-badge.fs-clk{cursor:pointer}
+.fscore-badge.fs-clk:hover{filter:brightness(1.15);border-color:var(--accent)}
+.fs-drill{margin-top:12px}
+.fs-groups{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:6px}
+.fs-gh{font-size:10.5px;font-weight:700;letter-spacing:.06em;color:var(--muted);margin-bottom:7px}
+.fs-item{display:flex;align-items:flex-start;gap:9px;padding:5px 0;font-size:13px;line-height:1.35}
+.fs-ic{flex:0 0 auto;width:18px;height:18px;border-radius:5px;display:grid;place-items:center;font-size:12px;font-weight:800}
+.fs-item.yes .fs-ic{background:color-mix(in srgb,var(--pos) 18%,transparent);color:var(--pos)}
+.fs-item.no .fs-ic{background:color-mix(in srgb,var(--neg) 16%,transparent);color:var(--neg)}
+.fs-item.na .fs-ic{background:var(--surface-2);color:var(--muted)}
+.fs-item.na .fs-lbl{color:var(--muted)}
+.fs-foot{margin-top:10px}
+@media(max-width:640px){.fs-groups{grid-template-columns:1fr}}
 
 /* --- Controle de Beta (KMLM) --- */
 .beta-card{margin-top:18px}
