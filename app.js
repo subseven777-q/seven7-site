@@ -1311,7 +1311,12 @@
     const sym = cur === "BRL" ? "R$" : "$";
     const money = v => v == null ? "—" : sym + Number(v).toLocaleString(locale(), { maximumFractionDigits: 0 });
     const isElite = PROFILE && PROFILE.plan === "elite";
-    positions.forEach(p => { if (!p.strategy) p.strategy = "po3"; });
+    // buy-and-hold (KMLM / dividendos: sem stop/TP) é compra no preço atual → ATIVO na hora,
+    // nunca "pendente" (efeito imediato mesmo antes do motor recomputar).
+    positions.forEach(p => {
+      if (!p.strategy) p.strategy = "po3";
+      if (p.status === "pending" && p.stop == null && p.tp == null) p.status = "open";
+    });
     const hasPo3 = positions.some(p => p.strategy === "po3");
     const hasDiv = positions.some(p => p.strategy === "dividends");
     if (PF_STRAT !== "all" && !((PF_STRAT === "po3" && hasPo3) || (PF_STRAT === "dividends" && hasDiv))) PF_STRAT = "all";
