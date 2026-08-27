@@ -274,7 +274,12 @@
     "fs.clickHint": { en: "click for detail", pt: "clique p/ detalhe" },
     "fs.title": { en: "Piotroski F-Score (9 signals)", pt: "F-Score de Piotroski (9 sinais)" },
     "fs.financial": { en: "financial · some signals N/A", pt: "financeira · alguns sinais N/A" },
-    "fs.asof": { en: "From annual statements · fiscal year {d}.", pt: "Das demonstrações anuais · exercício {d}." },
+    "fs.mAnnual": { en: "Annual", pt: "Anual" },
+    "fs.mTTM": { en: "TTM", pt: "TTM" },
+    "fs.hintAnnual": { en: "last audited fiscal year", pt: "último exercício anual (auditado)" },
+    "fs.hintTTM": { en: "trailing 12 months · not always audited", pt: "últimos 12 meses · nem sempre auditado" },
+    "fs.footAnnual": { en: "Last audited fiscal year: FY{y}.", pt: "Último exercício anual: FY{y} (auditado)." },
+    "fs.footTTM": { en: "Trailing 12 months to {d}, vs the last fiscal year. Quarterly data — not always audited.", pt: "Últimos 12 meses até {d}, vs o último exercício. Dados trimestrais — nem sempre auditados." },
     "fs.gProf": { en: "PROFITABILITY", pt: "RENTABILIDADE" },
     "fs.gLev": { en: "LEVERAGE & LIQUIDITY", pt: "ALAVANCAGEM & LIQUIDEZ" },
     "fs.gEff": { en: "EFFICIENCY", pt: "EFICIÊNCIA" },
@@ -662,7 +667,12 @@
       .then(r => r.json()).then(d => { FSCORES = d; if (cb) cb(); })
       .catch(() => { FSCORES = {}; if (cb) cb(); });
   }
-  const fscoreOf = (mkt, tk) => (FSCORES && FSCORES[mkt] && FSCORES[mkt][tk]) ? FSCORES[mkt][tk] : null;
+  let FS_MODE = "annual";   // "annual" (auditado) | "ttm" (não auditado)
+  const fscoreOf = (mkt, tk) => {
+    const e = FSCORES && FSCORES[mkt] && FSCORES[mkt][tk];
+    if (!e) return null;
+    return (e.annual || e.ttm) ? (e[FS_MODE] || null) : e;   // novo formato aninhado (fallback p/ formato antigo plano)
+  };
   function fscoreTier(fs) {   // Forte ≥67% · Média · Fraca <40% (Piotroski: fraca = evitar)
     if (!fs) return { txt: "—", cls: "", pct: null };
     const cls = fs.pct >= 67 ? "pos" : fs.pct < 40 ? "neg" : "o";
@@ -689,7 +699,7 @@
     host.innerHTML = `<div class="drill-card fs-drill">
       <div class="drill-head"><div><b>${tk}</b> <span class="mkt">${mkt}</span> · <span class="fscore-badge ${ft.cls}">${ft.txt}</span> <span class="muted-note">${t("fs.title")}</span>${fs.fin ? ` · <span class="o">${t("fs.financial")}</span>` : ""}</div><button class="drill-close" id="fsDrillClose">✕</button></div>
       <div class="fs-groups">${groups.map(g => `<div class="fs-group"><div class="fs-gh">${t(g[0])}</div>${g[1].map(item).join("")}</div>`).join("")}</div>
-      <div class="foot fs-foot">${interp(t("fs.asof"), { d: fs.asof })}</div></div>`;
+      <div class="foot fs-foot">${FS_MODE === "ttm" ? interp(t("fs.footTTM"), { d: fs.asof }) : interp(t("fs.footAnnual"), { y: (fs.asof || "").slice(0, 4) })}</div></div>`;
     const cl = $("#fsDrillClose"); if (cl) cl.onclick = () => { FS_SEL = null; host.innerHTML = ""; };
     host.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
@@ -1750,6 +1760,10 @@
     const fmtP = v => v == null ? "—" : (DIV_MKT === "BR" ? "R$ " : "$") + nf(v, 2);
     const th = (c2, lbl, num) => `<th class="${num ? "num" : ""} th-sort ${DIV_SIGSORT.c === c2 ? "on" : ""}" data-c="${c2}">${lbl}${DIV_SIGSORT.c === c2 ? (DIV_SIGSORT.d < 0 ? " ↓" : " ↑") : ""}</th>`;
     host.innerHTML =
+      `<div class="fs-modebar"><span class="fs-modelbl">F-Score:</span><div class="seg fs-modeseg" id="fsModeSeg">` +
+      `<button data-m="annual" class="${FS_MODE === "annual" ? "on" : ""}">${t("fs.mAnnual")}</button>` +
+      `<button data-m="ttm" class="${FS_MODE === "ttm" ? "on" : ""}">${t("fs.mTTM")}</button></div>` +
+      `<span class="fs-modehint">${FS_MODE === "annual" ? t("fs.hintAnnual") : t("fs.hintTTM")}</span></div>` +
       `<div class="dsig-count">${interp(t("div.sig.count"), { a: nA, m: nM })}</div>` +
       `<div class="table-wrap term-scroll"><table class="sig-table dsig-table term-screener"><thead><tr>` +
       th("ticker", t("div.sig.hTicker")) + th("state", t("div.sig.hState")) +
@@ -1767,6 +1781,8 @@
         `</tr>`).join("") +
       `</tbody></table></div><div id="divFDrill"></div>`;
     cardify(host.querySelector("table"));
+    const fsSeg = $("#fsModeSeg");
+    if (fsSeg) fsSeg.querySelectorAll("button").forEach(b => b.onclick = () => { if (FS_MODE === b.dataset.m) return; FS_MODE = b.dataset.m; FS_SEL = null; paintDivSignals(); });
     host.querySelectorAll(".fs-clk").forEach(el => el.onclick = () => renderFDrill(el.dataset.fsMkt, el.dataset.fsTk));
     if (FS_SEL) { const [mk, tk] = FS_SEL.split(":"); FS_SEL = null; renderFDrill(mk, tk); }   // preserva o detalhe aberto no repaint
     host.querySelectorAll(".pf-addbtn").forEach(b => b.onclick = () => addDivPosition(b));
