@@ -270,6 +270,7 @@
     "div.sig.hPrice": { en: "Price", pt: "Preço" },
     "div.sig.hYield": { en: "Yield (12m)", pt: "Yield (12m)" },
     "div.sig.hYoc": { en: "Yield on cost", pt: "Yield on cost" },
+    "div.sig.hF": { en: "F-Score", pt: "F-Score" },
     "div.sig.tv": { en: "Chart ↗", pt: "Gráfico ↗" },
     "div.addTitle": { en: "Add to portfolio (Dividends)", pt: "Adicionar ao portfólio (Dividendos)" },
     "div.addPrompt": { en: "% of your deposit to allocate to {tk}?", pt: "% do seu depósito para alocar em {tk}?" },
@@ -638,6 +639,23 @@
       .catch(() => { BETAS = {}; if (cb) cb(); });
   }
   const betaOf = (mkt, tk) => (BETAS && BETAS[mkt] && BETAS[mkt][tk] != null) ? BETAS[mkt][tk] : null;
+  let FSCORES = null;
+  function loadFscores(cb) {
+    if (FSCORES) { if (cb) cb(); return; }
+    fetch("data/fscores.json?d=" + new Date().toISOString().slice(0, 10))
+      .then(r => r.json()).then(d => { FSCORES = d; if (cb) cb(); })
+      .catch(() => { FSCORES = {}; if (cb) cb(); });
+  }
+  const fscoreOf = (mkt, tk) => (FSCORES && FSCORES[mkt] && FSCORES[mkt][tk]) ? FSCORES[mkt][tk] : null;
+  function fscoreTier(fs) {   // Forte ≥67% · Média · Fraca <40% (Piotroski: fraca = evitar)
+    if (!fs) return { txt: "—", cls: "", pct: null };
+    const cls = fs.pct >= 67 ? "pos" : fs.pct < 40 ? "neg" : "o";
+    return { txt: `${fs.f}/${fs.avail}${fs.fin ? "*" : ""}`, cls, pct: fs.pct };
+  }
+  function fsBadge(mkt, tk) {
+    const ft = fscoreTier(fscoreOf(mkt, tk));
+    return `<span class="fscore-badge ${ft.cls}" title="F-Score de Piotroski${ft.pct != null ? " · " + ft.pct + "%" : ""}">${ft.txt}</span>`;
+  }
   const boot = window.__DATA__ ? Promise.resolve(window.__DATA__) : fetch("data/metrics.json?d=" + new Date().toISOString().slice(0, 10)).then(r => r.json());
   boot.then(d => { DATA = d; render(); }).catch(e => { render(); console.error(e); });
 
@@ -645,6 +663,7 @@
     injectChrome();
     applyStatic();
     loadBetas();
+    loadFscores();
     initToggles();
     if (DATA) {
       buildTicker(); buildHero();
@@ -1637,6 +1656,7 @@
     DIV_ROWS = rows;
     drawDivHeat();
     paintDivSignals();
+    loadFscores(() => paintDivSignals());
     const hm = $("#divHeatMode");
     if (hm) hm.querySelectorAll("button").forEach(bt => bt.onclick = () => {
       DIV_HEATMODE = bt.dataset.m;
@@ -1697,13 +1717,14 @@
       `<div class="table-wrap term-scroll"><table class="sig-table dsig-table term-screener"><thead><tr>` +
       th("ticker", t("div.sig.hTicker")) + th("state", t("div.sig.hState")) +
       th("price", t("div.sig.hPrice"), 1) + th("trailing_yield_pct", t("div.sig.hYield"), 1) +
-      th("yield_on_cost_pct", t("div.sig.hYoc"), 1) + `<th></th></tr></thead><tbody>` +
+      th("yield_on_cost_pct", t("div.sig.hYoc"), 1) + `<th class="num">${t("div.sig.hF")}</th><th></th></tr></thead><tbody>` +
       rows.map(r => `<tr class="${r.state === "ACTIVE" ? "dsig-on" : ""}">` +
         `<td class="tk-cell">${r.ticker} <span class="mkt">${r.market}</span></td>` +
         `<td>${stBadge(r.state)}</td>` +
         `<td class="num">${fmtP(r.price)}</td>` +
         `<td class="num pos">${r.trailing_yield_pct != null ? nf(r.trailing_yield_pct, 1) + "%" : "—"}</td>` +
         `<td class="num">${r.yield_on_cost_pct != null ? nf(r.yield_on_cost_pct, 1) + "%" : "—"}</td>` +
+        `<td class="num">${fsBadge(r.market, r.ticker)}</td>` +
         `<td class="dsig-actions"><button class="pf-addbtn" title="${t("div.addTitle")}" data-tk="${r.ticker}" data-mkt="${r.market}" data-px="${r.price}" data-tv="${encodeURIComponent(r.tv_symbol || r.ticker)}">＋</button>` +
         `<a class="dsig-tv" href="https://www.tradingview.com/chart/?symbol=${encodeURIComponent(r.tv_symbol || r.ticker)}" target="_blank" rel="noopener">${t("div.sig.tv")}</a></td>` +
         `</tr>`).join("") +

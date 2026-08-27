@@ -549,6 +549,12 @@ h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.02em;font-weight:680}
   .term-scroll,.blotter-scroll{max-height:76vh;overflow-x:hidden}
 }
 
+/* --- F-Score (Piotroski) badge --- */
+.fscore-badge{display:inline-block;font-weight:700;font-size:12px;font-variant-numeric:tabular-nums;padding:1px 7px;border-radius:6px;background:var(--surface-2);border:1px solid var(--border);color:var(--ink-2)}
+.fscore-badge.pos{color:var(--pos);border-color:color-mix(in srgb,var(--pos) 40%,var(--border))}
+.fscore-badge.neg{color:var(--neg);border-color:color-mix(in srgb,var(--neg) 40%,var(--border))}
+.fscore-badge.o{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 40%,var(--border))}
+
 /* --- Controle de Beta (KMLM) --- */
 .beta-card{margin-top:18px}
 .beta-now{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:6px 0 12px}
