@@ -292,6 +292,20 @@
     "fs.dshr": { en: "No new shares issued", pt: "Não emitiu novas ações" },
     "fs.dgm": { en: "Gross margin improved", pt: "Margem bruta melhorou" },
     "fs.dturn": { en: "Asset turnover improved", pt: "Giro do ativo melhorou" },
+    "fm.title": { en: "Fundamentals — three complementary lenses (informational, not a signal)", pt: "Fundamentos — três lentes complementares (informativo, não é sinal)" },
+    "fm.hMagic": { en: "Magic", pt: "Mágica" },
+    "fm.hCons": { en: "Conserv.", pt: "Conserv." },
+    "fm.magic": { en: "Magic Formula (Greenblatt) — rank in the universe", pt: "Fórmula Mágica (Greenblatt) — rank no universo" },
+    "fm.cons": { en: "Conservative Formula (van Vliet/Blitz) — rank in the universe", pt: "Fórmula Conservadora (van Vliet/Blitz) — rank no universo" },
+    "fm.ey": { en: "Earnings yield (EBIT/EV) — cheapness", pt: "Earnings yield (EBIT/EV) — barateza" },
+    "fm.roc": { en: "Return on capital (EBIT/tangible capital) — quality", pt: "Retorno sobre o capital (EBIT/capital tangível) — qualidade" },
+    "fm.vol": { en: "Volatility (36-mo monthly) — lower is better", pt: "Volatilidade (mensal, 36m) — quanto menor, melhor" },
+    "fm.npy": { en: "Net payout yield (dividend + buyback)", pt: "Net payout yield (dividendo + recompra)" },
+    "fm.mom": { en: "Momentum (11-mo, skip 1)", pt: "Momentum (11 meses, pula 1)" },
+    "fm.magFoot": { en: "Rank = rank(EY) + rank(ROC); lower rank = better (good business at a bargain). Annual accounting.", pt: "Rank = rank(EY) + rank(ROC); rank menor = melhor (boa empresa a preço de barganha). Contabilidade anual." },
+    "fm.consFoot": { en: "Rank = ⅓ volatility + ⅓ net payout yield + ⅓ momentum; lower rank = better. Price/dividend data only.", pt: "Rank = ⅓ volatilidade + ⅓ net payout yield + ⅓ momentum; rank menor = melhor. Só preço/dividendos." },
+    "fm.magNA": { en: "Not applicable to banks/insurers (no operating EBIT / capital employed à la Greenblatt).", pt: "Não se aplica a bancos/seguradoras (sem EBIT operacional / capital empregado à la Greenblatt)." },
+    "fm.na": { en: "no data", pt: "sem dados" },
     "div.sig.tv": { en: "Chart ↗", pt: "Gráfico ↗" },
     "div.addTitle": { en: "Add to portfolio (Dividends)", pt: "Adicionar ao portfólio (Dividendos)" },
     "div.addPrompt": { en: "% of your deposit to allocate to {tk}?", pt: "% do seu depósito para alocar em {tk}?" },
@@ -667,6 +681,32 @@
       .then(r => r.json()).then(d => { FSCORES = d; if (cb) cb(); })
       .catch(() => { FSCORES = {}; if (cb) cb(); });
   }
+  // --- Fórmula Mágica (Greenblatt) + Conservadora (van Vliet/Blitz): ranks relativos ao mercado ---
+  let FORMULAS = null;
+  function loadFormulas(cb) {
+    if (FORMULAS) { if (cb) cb(); return; }
+    fetch("data/formulas.json?d=" + new Date().toISOString().slice(0, 10))
+      .then(r => r.json()).then(d => { FORMULAS = d; if (cb) cb(); })
+      .catch(() => { FORMULAS = {}; if (cb) cb(); });
+  }
+  const formulaOf = (mkt, tk) => (FORMULAS && FORMULAS[mkt] && FORMULAS[mkt][tk]) || null;
+  function rankTier(rank, n) {   // rank BAIXO = melhor; topo 1/3 verde, base 1/3 vermelho
+    if (!rank || !n) return { txt: "—", cls: "" };
+    const cls = rank <= Math.ceil(n / 3) ? "pos" : rank > Math.ceil(2 * n / 3) ? "neg" : "o";
+    return { txt: `${rank}/${n}`, cls };
+  }
+  function magicBadge(mkt, tk) {
+    const m = (formulaOf(mkt, tk) || {}).magic;
+    if (!m || !m.rank) return `<span class="fscore-badge" title="${m && m.fin ? t("fm.magNA") : t("fm.na")}">—${m && m.fin ? "*" : ""}</span>`;
+    const ft = rankTier(m.rank, m.n);
+    return `<span class="fscore-badge ${ft.cls} fs-clk" data-fs-mkt="${mkt}" data-fs-tk="${tk}" title="${t("fm.magic")} #${m.rank}/${m.n} · ${t("fs.clickHint")}">${ft.txt}</span>`;
+  }
+  function consBadge(mkt, tk) {
+    const c = (formulaOf(mkt, tk) || {}).cons;
+    if (!c || !c.rank) return `<span class="fscore-badge" title="${t("fm.na")}">—</span>`;
+    const ft = rankTier(c.rank, c.n);
+    return `<span class="fscore-badge ${ft.cls} fs-clk" data-fs-mkt="${mkt}" data-fs-tk="${tk}" title="${t("fm.cons")} #${c.rank}/${c.n} · ${t("fs.clickHint")}">${ft.txt}</span>`;
+  }
   let FS_MODE = "annual";   // "annual" (auditado) | "ttm" (não auditado)
   const fscoreOf = (mkt, tk) => {
     const e = FSCORES && FSCORES[mkt] && FSCORES[mkt][tk];
@@ -685,21 +725,53 @@
     return `<span class="fscore-badge ${ft.cls} fs-clk" data-fs-mkt="${mkt}" data-fs-tk="${tk}" title="F-Score ${ft.pct}% · ${t("fs.clickHint")}">${ft.txt}</span>`;
   }
   let FS_SEL = null;
-  function renderFDrill(mkt, tk) {
+  function renderFDrill(mkt, tk) {   // painel unificado de fundamentos: F-Score + Mágica + Conservadora
     const host = $("#divFDrill"); if (!host) return;
     const key = mkt + ":" + tk;
     if (FS_SEL === key) { FS_SEL = null; host.innerHTML = ""; return; }   // toggle
     const fs = fscoreOf(mkt, tk);
-    if (!fs || !fs.signals) { FS_SEL = null; host.innerHTML = ""; return; }
+    const fo = formulaOf(mkt, tk) || {};
+    const mg = fo.magic, cs = fo.cons;
+    if ((!fs || !fs.signals) && !mg && !cs) { FS_SEL = null; host.innerHTML = ""; return; }
     FS_SEL = key;
-    const sg = fs.signals, ft = fscoreTier(fs);
-    const item = k => { const v = sg[k]; const ic = v == null ? "—" : v ? "✓" : "✗"; const cls = v == null ? "na" : v ? "yes" : "no";
-      return `<div class="fs-item ${cls}"><span class="fs-ic">${ic}</span><span class="fs-lbl">${t("fs." + k)}</span></div>`; };
-    const groups = [["fs.gProf", ["roa", "cfo", "droa", "accr"]], ["fs.gLev", ["dlev", "dliq", "dshr"]], ["fs.gEff", ["dgm", "dturn"]]];
+    const pctf = v => v == null ? "—" : (v * 100).toFixed(1) + "%";
+    // --- F-Score (9 sinais) ---
+    let fsBlock = "";
+    if (fs && fs.signals) {
+      const sg = fs.signals, ft = fscoreTier(fs);
+      const item = k => { const v = sg[k]; const ic = v == null ? "—" : v ? "✓" : "✗"; const cl = v == null ? "na" : v ? "yes" : "no";
+        return `<div class="fs-item ${cl}"><span class="fs-ic">${ic}</span><span class="fs-lbl">${t("fs." + k)}</span></div>`; };
+      const groups = [["fs.gProf", ["roa", "cfo", "droa", "accr"]], ["fs.gLev", ["dlev", "dliq", "dshr"]], ["fs.gEff", ["dgm", "dturn"]]];
+      fsBlock = `<div class="fund-sec"><div class="fund-sh"><span class="fscore-badge ${ft.cls}">${ft.txt}</span> ${t("fs.title")}${fs.fin ? ` · <span class="o">${t("fs.financial")}</span>` : ""}</div>
+        <div class="fs-groups">${groups.map(g => `<div class="fs-group"><div class="fs-gh">${t(g[0])}</div>${g[1].map(item).join("")}</div>`).join("")}</div>
+        <div class="foot fs-foot">${FS_MODE === "ttm" ? interp(t("fs.footTTM"), { d: fs.asof }) : interp(t("fs.footAnnual"), { y: (fs.asof || "").slice(0, 4) })}</div></div>`;
+    }
+    // --- Fórmula Mágica (EY + ROC) ---
+    let mgBlock = "";
+    if (mg && mg.rank) {
+      const ft = rankTier(mg.rank, mg.n);
+      mgBlock = `<div class="fund-sec"><div class="fund-sh"><span class="fscore-badge ${ft.cls}">#${mg.rank}/${mg.n}</span> ${t("fm.magic")}</div>
+        <div class="fund-rows">
+          <div class="fund-row"><span class="fr-l">${t("fm.ey")}</span><b>${pctf(mg.ey)}</b><span class="rk">#${mg.ey_rank}</span></div>
+          <div class="fund-row"><span class="fr-l">${t("fm.roc")}</span><b>${pctf(mg.roc)}</b><span class="rk">#${mg.roc_rank}</span></div>
+        </div><div class="foot">${t("fm.magFoot")}</div></div>`;
+    } else if (mg && mg.fin) {
+      mgBlock = `<div class="fund-sec"><div class="fund-sh">${t("fm.magic")}</div><div class="foot">${t("fm.magNA")}</div></div>`;
+    }
+    // --- Fórmula Conservadora (Vol + NPY + Momentum) ---
+    let csBlock = "";
+    if (cs && cs.rank) {
+      const ft = rankTier(cs.rank, cs.n);
+      csBlock = `<div class="fund-sec"><div class="fund-sh"><span class="fscore-badge ${ft.cls}">#${cs.rank}/${cs.n}</span> ${t("fm.cons")}</div>
+        <div class="fund-rows">
+          <div class="fund-row"><span class="fr-l">${t("fm.vol")}</span><b>${pctf(cs.vol)}</b><span class="rk">#${cs.vol_rank}</span></div>
+          <div class="fund-row"><span class="fr-l">${t("fm.npy")}</span><b>${pctf(cs.npy)}</b><span class="rk">#${cs.npy_rank}</span></div>
+          <div class="fund-row"><span class="fr-l">${t("fm.mom")}</span><b>${pctf(cs.mom)}</b><span class="rk">#${cs.mom_rank}</span></div>
+        </div><div class="foot">${t("fm.consFoot")}</div></div>`;
+    }
     host.innerHTML = `<div class="drill-card fs-drill">
-      <div class="drill-head"><div><b>${tk}</b> <span class="mkt">${mkt}</span> · <span class="fscore-badge ${ft.cls}">${ft.txt}</span> <span class="muted-note">${t("fs.title")}</span>${fs.fin ? ` · <span class="o">${t("fs.financial")}</span>` : ""}</div><button class="drill-close" id="fsDrillClose">✕</button></div>
-      <div class="fs-groups">${groups.map(g => `<div class="fs-group"><div class="fs-gh">${t(g[0])}</div>${g[1].map(item).join("")}</div>`).join("")}</div>
-      <div class="foot fs-foot">${FS_MODE === "ttm" ? interp(t("fs.footTTM"), { d: fs.asof }) : interp(t("fs.footAnnual"), { y: (fs.asof || "").slice(0, 4) })}</div></div>`;
+      <div class="drill-head"><div><b>${tk}</b> <span class="mkt">${mkt}</span> <span class="muted-note">${t("fm.title")}</span></div><button class="drill-close" id="fsDrillClose">✕</button></div>
+      <div class="fund-secs">${fsBlock}${mgBlock}${csBlock}</div></div>`;
     const cl = $("#fsDrillClose"); if (cl) cl.onclick = () => { FS_SEL = null; host.innerHTML = ""; };
     host.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
@@ -711,6 +783,7 @@
     applyStatic();
     loadBetas();
     loadFscores();
+    loadFormulas();
     initToggles();
     if (DATA) {
       buildTicker(); buildHero();
@@ -1704,6 +1777,7 @@
     drawDivHeat();
     paintDivSignals();
     loadFscores(() => paintDivSignals());
+    loadFormulas(() => paintDivSignals());
     const hm = $("#divHeatMode");
     if (hm) hm.querySelectorAll("button").forEach(bt => bt.onclick = () => {
       DIV_HEATMODE = bt.dataset.m;
@@ -1768,7 +1842,8 @@
       `<div class="table-wrap term-scroll"><table class="sig-table dsig-table term-screener"><thead><tr>` +
       th("ticker", t("div.sig.hTicker")) + th("state", t("div.sig.hState")) +
       th("price", t("div.sig.hPrice"), 1) + th("trailing_yield_pct", t("div.sig.hYield"), 1) +
-      th("yield_on_cost_pct", t("div.sig.hYoc"), 1) + `<th class="num">${t("div.sig.hF")}</th><th></th></tr></thead><tbody>` +
+      th("yield_on_cost_pct", t("div.sig.hYoc"), 1) +
+      `<th class="num">${t("div.sig.hF")}</th><th class="num">${t("fm.hMagic")}</th><th class="num">${t("fm.hCons")}</th><th></th></tr></thead><tbody>` +
       rows.map(r => `<tr class="${r.state === "ACTIVE" ? "dsig-on" : ""}">` +
         `<td class="tk-cell">${r.ticker} <span class="mkt">${r.market}</span></td>` +
         `<td>${stBadge(r.state)}</td>` +
@@ -1776,6 +1851,8 @@
         `<td class="num pos">${r.trailing_yield_pct != null ? nf(r.trailing_yield_pct, 1) + "%" : "—"}</td>` +
         `<td class="num">${r.yield_on_cost_pct != null ? nf(r.yield_on_cost_pct, 1) + "%" : "—"}</td>` +
         `<td class="num">${fsBadge(r.market, r.ticker)}</td>` +
+        `<td class="num">${magicBadge(r.market, r.ticker)}</td>` +
+        `<td class="num">${consBadge(r.market, r.ticker)}</td>` +
         `<td class="dsig-actions"><button class="pf-addbtn" title="${t("div.addTitle")}" data-tk="${r.ticker}" data-mkt="${r.market}" data-px="${r.price}" data-tv="${encodeURIComponent(r.tv_symbol || r.ticker)}">＋</button>` +
         `<a class="dsig-tv" href="https://www.tradingview.com/chart/?symbol=${encodeURIComponent(r.tv_symbol || r.ticker)}" target="_blank" rel="noopener">${t("div.sig.tv")}</a></td>` +
         `</tr>`).join("") +
