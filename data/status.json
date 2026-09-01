@@ -1,19 +1,19 @@
 {
-  "last_run": "2026-08-29T16:09:43+00:00",
+  "last_run": "2026-08-31T22:31:18+00:00",
   "success": true,
-  "data_through": "2026-08-27",
+  "data_through": "2026-08-31",
   "steps": [
     {
       "step": "update_data",
       "ok": true,
       "returncode": 0,
-      "seconds": 27.0
+      "seconds": 25.0
     },
     {
       "step": "build_metrics",
       "ok": true,
       "returncode": 0,
-      "seconds": 8.0
+      "seconds": 6.0
     },
     {
       "step": "compute_fscores",
@@ -31,13 +31,13 @@
       "step": "build_dividends",
       "ok": false,
       "returncode": 1,
-      "seconds": 46.0
+      "seconds": 35.0
     },
     {
       "step": "push_signals",
       "ok": true,
       "returncode": 0,
-      "seconds": 1.0
+      "seconds": 2.0
     },
     {
       "step": "push_dividend_signals",
