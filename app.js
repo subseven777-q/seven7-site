@@ -100,7 +100,7 @@
     "card.open": { en: "Open →", pt: "Abrir →" },
     "track.kicker": { en: "TRACK RECORD", pt: "TRACK RECORD" },
     "track.h2": { en: "Numbers that don't have feelings.", pt: "Números que não têm sentimento." },
-    "track.sub": { en: "Simulated over 10 years of real daily data, with costs. Pick a book:", pt: "Simulado sobre 10 anos de dados diários reais, com custos. Escolha o livro:" },
+    "track.sub": { en: "Simulated over 10 years of real daily data, with costs. Three strategies, one portfolio:", pt: "Simulado sobre 10 anos de dados diários reais, com custos. Três estratégias, uma carteira:" },
     "chart.equity.title": { en: "Equity curve — 10 years", pt: "Evolução do capital — 10 anos" },
     "chart.dd.title": { en: "Underwater drawdown", pt: "Drawdown submerso" },
     "metrics.kicker": { en: "METRICS · THE DIFFERENCE", pt: "MÉTRICAS · O DIFERENCIAL" },
@@ -544,6 +544,12 @@
     "book.us": { en: "US · S&P 100", pt: "EUA · S&P 100" },
     "book.br": { en: "Brazil · Ibovespa", pt: "Brasil · Ibovespa" },
     "book.global": { en: "🌐 Global 50/50", pt: "🌐 Global 50/50" },
+    "perf.markov3": { en: "Markov 3", pt: "Markov 3" },
+    "perf.dividends": { en: "Dividends", pt: "Dividendos" },
+    "perf.portfolio": { en: "Portfolio 50/50", pt: "Carteira 50/50" },
+    "perf.markov3D": { en: "The systematic breakout strategy (stocks) — stop, target, regime filter and tail hedge. Growth of 1, 10 years.", pt: "A estratégia sistemática de rompimento (ações) — stop, alvo, filtro de regime e hedge de cauda. Crescimento de 1, 10 anos." },
+    "perf.dividendsD": { en: "Buy-and-hold dividend payers, bought only in the buy zone and reinvested (DRIP) — never sold. Time-weighted growth of 1.", pt: "Pagadoras de dividendos compradas só na zona de compra e reinvestidas (DRIP) — nunca vende. Crescimento de 1 (time-weighted)." },
+    "perf.portfolioD": { en: "50% Markov 3 + 50% Dividends, rebalanced daily. The blend lifts return per unit of risk and cuts the dividend book's drawdown.", pt: "50% Markov 3 + 50% Dividendos, rebalanceado diariamente. O blend eleva o retorno por risco e corta o drawdown do livro de dividendos." },
     "disclaimer": { en: "Simulated results over 10 years of real data. A mostly-bull-market window; the Sharpe is optimistic. Software and market information — not investment advice. Past performance does not guarantee future results.", pt: "Resultados simulados sobre 10 anos de dados reais. Janela majoritariamente de bull market; o Sharpe é otimista. Software e informação de mercado — não é recomendação de investimento. Rentabilidade passada não garante resultado futuro." },
     "footer.copy": { en: "© 2026 Seven7 · Quantified Investing. All rights reserved.", pt: "© 2026 Seven7 · Investimentos Quantificados. Todos os direitos reservados." },
     // auth
@@ -683,7 +689,13 @@
       <p class="copy" id="copy"></p>
     </footer>`;
 
-  let DATA = null, DIVDATA = null, TRADES = null, BETAS = null;
+  let DATA = null, DIVDATA = null, TRADES = null, BETAS = null, PERFDATA = null;
+  function loadPerf(cb) {
+    if (PERFDATA) { if (cb) cb(); return; }
+    fetch("data/performance.json?d=" + new Date().toISOString().slice(0, 10))
+      .then(r => r.json()).then(d => { PERFDATA = d; if (cb) cb(); })
+      .catch(() => { PERFDATA = {}; if (cb) cb(); });
+  }
   function loadBetas(cb) {
     if (BETAS) { if (cb) cb(); return; }
     fetch("data/betas.json?d=" + new Date().toISOString().slice(0, 10))
@@ -810,7 +822,7 @@
     if (DATA) {
       buildTicker(); buildHero();
       const dc = $("#disclaimer"); if (dc) dc.textContent = t("disclaimer");
-      guard("#bookTabs", () => initSection(["US", "BR", "GLOBAL"], "#bookTabs", renderTrack));
+      guard("#bookTabs", () => loadPerf(() => initSection(["MARKOV3", "DIVIDENDS", "PORTFOLIO"], "#bookTabs", renderTrack)));
       guard("#quantHost", () => initSection(["US", "BR"], "#quantTabsHost", renderMetrics, "#quantHost"));
       guard("#cherryHost", renderCherry);
       guard("#cherryTeaser", buildCherryTeaser);
@@ -853,7 +865,8 @@
     document.documentElement.lang = LANG;
   }
 
-  const labelOf = k => ({ US: t("book.us"), BR: t("book.br"), GLOBAL: t("book.global") }[k] || k);
+  const labelOf = k => ({ US: t("book.us"), BR: t("book.br"), GLOBAL: t("book.global"),
+    MARKOV3: t("perf.markov3"), DIVIDENDS: t("perf.dividends"), PORTFOLIO: t("perf.portfolio") }[k] || k);
   function initSection(keys, hostSel, fn, insertAfter) {
     let host = $(hostSel);
     if (!host && insertAfter) { host = elh("div", "book-tabs"); host.id = hostSel.slice(1); $(insertAfter).after(host); }
@@ -905,20 +918,16 @@
     return DATA.books[k];
   }
   function renderTrack(k) {
-    const b = bookOrCombined(k), h = b.headline, tr = b.track_record;
-    let cards;
-    if (b.combined) {
-      cards = [[t("stat.cagr"), fmtPct(h.cagr), h.cagr >= 0 ? "pos" : "neg"], [t("stat.sharpe"), h.sharpe, ""],
+    const b = (PERFDATA || {})[String(k).toLowerCase()];
+    if (!b) { const sr = $("#statRow"); if (sr) sr.innerHTML = `<p class="muted-note">—</p>`; return; }
+    const h = b.headline;
+    const cards = [[t("stat.cagr"), fmtPct(h.cagr), h.cagr >= 0 ? "pos" : "neg"], [t("stat.sharpe"), h.sharpe, ""],
       [t("stat.maxdd"), "-" + nf(Math.abs(h.max_dd)) + "%", "neg"], [t("stat.vol"), nf(h.ann_vol) + "%", ""]];
-    } else {
-      cards = [[t("stat.win"), nf(tr.win_rate) + "%", ""], [t("stat.trades"), fmtNum(tr.total_trades), ""],
-      [t("stat.cumret"), fmtPct(tr.total_pnl_pct), tr.total_pnl_pct >= 0 ? "pos" : "neg"], [t("stat.pf"), tr.profit_factor ?? "—", ""]];
-    }
     $("#statRow").innerHTML = cards.map(c => `<div class="stat"><div class="v ${c[2]}">${c[1]}</div><div class="l">${c[0]}</div></div>`).join("");
-    const benchName = b.combined ? null : (k === "US" ? t("legend.stratBench") : t("legend.stratBenchBR"));
+    const sub = $("#trackSub"); if (sub) sub.textContent = t("perf." + String(k).toLowerCase() + "D");
     $("#equitySub").textContent = `${h.total_return != null ? t("m.totalRet") + " " + fmtPct(h.total_return) + " · " : ""}CAGR ${fmtPct(h.cagr)} · Sharpe ${h.sharpe} · ${t("m.maxDD")} -${nf(Math.abs(h.max_dd))}%`;
-    $("#equityLegend").innerHTML = `<span class="lg"><span class="sw" style="background:var(--series)"></span>Seven7</span>` + (benchName ? `<span class="lg"><span class="sw dash"></span>${benchName}</span>` : "");
-    lineChart($("#equityChart"), b.equity_curve, { keys: benchName ? ["e", "b"] : ["e"], colors: ["var(--series)", "var(--bench)"], labels: ["Seven7", benchName || ""], dash: [false, true], asPctGrowth: true });
+    $("#equityLegend").innerHTML = `<span class="lg"><span class="sw" style="background:var(--series)"></span>${labelOf(k)}</span>`;
+    lineChart($("#equityChart"), b.equity_curve, { keys: ["e"], colors: ["var(--series)"], labels: [labelOf(k)], dash: [false], asPctGrowth: true });
     let dd = b.drawdown_curve;
     if (!dd) { let pk = -Infinity; dd = b.equity_curve.map(p => { pk = Math.max(pk, p.e); return { d: p.d, e: p.e / pk - 1 }; }); }
     $("#ddSub").textContent = `${t("dd.worst")} ${nf(Math.min(...dd.map(p => p.e)) * 100)}%`;

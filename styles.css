@@ -788,3 +788,5 @@ h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.02em;font-weight:680}
   .nav-auth .btn{width:100%;text-align:center;padding:12px}
   .nav-user{max-width:none}
 }
+
+.track-sub{margin:-6px 0 18px;max-width:680px}
