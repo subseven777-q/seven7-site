@@ -367,6 +367,9 @@ h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.02em;font-weight:680}
 .sig-levels{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:1px;margin-top:12px;background:var(--border);border:1px solid var(--border);border-radius:10px;overflow:hidden}
 .sig-levels .lvl{background:var(--surface);padding:11px 14px;display:flex;flex-direction:column;gap:3px}
 .sig-levels .lvl.cc{background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
+.sig-levels .lvl.trail{background:color-mix(in srgb,var(--pos) 8%,var(--surface))}
+.sig-trailnote{margin-top:10px;font-size:12.5px;line-height:1.5;color:var(--ink-2);background:color-mix(in srgb,var(--pos) 6%,var(--surface));border:1px solid color-mix(in srgb,var(--pos) 20%,var(--border));border-radius:9px;padding:9px 12px}
+.sig-upgradenote{font-size:11.5px;line-height:1.45;color:var(--muted);background:var(--surface-2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:8px 12px;margin-bottom:12px}
 .sig-levels .lk{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 .sig-levels .lv-v{font-family:ui-monospace,monospace;font-weight:700;font-size:15px}
 .sig-tablewrap{border:1px solid var(--border);border-radius:14px;overflow-x:hidden;overflow-y:auto;background:var(--surface);max-height:clamp(320px,46vh,520px)}

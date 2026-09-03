@@ -211,6 +211,9 @@
     "sig.stop": { en: "Stop", pt: "Stop" },
     "sig.tp": { en: "Target", pt: "Alvo" },
     "sig.cc": { en: "Covered call", pt: "Covered call" },
+    "sig.trail": { en: "Trail stop", pt: "Stop do trailing" },
+    "sig.trailNote": { en: "Enhanced dynamic: when price reaches {old} (the original target), move the stop up to {trail} — this halves your risk — and let it run to the target {tp}. The covered call (Elite) stays written at the original target {old}.", pt: "Dinâmica aprimorada: ao atingir {old} (o alvo original), suba o stop para {trail} — isso corta o risco pela metade — e deixe correr até o alvo {tp}. O covered call (Elite) permanece no alvo original {old}." },
+    "sig.upgradeNote": { en: "Strategy enhanced on 2026-09-02 (extended target + trailing). Historical track record reflects the rules in force at the time — we never rewrite past results.", pt: "Estratégia aprimorada em 02/09/2026 (alvo estendido + trailing). O histórico reflete as regras vigentes à época — nunca reescrevemos resultados passados." },
     "sig.stActive": { en: "ACTIVE", pt: "ATIVO" },
     "sig.stMon": { en: "MONITORING", pt: "MONITORANDO" },
     "sig.stFlat": { en: "CASH", pt: "CAIXA" },
@@ -779,6 +782,11 @@
   boot.then(d => { DATA = d; render(); }).catch(e => { render(); console.error(e); });
 
   function render() {
+    // preview localhost GLOBAL (vale em todas as páginas, não só members/monitor)
+    if (/[?&]preview=1/.test(location.search) && /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
+      PREVIEW = true; USER = USER || { id: "preview" };
+      PROFILE = PROFILE || { status: "active", plan: "elite", is_admin: true };
+    }
     injectChrome();
     applyStatic();
     loadBetas();
@@ -1144,11 +1152,16 @@
   const stLabel = s => (s === "ACTIVE" ? t("sig.stActive") : s === "MONITORING" ? t("sig.stMon") : t("sig.stFlat"));
 
   async function renderMemberSignals() {
-    if (document.body.dataset.page !== "signals" || !sb || !isMember()) return;
+    if (document.body.dataset.page !== "signals") return;
     const host = $("#radarHost"), tabsHost = $("#radarTabs");
     if (!host) return;
-    host.innerHTML = `<p class="muted-note">${t("sig.loading")}</p>`;
-    const { data, error } = await sb.from("signals").select("*");
+    let data = null, error = null;
+    if (sb && isMember()) {
+      host.innerHTML = `<p class="muted-note">${t("sig.loading")}</p>`;
+      ({ data, error } = await sb.from("signals").select("*"));
+    } else if (PREVIEW) {
+      data = previewSignals();                 // localhost preview only
+    } else { return; }
     if (error) { host.innerHTML = `<p class="muted-note">${t("sig.err")}</p>`; return; }
     SIGNALS = (data || []).filter(s => !s.ticker.startsWith("__")).sort((a, b) => a.ticker.localeCompare(b.ticker));  // ordem alfabética; exclui meta (__HEDGE__)
     const filters = [["ALL", t("sig.all")], ["US", "US"], ["BR", "BR"]];
@@ -1160,11 +1173,13 @@
       });
     }
     host.innerHTML = `
+      <div class="sig-upgradenote">${t("sig.upgradeNote")}</div>
       <div class="sig-viewbar" id="sigViewbar"></div>
       <div class="sig-chartcard">
         <div class="sig-charthead" id="sigChartHead"></div>
         <div class="tvchart" id="tvChart"></div>
         <div class="sig-levels" id="sigLevels"></div>
+        <div class="sig-trailnote" id="sigTrailNote"></div>
         <div class="sig-add" id="sigAdd"></div>
       </div>
       <div class="sig-tablewrap"><table class="sig-table" id="sigTable"></table></div>`;
@@ -1214,13 +1229,20 @@
     const head = $("#sigChartHead");
     if (head) head.innerHTML = `<div><span class="sig-tk">${s.ticker}</span> <span class="st ${stClass(s.state)}">${stLabel(s.state)}</span></div>
       <a class="sig-tv" href="https://www.tradingview.com/chart/?symbol=${encodeURIComponent(s.tv_symbol)}" target="_blank" rel="noopener">${t("sig.openTV")} ↗</a>`;
+    // NOVA dinamica: TP estendido + trailing. TP antigo (+1R) = gatilho do trail e strike do covered call.
+    const r2 = v => v == null ? null : Math.round(v * 100) / 100;
+    const tpOld = (s.cc_strike != null) ? s.cc_strike : (s.entry != null && s.stop != null ? r2(2 * s.entry - s.stop) : null);
+    const trailStop = (s.entry != null && s.stop != null) ? r2((s.entry + s.stop) / 2) : null;
     const lv = $("#sigLevels");
     if (lv) lv.innerHTML = `
       <div class="lvl"><span class="lk">${t("sig.entry")}</span><span class="lv-v">${fmtNum(s.entry)}</span></div>
       <div class="lvl"><span class="lk">${t("sig.stop")}</span><span class="lv-v neg">${fmtNum(s.stop)}</span></div>
       <div class="lvl"><span class="lk">${t("sig.tp")}</span><span class="lv-v pos">${fmtNum(s.tp)}</span></div>
       <div class="lvl"><span class="lk">R:R</span><span class="lv-v">${s.rr != null ? nf(s.rr, 2) : "—"}</span></div>
+      ${trailStop != null ? `<div class="lvl trail"><span class="lk">↗ ${t("sig.trail")}</span><span class="lv-v">${fmtNum(trailStop)}</span></div>` : ""}
       ${elite ? `<div class="lvl cc"><span class="lk">🍒 ${t("sig.cc")}</span><span class="lv-v">@${fmtNum(s.cc_strike)} · ${nf(s.cc_premium_pct, 1)}%</span></div>` : ""}`;
+    const tn = $("#sigTrailNote");
+    if (tn && trailStop != null && tpOld != null) tn.innerHTML = interp(t("sig.trailNote"), { old: fmtNum(tpOld), trail: fmtNum(trailStop), tp: fmtNum(s.tp) });
     const add = $("#sigAdd");
     if (add) {
       const cur = s.market === "BR" ? "R$" : "$";
@@ -1784,6 +1806,17 @@
       hm.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === bt));
       drawDivHeat();
     });
+  }
+  function previewSignals() {
+    // localhost preview only — sinais sinteticos com a NOVA dinamica (tp=+1.5R, cc_strike=+1R)
+    const mk = (ticker, tv, price, entry, stop, tp, ccstrike, rr, state) =>
+      ({ ticker, tv_symbol: tv, market: "US", state, dir: "BUY", price, entry, stop, tp,
+         cc_strike: ccstrike, cc_premium_pct: 0.8, rr, pct_in_range: 12.5 });
+    return [
+      mk("TMO", "TMO", 615, 607.5, 546.75, 698.62, 668.25, 1.5, "ACTIVE"),
+      mk("BMY", "BMY", 68.2, 67.5, 60.75, 77.62, 74.25, 1.5, "ACTIVE"),
+      mk("PGR", "PGR", 224, 222.75, 202.5, 251.99, 243.0, 1.44, "WAITING"),
+    ];
   }
   function previewDivRows() {
     // localhost preview only — synthetic holdings so the terminal renders without Supabase
