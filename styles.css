@@ -222,6 +222,19 @@ h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.02em;font-weight:680}
 .qcard .qv{font-size:29px;font-weight:750;letter-spacing:-.02em}
 .qcard .ql{font-size:12.5px;color:var(--ink-2);margin-top:4px;font-weight:600}
 .qcard .qd{font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.45}
+/* baskets por fórmula quant (dividendos, público) */
+.fb-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.fb-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:10px}
+.fb-card .fb-h{font-size:16px;font-weight:750;letter-spacing:-.01em}
+.fb-card .fb-sub{font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--accent);text-transform:uppercase;margin-top:-4px}
+.fb-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.fb-m{display:flex;flex-direction:column;gap:2px}
+.fb-m .fb-v{font-size:19px;font-weight:750;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.fb-m .fb-l{font-size:10px;color:var(--muted);line-height:1.2}
+.fb-foot{font-size:12px;color:var(--ink-2);font-weight:600}
+.fb-desc{font-size:11.5px;color:var(--muted);line-height:1.45}
+.fb-note{font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:12px;max-width:760px}
+@media(max-width:640px){.fb-metrics{grid-template-columns:1fr 1fr}}
 .qcard .verdict{position:absolute;top:16px;right:16px;font-size:10.5px;font-weight:700;letter-spacing:.04em;
   padding:3px 9px;border-radius:20px}
 .verdict.good{background:color-mix(in srgb,var(--pos) 15%,transparent);color:var(--pos)}

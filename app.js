@@ -14,7 +14,7 @@
   let sb = null, USER = null, PROFILE = null, PREVIEW = false;
   const isMember = () => PROFILE && PROFILE.status === "active";
 
-  let LANG = localStorage.getItem("seven7-lang") || "en";
+  let LANG = localStorage.getItem("seven7-lang") || "pt";   // padrão PT-BR (usuário novo entra em português)
   const locale = () => (LANG === "en" ? "en-US" : "pt-BR");
   const MONTHS = { en: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], pt: ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"] };
   const nf = (v, d = 1) => new Intl.NumberFormat(locale(), { minimumFractionDigits: d, maximumFractionDigits: d }).format(v);
@@ -242,6 +242,20 @@
     "div.tile.dripD": { en: "Total return with every dividend reinvested (DRIP).", pt: "Retorno total reinvestindo cada dividendo (DRIP)." },
     "div.salaryTitle": { en: "Dividend income per year, per {cur}100k invested", pt: "Renda de dividendos por ano, por {cur}100 mil aportados" },
     "div.salarySub": { en: "The income stream compounds as you accumulate more shares and payouts grow.", pt: "A renda cresce à medida que você acumula mais ações e os proventos aumentam." },
+    "div.fbKicker": { en: "QUANT LENSES", pt: "LENTES QUANTITATIVAS" },
+    "div.fbH": { en: "Investing only in the top 5 by each formula", pt: "Aportando só nas 5 melhores por cada fórmula" },
+    "div.fbSub": { en: "Three fundamental formulas, three baskets. Each holds only its <b>5 best-ranked</b> names, bought under our <b>buy-zone rule</b> and reinvested (DRIP). Nominal return and dividend yield, updated whenever the formula reranks.", pt: "Três fórmulas fundamentalistas, três cestas. Cada uma carrega só as <b>5 melhores</b> pelo seu critério, compradas dentro da nossa <b>zona de compra</b> e reinvestidas (DRIP). Retorno nominal e yield, atualizados sempre que a fórmula reordena." },
+    "div.fb.fscore": { en: "F-Score", pt: "F-Score" },
+    "div.fb.fscoreD": { en: "Piotroski financial strength — the 5 healthiest balance sheets.", pt: "Força financeira de Piotroski — os 5 balanços mais saudáveis." },
+    "div.fb.magic": { en: "Magic Formula", pt: "Fórmula Mágica" },
+    "div.fb.magicD": { en: "Greenblatt — cheapest × highest return on capital.", pt: "Greenblatt — mais barata × maior retorno sobre o capital." },
+    "div.fb.cons": { en: "Conservative Formula", pt: "Fórmula Conservadora" },
+    "div.fb.consD": { en: "van Vliet/Blitz — low volatility, high payout, momentum.", pt: "van Vliet/Blitz — baixa volatilidade, alto payout, momentum." },
+    "div.fb.topn": { en: "Top {n} · in the buy zone", pt: "Top {n} · na zona de compra" },
+    "div.fb.drip": { en: "Total return (DRIP)", pt: "Retorno total (DRIP)" },
+    "div.fb.cy": { en: "Current yield", pt: "Yield atual" },
+    "div.fb.incomeFoot": { en: "≈ {v}/yr income per 100k invested", pt: "≈ {v}/ano de renda por 100k aportados" },
+    "div.fb.note": { en: "Illustrative: today's top 5 by each formula, backtested under the buy-zone rule (10y, reinvested). Not live signals — the current picks are for members. Updates automatically when the formulas rerank.", pt: "Ilustrativo: as 5 melhores de hoje por cada fórmula, testadas sob a regra da zona de compra (10a, reinvestido). Não são sinais ao vivo — as escolhas atuais são para membros. Atualiza sozinho quando as fórmulas reordenam." },
     "div.benchKicker": { en: "HONEST COMPARISON", pt: "COMPARAÇÃO HONESTA" },
     "div.benchH": { en: "How it stacks up", pt: "Como se compara" },
     "div.benchSub": { en: "Same money, same dates, reinvested. An <b>income-first</b> strategy that pays far more cash than the risk-free rate — and, in the US, has beaten the index outright over the last decade.", pt: "Mesmo dinheiro, mesmas datas, reinvestido. Uma estratégia <b>income-first</b> que paga muito mais caixa que o risk-free — e, nos EUA, superou o próprio índice na última década." },
@@ -1748,6 +1762,29 @@
       `<div class="divbar-row"><span class="divbar-lbl">${x.label}</span>` +
       `<span class="divbar-track"><span class="divbar-fill ${x.hi ? "hi" : ""}" style="width:${Math.max(4, x.v / mx * 100).toFixed(1)}%"></span></span>` +
       `<span class="divbar-val ${x.hi ? "hi" : ""}">+${nf(x.v, 1)}%</span></div>`).join("") + `</div>`;
+
+    // Performance por FÓRMULA QUANT (top 5 de cada, na zona de compra) — público
+    const fb = M.formula_baskets || {}, fh = $("#divFormulas");
+    if (fh) {
+      const defs = [["fscore", t("div.fb.fscore"), t("div.fb.fscoreD")],
+                    ["magic", t("div.fb.magic"), t("div.fb.magicD")],
+                    ["cons", t("div.fb.cons"), t("div.fb.consD")]];
+      fh.innerHTML = `<div class="fb-grid">` + defs.map(([k, name, desc]) => {
+        const b = fb[k];
+        if (!b) return `<div class="fb-card"><div class="fb-h">${name}</div><div class="muted-note">—</div></div>`;
+        return `<div class="fb-card">
+          <div class="fb-h">${name}</div>
+          <div class="fb-sub">${interp(t("div.fb.topn"), { n: b.n })}</div>
+          <div class="fb-metrics">
+            <div class="fb-m"><span class="fb-v pos">+${nf(b.total_return_drip_pct, 1)}%</span><span class="fb-l">${t("div.fb.drip")}</span></div>
+            <div class="fb-m"><span class="fb-v">${nf(b.yield_on_cost_pct, 1)}%</span><span class="fb-l">${t("div.tile.yoc")}</span></div>
+            <div class="fb-m"><span class="fb-v">${b.current_yield_pct != null ? nf(b.current_yield_pct, 1) + "%" : "—"}</span><span class="fb-l">${t("div.fb.cy")}</span></div>
+          </div>
+          <div class="fb-foot">${interp(t("div.fb.incomeFoot"), { v: money0(b.annual_income_per_100k) })}</div>
+          <div class="fb-desc">${desc}</div>
+        </div>`;
+      }).join("") + `</div><p class="fb-note">${t("div.fb.note")}</p>`;
+    }
 
     const onMembers = document.body.dataset.page === "members";
     const cg = $("#divCore");
