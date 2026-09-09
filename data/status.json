@@ -1,19 +1,19 @@
 {
-  "last_run": "2026-09-05T15:26:37+00:00",
+  "last_run": "2026-09-08T22:32:14+00:00",
   "success": true,
-  "data_through": "2026-09-04",
+  "data_through": "2026-09-08",
   "steps": [
     {
       "step": "update_data",
       "ok": true,
       "returncode": 0,
-      "seconds": 123.0
+      "seconds": 37.0
     },
     {
       "step": "build_metrics",
       "ok": true,
       "returncode": 0,
-      "seconds": 91.0
+      "seconds": 7.0
     },
     {
       "step": "compute_fscores",
@@ -25,19 +25,19 @@
       "step": "compute_formulas",
       "ok": true,
       "returncode": 0,
-      "seconds": 129.0
+      "seconds": 1.0
     },
     {
       "step": "build_dividends",
       "ok": true,
       "returncode": 0,
-      "seconds": 57.0
+      "seconds": 70.0
     },
     {
       "step": "push_signals",
       "ok": true,
       "returncode": 0,
-      "seconds": 1.0
+      "seconds": 2.0
     },
     {
       "step": "push_dividend_signals",
@@ -49,13 +49,13 @@
       "step": "update_portfolios",
       "ok": true,
       "returncode": 0,
-      "seconds": 2.0
+      "seconds": 10.0
     },
     {
       "step": "compute_betas",
       "ok": true,
       "returncode": 0,
-      "seconds": 1.0
+      "seconds": 2.0
     },
     {
       "step": "markov3_monitor",
