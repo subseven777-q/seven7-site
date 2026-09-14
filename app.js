@@ -1987,10 +1987,56 @@
       `<div class="mon-tile"><div class="k">${x[0]}</div><div class="v ${x[3] || ""}">${x[1]}</div><div class="dd">${x[2]}</div></div>`).join("");
     const panels = (d.figs || []).map(f =>
       `<div class="mon-panel"><h2>${f.title}</h2><div class="mon-pd">${f.desc}</div><div id="mon_${f.id}" style="height:${f.height}px;width:100%"></div></div>`).join("");
+
+    // --- VOLATILIDADE & CONTINUAÇÃO por ação (admin-only) ---
+    let volBlock = "";
+    const v = d.vol;
+    if (v && v.rows && v.rows.length) {
+      const s = v.summary || {}, u = x => x == null ? "—" : x;
+      const vt = [
+        ["VIX · IMPLÍCITA 30d (MERCADO)", u(s.vix) + (s.vix != null ? "" : ""), "VIX9D (~7d): " + u(s.vix9d), "o"],
+        ["IV30 MEDIANA (BS, POR AÇÃO)", u(s.med_iv30) + "%", "realizada 30d: " + u(s.med_rv30) + "%", "b"],
+        ["IV7 MEDIANA (BS)", u(s.med_iv7) + "%", "realizada 7d: " + u(s.med_rv7) + "%", "b"],
+        ["σ* MEDIANA — VOL P/ CONTINUAR", u(s.med_vneed) + "%", "holding ~" + u(s.h_hold) + " pregões · θ=" + u(s.theta), "o"],
+        ["CONTINUAÇÃO FAVORECIDA", u(s.cont_favored) + "/" + u(s.n), u(s.cont_pct) + "% do universo têm combustível", "g"],
+      ];
+      const vtiles = vt.map(x => `<div class="mon-tile"><div class="k">${x[0]}</div><div class="v ${x[3] || ""}">${x[1]}</div><div class="dd">${x[2]}</div></div>`).join("");
+      const fuel = r => (r.iv30 != null && r.vneed) ? r.iv30 / r.vneed : ((r.rv30 != null && r.vneed) ? r.rv30 / r.vneed : -1);
+      const rows = v.rows.slice().sort((a, b) => fuel(b) - fuel(a));
+      const cnum = (x, suf) => x == null ? "—" : x + (suf || "");
+      const trs = rows.map(r => {
+        const fr = fuel(r);
+        return `<tr>
+          <td class="vt-tk"><b>${r.ticker}</b> <span class="vt-st ${r.state === "ACTIVE" ? "on" : ""}">${r.state}</span></td>
+          <td class="num">${cnum(r.rv7, "%")}</td><td class="num">${cnum(r.rv30, "%")}</td>
+          <td class="num b">${cnum(r.iv7, "%")}</td><td class="num b">${cnum(r.iv30, "%")}</td>
+          <td class="num o">${cnum(r.garch, "%")}</td>
+          <td class="num">${cnum(r.tp_dist_pct, "%")}</td>
+          <td class="num">${cnum(r.vneed, "%")}</td>
+          <td class="num">${cnum(r.pcont, "%")}</td>
+          <td class="num ${fr >= 1 ? "g" : ""}">${fr > 0 ? fr.toFixed(2) : "—"}</td>
+          <td class="ctr">${r.cont ? "<span class='g'>✓</span>" : "<span class='muted'>—</span>"}</td></tr>`;
+      }).join("");
+      volBlock = `<div class="mon-banner"><h3>VOLATILIDADE & CONTINUAÇÃO — POR AÇÃO</h3>
+        <p>Vol <b>implícita</b> (Black-Scholes, ATM 7d/30d), <b>realizada</b> (7d/30d) e <b>GARCH(1,1)</b> por ação.
+        A <b>continuação</b> (o breakout tocar o próximo nível) exige vol suficiente: <b>σ*</b> é a vol necessária
+        para 50% de chance de tocar o alvo em ~${u(s.h_hold)} pregões (difusão pura). <b>Combustível = IV30/σ*</b>
+        (≥1 = suficiente). P(cont.) inclui o drift de momentum (θ=${u(s.theta)}). Hoje: <b class="g">${u(s.cont_favored)}/${u(s.n)}</b>
+        ações com combustível para continuar.</p></div>
+        <div class="mon-tiles">${vtiles}</div>
+        <div class="mon-panel"><h2>Tabela — vol implícita · realizada · GARCH · vol necessária (ordenada por combustível)</h2>
+          <div class="mon-pd">IV = implícita (BS). RV = realizada. σ* = vol necessária p/ continuar. P(cont.) = prob. de tocar o alvo em ~${u(s.h_hold)}d (com drift). Combustível = IV30/σ*.</div>
+          <div class="voltable-wrap"><table class="voltable"><thead><tr>
+            <th>Ativo</th><th class="num">RV7</th><th class="num">RV30</th><th class="num">IV7</th><th class="num">IV30</th>
+            <th class="num">GARCH</th><th class="num">Alvo</th><th class="num">σ* precisa</th><th class="num">P(cont.)</th><th class="num">Combustível</th><th>Cont.</th>
+          </tr></thead><tbody>${trs}</tbody></table></div></div>`;
+    }
+
     host.innerHTML = `<section class="section mon">
       <div class="mon-tiles">${tiles}</div>
       <div class="mon-banner"><h3>${t("mon.bannerH")}</h3><p>${d.banner}</p></div>
       ${panels}
+      ${volBlock}
       <p class="mon-foot">${interp(t("mon.foot"), { updated: d.updated || "" })}</p></section>`;
     if (window.Plotly) (d.figs || []).forEach(f => {
       try { Plotly.newPlot("mon_" + f.id, f.data, f.layout, { displayModeBar: false, responsive: true }); } catch (e) {}

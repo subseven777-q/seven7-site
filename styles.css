@@ -633,6 +633,19 @@ h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.02em;font-weight:680}
 .mon-panel h2{font-size:16px;margin-bottom:2px}
 .mon-pd{color:#8a97a6;font-size:12px;margin-bottom:8px}
 .mon-foot{color:#8a97a6;font-size:11px;margin-top:8px}
+.mon .g{color:#34d8bf}.mon .b{color:#6ea8fe}.mon .o{color:#e6c34a}.mon .muted{color:#5b6b7f}
+/* tabela de vol & continuação (monitor) */
+.voltable-wrap{overflow-x:auto;max-height:560px;overflow-y:auto;border:1px solid #1e2b38;border-radius:10px}
+.voltable{width:100%;border-collapse:collapse;font-size:12.5px;min-width:820px}
+.voltable thead th{position:sticky;top:0;background:#0f1720;color:#8a97a6;font-size:10.5px;letter-spacing:.04em;
+  text-transform:uppercase;text-align:right;padding:9px 10px;border-bottom:1px solid #1e2b38;white-space:nowrap}
+.voltable thead th:first-child{text-align:left}
+.voltable td{padding:8px 10px;border-bottom:1px solid #16212c;font-variant-numeric:tabular-nums}
+.voltable td.num{text-align:right}.voltable td.ctr{text-align:center}
+.voltable tbody tr:hover{background:#0f1720}
+.voltable .vt-tk{white-space:nowrap}
+.voltable .vt-st{font-size:9.5px;color:#5b6b7f;border:1px solid #22303c;border-radius:5px;padding:1px 5px;margin-left:4px}
+.voltable .vt-st.on{color:#34d8bf;border-color:#1f5a4f}
 @media(max-width:900px){.mon-tiles{grid-template-columns:repeat(2,1fr)}}
 
 /* --- KMLM hedge card --- */
