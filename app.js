@@ -1997,7 +1997,7 @@
         ["VIX · IMPLÍCITA 30d (MERCADO)", u(s.vix) + (s.vix != null ? "" : ""), "VIX9D (~7d): " + u(s.vix9d), "o"],
         ["IV30 MEDIANA (BS, POR AÇÃO)", u(s.med_iv30) + "%", "realizada 30d: " + u(s.med_rv30) + "%", "b"],
         ["IV7 MEDIANA (BS)", u(s.med_iv7) + "%", "realizada 7d: " + u(s.med_rv7) + "%", "b"],
-        ["σ* MEDIANA — VOL P/ CONTINUAR", u(s.med_vneed) + "%", "holding ~" + u(s.h_hold) + " pregões · θ=" + u(s.theta), "o"],
+        ["σ† MEDIANA — VOL P/ CONTINUAR", u(s.med_vneed) + "%", "holding ~" + u(s.h_hold) + " pregões · θ=" + u(s.theta), "o"],
         ["CONTINUAÇÃO FAVORECIDA", u(s.cont_favored) + "/" + u(s.n), u(s.cont_pct) + "% do universo têm combustível", "g"],
       ];
       const vtiles = vt.map(x => `<div class="mon-tile"><div class="k">${x[0]}</div><div class="v ${x[3] || ""}">${x[1]}</div><div class="dd">${x[2]}</div></div>`).join("");
@@ -2019,16 +2019,16 @@
       }).join("");
       volBlock = `<div class="mon-banner"><h3>VOLATILIDADE & CONTINUAÇÃO — POR AÇÃO</h3>
         <p>Vol <b>implícita</b> (Black-Scholes, ATM 7d/30d), <b>realizada</b> (7d/30d) e <b>GARCH(1,1)</b> por ação.
-        A <b>continuação</b> (o breakout tocar o próximo nível) exige vol suficiente: <b>σ*</b> é a vol necessária
-        para 50% de chance de tocar o alvo em ~${u(s.h_hold)} pregões (difusão pura). <b>Combustível = IV30/σ*</b>
-        (≥1 = suficiente). P(cont.) inclui o drift de momentum (θ=${u(s.theta)}). Hoje: <b class="g">${u(s.cont_favored)}/${u(s.n)}</b>
-        ações com combustível para continuar.</p></div>
+        A <b>continuação</b> (o breakout tocar o próximo nível) fica mais provável que não quando há vol suficiente:
+        <b>σ†</b> é a vol necessária para <b>P(continuação)≥50%</b> em ~${u(s.h_hold)} pregões, já com o
+        <b>drift de momentum MEDIDO das ações</b> (θ=${u(s.theta)}, de 3442 trades). <b>Combustível = IV30/σ†</b>
+        (≥1 = favorecida). Hoje: <b class="g">${u(s.cont_favored)}/${u(s.n)}</b> ações com continuação favorecida.</p></div>
         <div class="mon-tiles">${vtiles}</div>
-        <div class="mon-panel"><h2>Tabela — vol implícita · realizada · GARCH · vol necessária (ordenada por combustível)</h2>
-          <div class="mon-pd">IV = implícita (BS). RV = realizada. σ* = vol necessária p/ continuar. P(cont.) = prob. de tocar o alvo em ~${u(s.h_hold)}d (com drift). Combustível = IV30/σ*.</div>
+        <div class="mon-panel"><h2>Tabela — vol implícita · realizada · GARCH · vol necessária σ† (ordenada por combustível)</h2>
+          <div class="mon-pd">IV = implícita (BS). RV = realizada. σ† = vol p/ P(cont.)≥50% (com o drift medido θ=${u(s.theta)}). P(cont.) = prob. de tocar o alvo em ~${u(s.h_hold)}d. Combustível = IV30/σ†.</div>
           <div class="voltable-wrap"><table class="voltable"><thead><tr>
             <th>Ativo</th><th class="num">RV7</th><th class="num">RV30</th><th class="num">IV7</th><th class="num">IV30</th>
-            <th class="num">GARCH</th><th class="num">Alvo</th><th class="num">σ* precisa</th><th class="num">P(cont.)</th><th class="num">Combustível</th><th>Cont.</th>
+            <th class="num">GARCH</th><th class="num">Alvo</th><th class="num">σ† precisa</th><th class="num">P(cont.)</th><th class="num">Combustível</th><th>Cont.</th>
           </tr></thead><tbody>${trs}</tbody></table></div></div>`;
     }
 
