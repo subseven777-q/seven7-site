@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-15 08:38",
+  "generated": "2026-09-16 08:11",
   "data_through": "2026-09-14",
   "markets": {
     "BR": {
@@ -19,17 +19,17 @@
         {
           "key": "index",
           "label": "BOVA11",
-          "ret": 85.4
+          "ret": 83.9
         },
         {
           "key": "divetf",
           "label": "DIVO11",
-          "ret": 114.8
+          "ret": 112.8
         },
         {
           "key": "riskfree",
           "label": "CDI",
-          "ret": 67.9
+          "ret": 68.0
         }
       ],
       "salary_by_year": {
