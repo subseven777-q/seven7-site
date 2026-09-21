@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-18 19:34",
+  "generated": "2026-09-21 19:32",
   "data_through": "2026-09-18",
   "markets": {
     "BR": {
@@ -8,11 +8,11 @@
       "currency": "R$",
       "years": 10,
       "headline": {
-        "yield_on_cost_pct": 10.06,
+        "yield_on_cost_pct": 10.28,
         "total_return_drip_pct": 146.0,
         "total_return_income_pct": 114.1,
         "div_collected_pct": 47.0,
-        "annual_income_per_100k": 10059.0,
+        "annual_income_per_100k": 10279.0,
         "invested_base": 758000.0
       },
       "benchmarks": [
@@ -29,7 +29,7 @@
         {
           "key": "riskfree",
           "label": "CDI",
-          "ret": 68.2
+          "ret": 68.3
         }
       ],
       "salary_by_year": {
@@ -42,7 +42,7 @@
         "2022": 52179.73,
         "2023": 48514.33,
         "2024": 50562.86,
-        "2025": 74148.8
+        "2025": 74166.88
       },
       "core_count": 20,
       "formula_baskets": {
@@ -52,25 +52,25 @@
           "n": 5,
           "total_return_drip_pct": 192.9,
           "total_return_income_pct": 149.2,
-          "yield_on_cost_pct": 10.8,
-          "current_yield_pct": 5.29,
-          "annual_income_per_100k": 10835.0
+          "yield_on_cost_pct": 10.9,
+          "current_yield_pct": 5.32,
+          "annual_income_per_100k": 10901.0
         },
         "magic": {
           "n": 5,
           "total_return_drip_pct": 161.1,
           "total_return_income_pct": 125.8,
-          "yield_on_cost_pct": 10.3,
-          "current_yield_pct": 5.77,
-          "annual_income_per_100k": 10301.0
+          "yield_on_cost_pct": 10.6,
+          "current_yield_pct": 5.94,
+          "annual_income_per_100k": 10615.0
         },
         "cons": {
           "n": 5,
           "total_return_drip_pct": 155.7,
           "total_return_income_pct": 116.5,
-          "yield_on_cost_pct": 12.6,
-          "current_yield_pct": 8.34,
-          "annual_income_per_100k": 12576.0
+          "yield_on_cost_pct": 12.9,
+          "current_yield_pct": 8.55,
+          "annual_income_per_100k": 12907.0
         }
       }
     },
