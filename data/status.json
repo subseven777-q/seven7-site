@@ -1,13 +1,13 @@
 {
-  "last_run": "2026-09-18T22:34:47+00:00",
+  "last_run": "2026-09-21T22:34:27+00:00",
   "success": true,
-  "data_through": "2026-09-18",
+  "data_through": "2026-09-21",
   "steps": [
     {
       "step": "update_data",
       "ok": true,
       "returncode": 0,
-      "seconds": 36.0
+      "seconds": 31.0
     },
     {
       "step": "build_metrics",
@@ -19,25 +19,25 @@
       "step": "compute_fscores",
       "ok": true,
       "returncode": 0,
-      "seconds": 125.0
+      "seconds": 1.0
     },
     {
       "step": "compute_formulas",
       "ok": true,
       "returncode": 0,
-      "seconds": 3.0
+      "seconds": 1.0
     },
     {
       "step": "build_dividends",
       "ok": true,
       "returncode": 0,
-      "seconds": 87.0
+      "seconds": 120.0
     },
     {
       "step": "push_signals",
       "ok": true,
       "returncode": 0,
-      "seconds": 2.0
+      "seconds": 1.0
     },
     {
       "step": "push_dividend_signals",
@@ -49,31 +49,31 @@
       "step": "update_portfolios",
       "ok": true,
       "returncode": 0,
-      "seconds": 12.0
+      "seconds": 10.0
     },
     {
       "step": "compute_betas",
       "ok": true,
       "returncode": 0,
-      "seconds": 3.0
+      "seconds": 2.0
     },
     {
       "step": "measure_theta",
       "ok": true,
       "returncode": 0,
-      "seconds": 2.0
+      "seconds": 1.0
     },
     {
       "step": "markov3_monitor",
       "ok": true,
       "returncode": 0,
-      "seconds": 2.0
+      "seconds": 86.0
     },
     {
       "step": "build_artifact",
       "ok": true,
       "returncode": 0,
-      "seconds": 1.0
+      "seconds": 0.0
     },
     {
       "step": "deploy",
