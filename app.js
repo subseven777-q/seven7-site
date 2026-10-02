@@ -586,6 +586,15 @@
     "acct.manage": { en: "Manage subscription", pt: "Gerenciar assinatura" },
     "acct.needLogin": { en: "You're not logged in", pt: "Você não está logado" },
     "acct.needLoginSub": { en: "Log in to see your account and subscription.", pt: "Entre para ver sua conta e assinatura." },
+    "acct.redeemH": { en: "Redeem a code", pt: "Resgatar um código" },
+    "acct.redeemSub": { en: "Got an Elite code from @seven7_quant on Instagram? Enter it below.", pt: "Recebeu um código Elite do @seven7_quant no Instagram? Digite abaixo." },
+    "acct.redeemPh": { en: "e.g. IG-XXXX-XXXX", pt: "ex.: IG-XXXX-XXXX" },
+    "acct.redeemBtn": { en: "Redeem", pt: "Resgatar" },
+    "acct.redeemOkEl": { en: "Done! Your account is now Elite.", pt: "Pronto! Sua conta agora é Elite." },
+    "acct.redeemErrInvalid": { en: "That code isn't valid.", pt: "Esse código não é válido." },
+    "acct.redeemErrUsed": { en: "This code has already been redeemed.", pt: "Esse código já foi resgatado." },
+    "acct.redeemErrUsedYou": { en: "You've already redeemed this code.", pt: "Você já resgatou esse código." },
+    "acct.redeemErrGeneric": { en: "Couldn't redeem the code. Try again.", pt: "Não foi possível resgatar o código. Tente de novo." },
     "auth.orTrial": { en: "or start a free trial", pt: "ou comece um teste grátis" },
     "page.plans.trial": { en: "Includes a 7-day free trial · cancel anytime", pt: "Inclui teste grátis de 7 dias · cancele quando quiser" },
   };
@@ -1113,11 +1122,12 @@
       const mod = await import("https://esm.sh/@supabase/supabase-js@2");
       sb = mod.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       const { data } = await sb.auth.getSession();
-      USER = data?.session?.user || null;
+      // preserva o USER semeado pelo preview localhost (sem sessao real) — nao afeta producao
+      USER = data?.session?.user || (PREVIEW ? USER : null);
       await loadProfile();
       updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio(); renderDivSignals(); renderMembers(); renderKmlmCard(); renderMonitor();
       sb.auth.onAuthStateChange(async (_ev, session) => {
-        USER = session?.user || null; await loadProfile(); updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio(); renderDivSignals(); renderMembers(); renderKmlmCard(); renderMonitor();
+        USER = session?.user || (PREVIEW ? USER : null); await loadProfile(); updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio(); renderDivSignals(); renderMembers(); renderKmlmCard(); renderMonitor();
       });
     } catch (e) { console.error("auth init failed", e); renderAccount(); }
     wireAuthForms();
@@ -1673,6 +1683,15 @@
         ? `<a class="btn btn-ghost btn-block" href="#" id="manageBtn">${t("acct.manage")}</a>`
         : `<div class="acct-upsell"><p>${t("acct.upsell")}</p><a class="btn btn-primary btn-block" href="plans.html">${t("acct.subscribe")}</a></div>`}
         <button class="btn btn-ghost btn-block" id="acctLogout">${t("auth.logout")}</button>
+      </div>
+      <div class="acct-card acct-redeem">
+        <h3>${t("acct.redeemH")}</h3>
+        <p class="acct-redeem-sub">${t("acct.redeemSub")}</p>
+        <div class="acct-redeem-row">
+          <input type="text" id="redeemInput" class="acct-redeem-in" placeholder="${t("acct.redeemPh")}" autocapitalize="characters" autocomplete="off">
+          <button class="btn btn-primary" id="redeemBtn">${t("acct.redeemBtn")}</button>
+        </div>
+        <p class="acct-redeem-msg" id="redeemMsg"></p>
       </div>`;
     const lo = $("#acctLogout"); if (lo) lo.onclick = async () => { if (sb) await sb.auth.signOut(); location.href = "index.html"; };
     const mb = $("#manageBtn");
@@ -1686,6 +1705,29 @@
         location.href = "mailto:support@seven7invest.com?subject=" + encodeURIComponent("Manage subscription — " + USER.email);
       }
     };
+    const ri = $("#redeemInput"), rb = $("#redeemBtn"), rm = $("#redeemMsg");
+    const doRedeem = async () => {
+      const code = (ri.value || "").trim();
+      if (!code || !sb) return;
+      rb.disabled = true; rm.className = "acct-redeem-msg"; rm.textContent = "…";
+      try {
+        const { data, error } = await sb.rpc("redeem_instagram_code", { p_code: code });
+        if (error) throw error;
+        if (data && data.ok) {
+          rm.className = "acct-redeem-msg ok"; rm.textContent = t("acct.redeemOkEl");
+          ri.value = ""; ri.disabled = true; rb.disabled = true;
+          await loadProfile(); updateAuthUI(); renderAccount();
+        } else {
+          const key = { invalid_code: "acct.redeemErrInvalid", already_used: "acct.redeemErrUsed",
+            already_used_by_you: "acct.redeemErrUsedYou" }[(data || {}).error] || "acct.redeemErrGeneric";
+          rm.className = "acct-redeem-msg err"; rm.textContent = t(key); rb.disabled = false;
+        }
+      } catch (e) {
+        rm.className = "acct-redeem-msg err"; rm.textContent = t("acct.redeemErrGeneric"); rb.disabled = false;
+      }
+    };
+    if (rb) rb.onclick = doRedeem;
+    if (ri) ri.onkeydown = ev => { if (ev.key === "Enter") doRedeem(); };
   }
 
   /* ---- toggles (theme + language) ---- */
