@@ -3,19 +3,26 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Performance — Seven7</title>
-<link rel="stylesheet" href="styles.css?v=56">
+<title>Results — Seven7</title>
+<link rel="stylesheet" href="styles.css?v=57">
 </head>
 <body data-page="performance">
 <div id="nav-root"></div>
 
 <div class="page-hero">
-  <div class="kicker" data-i18n="track.kicker"></div>
+  <div class="kicker" data-i18n="res.kicker"></div>
   <h1 data-i18n="track.h2"></h1>
-  <p class="sub" data-i18n="track.sub"></p>
+  <p class="sub" data-i18n="res.sub"></p>
 </div>
 
+<section class="section view-bar-wrap">
+  <div class="view-tabs" id="viewTabs" role="tablist"></div>
+</section>
+
+<!-- ===== Visão geral ===== -->
+<div class="view" data-view="overview">
 <section class="section">
+  <p class="sub view-intro" data-i18n="res.overviewIntro"></p>
   <div class="book-tabs" id="bookTabs"></div>
   <p class="sub track-sub" id="trackSub"></p>
   <div class="stat-row" id="statRow"></div>
@@ -39,9 +46,54 @@
     <div class="chart-body" id="ddChart"></div>
   </div>
 </section>
+</div>
+
+<!-- ===== Métricas ===== -->
+<div class="view" data-view="metrics" hidden>
+<section class="section">
+  <p class="sub view-intro" data-i18n-html="metrics.sub"></p>
+  <div class="section-head" id="quantHost"></div>
+  <div class="quant-grid" id="quantGrid"></div>
+
+  <div class="chart-card">
+    <div class="chart-head">
+      <div class="chart-title" data-i18n="heatmap.title"></div>
+      <div class="chart-sub" data-i18n="heatmap.sub"></div>
+    </div>
+    <div class="chart-body heatmap-body" id="monthlyHeatmap"></div>
+  </div>
+</section>
+
+<section class="section section-alt" id="cherry">
+  <div class="section-head">
+    <div class="kicker" data-i18n="cc.kicker"></div>
+    <h2 data-i18n="cc.h2"></h2>
+    <p class="sub" data-i18n="cc.sub"></p>
+  </div>
+  <div id="cherryHost"></div>
+</section>
+
+<section class="section" id="hedge">
+  <div class="section-head">
+    <div class="kicker" data-i18n="hedge.kicker"></div>
+    <h2 data-i18n="hedge.h2"></h2>
+    <p class="sub" data-i18n-html="hedge.sub"></p>
+  </div>
+  <div id="hedgeHost"></div>
+</section>
+</div>
+
+<!-- ===== Mês a mês ===== -->
+<div class="view" data-view="replay" hidden>
+<section class="section">
+  <p class="sub view-intro" data-i18n="replay.sub"></p>
+  <div class="book-tabs" id="replayTabs"></div>
+  <div class="table-wrap" id="replayHost"></div>
+</section>
+</div>
 
 <div id="footer-root"></div>
 <div class="tooltip" id="tooltip" hidden></div>
-<script src="app.js?v=56"></script>
+<script src="app.js?v=57"></script>
 </body>
 </html>

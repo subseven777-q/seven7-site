@@ -68,7 +68,7 @@
   /* ---------------- i18n dictionary ---------------- */
   const T = {
     "brand.tag": { en: "QUANTIFIED INVESTING", pt: "INVESTIMENTOS QUANTIFICADOS" },
-    "nav.perf": { en: "Performance", pt: "Desempenho" },
+    "nav.perf": { en: "Results", pt: "Resultados" },
     "nav.metrics": { en: "Metrics", pt: "Métricas" },
     "nav.signals": { en: "Live", pt: "Ao vivo" },
     "nav.dividends": { en: "Dividends", pt: "Dividendos" },
@@ -115,6 +115,15 @@
     "how.s3t": { en: "Track it in your portfolio", pt: "Acompanhe no seu portfólio" },
     "how.s3d": { en: "Log your positions and compare your result with the S&P 500 and Ibovespa, live.", pt: "Registre suas posições e compare seu resultado com o S&P 500 e o Ibovespa, ao vivo." },
     "home.explore": { en: "EXPLORE", pt: "EXPLORE" },
+    "res.kicker": { en: "RESULTS", pt: "RESULTADOS" },
+    "res.sub": { en: "Simulated over 10 years of real daily data, with costs. Pick what you want to see:", pt: "Simulado sobre 10 anos de dados diários reais, com custos. Escolha o que quer ver:" },
+    "res.overviewIntro": { en: "How the money grew and how deep the falls were — for each strategy.", pt: "Como o dinheiro cresceu e quão fundas foram as quedas — em cada estratégia." },
+    "res.tabOverview": { en: "Overview", pt: "Visão geral" },
+    "res.tabOverviewD": { en: "Growth and falls", pt: "Crescimento e quedas" },
+    "res.tabMetrics": { en: "Metrics", pt: "Métricas" },
+    "res.tabMetricsD": { en: "Risk and return in detail", pt: "Risco e retorno em detalhe" },
+    "res.tabReplay": { en: "Month by month", pt: "Mês a mês" },
+    "res.tabReplayD": { en: "Every closed month, no filter", pt: "Cada mês fechado, sem filtro" },
     "card.perfT": { en: "Results", pt: "Resultados" },
     "card.metricsT": { en: "Metrics", pt: "Métricas" },
     "card.divT": { en: "Dividends", pt: "Dividendos" },
@@ -146,6 +155,13 @@
     "radar.gateT": { en: "The live strategy is for members", pt: "A estratégia ao vivo é para membros" },
     "radar.gateS": { en: "Subscribers follow the systematic strategy's live positions, updated every day. First, judge it by the numbers — 10 years of real, auditable performance.", pt: "Assinantes acompanham as posições ao vivo da estratégia sistemática, atualizadas todo dia. Primeiro, julgue pelos números — 10 anos de desempenho real e auditável." },
     "radar.gateCta": { en: "See plans", pt: "Ver planos" },
+    "radar.fScan": { en: "stocks scanned every day", pt: "ações analisadas todo dia" },
+    "radar.fWin": { en: "of trades closed in profit (10y)", pt: "das operações no lucro (10 anos)" },
+    "radar.fUpd": { en: "last update", pt: "última atualização" },
+    "radar.b1": { en: "Entry, stop and target for every trade", pt: "Entrada, stop e alvo de cada operação" },
+    "radar.b2": { en: "Chart with the levels marked", pt: "Gráfico com os níveis marcados" },
+    "radar.b3": { en: "US + Brazil, updated every day", pt: "EUA + Brasil, atualizado todo dia" },
+    "radar.mockNote": { en: "Illustrative preview — the numbers behind the blur are not real signals.", pt: "Prévia ilustrativa — os números atrás do desfoque não são sinais reais." },
     "radar.gateAlt": { en: "See the 10-year performance first →", pt: "Ver o desempenho de 10 anos primeiro →" },
     "replay.kicker": { en: "LIVE REPLAY", pt: "LIVE REPLAY" },
     "replay.h2": { en: "Closed results, month by month.", pt: "Resultados concluídos, mês a mês." },
@@ -458,6 +474,15 @@
     "mcc.colWith": { en: "With covered call", pt: "Com covered call" },
     "mcc.note": { en: "10 years of simulated data on the same trades, with the covered-call premium modelled on each position.", pt: "Dados simulados de 10 anos das mesmas operações, com o prêmio do covered call modelado em cada posição." },
     "mem.pfH": { en: "Your portfolio", pt: "Seu portfólio" },
+    "desk.tabPf": { en: "My portfolio", pt: "Meu portfólio" },
+    "desk.tabPfD": { en: "Your positions and result", pt: "Suas posições e resultado" },
+    "desk.tabM3": { en: "Markov 3", pt: "Markov 3" },
+    "desk.tabM3D": { en: "Stocks: entry, stop, target", pt: "Ações: entrada, stop e alvo" },
+    "desk.tabDiv": { en: "Dividends", pt: "Dividendos" },
+    "desk.tabDivD": { en: "Long-term income", pt: "Renda de longo prazo" },
+    "desk.tabVid": { en: "Videos", pt: "Vídeos" },
+    "desk.tabVidD": { en: "Weekly market read", pt: "Leitura semanal do mercado" },
+    "desk.pfIntro": { en: "Log the trades you take and compare your result with the S&P 500 and the Ibovespa.", pt: "Registre as operações que você fizer e compare seu resultado com o S&P 500 e o Ibovespa." },
     "mem.gateLogin": { en: "The members area is for subscribers. Log in to enter.", pt: "A área de membros é para assinantes. Entre para acessar." },
     "mem.gateUpgrade": { en: "Subscribe to unlock the members area — live panels, videos and your portfolio.", pt: "Assine para liberar a área de membros — painéis ao vivo, vídeos e seu portfólio." },
     "mem.login": { en: "Log in", pt: "Entrar" },
@@ -473,28 +498,28 @@
     "pf.saved": { en: "Saved ✓ (metrics update at the next daily run)", pt: "Salvo ✓ (as métricas atualizam no próximo ciclo diário)" },
     "pf.value": { en: "Portfolio value", pt: "Valor do portfólio" },
     "pf.return": { en: "Total return", pt: "Retorno total" },
-    "pf.win": { en: "Win rate", pt: "Win rate" },
-    "pf.dd": { en: "Max drawdown", pt: "Max drawdown" },
+    "pf.win": { en: "Win rate", pt: "Taxa de acerto" },
+    "pf.dd": { en: "Max drawdown", pt: "Queda máxima" },
     "pf.drag": { en: "Vol drag", pt: "Vol drag" },
-    "pf.beta": { en: "Beta (5y)", pt: "Beta (5a)" },
+    "pf.beta": { en: "Beta", pt: "Beta" },
     "pf.clearPos": { en: "Clear positions", pt: "Zerar posições" },
     "pf.resetAll": { en: "Reset portfolio", pt: "Zerar portfólio" },
     "pf.clearConfirm": { en: "Remove ALL {n} positions? Your deposit is kept. This cannot be undone.", pt: "Remover TODAS as {n} posições? O depósito é mantido. Isso não pode ser desfeito." },
     "pf.resetConfirm": { en: "Full reset: remove all positions, clear history, and reset the deposit to the default. This cannot be undone. Continue?", pt: "Reinício total: remove todas as posições, limpa o histórico e volta o depósito ao padrão. Isso não pode ser desfeito. Continuar?" },
     "pf.frozenNote": { en: "Positions cleared — the metrics below are kept from your portfolio history. Use “Reset portfolio” to zero everything.", pt: "Posições zeradas — as métricas abaixo são mantidas do histórico do portfólio. Use “Zerar portfólio” para zerar tudo." },
     "pf.noOpenPos": { en: "No open positions.", pt: "Nenhuma posição aberta." },
-    "beta.title": { en: "Beta control (KMLM)", pt: "Controle de Beta (KMLM)" },
-    "beta.sub": { en: "Neutralize the portfolio's systematic (market) risk with KMLM — Markov 3 + Dividends included.", pt: "Neutralize o risco sistemático (de mercado) do portfólio com KMLM — inclui Markov 3 + Dividendos." },
-    "beta.net": { en: "Net beta now", pt: "β líquido atual" },
-    "beta.book": { en: "Equity book β", pt: "β do book de ações" },
+    "beta.title": { en: "Portfolio protection", pt: "Proteção da carteira" },
+    "beta.sub": { en: "Reduce how much your portfolio moves with the market using KMLM, the Elite protection asset (Markov 3 + Dividends included).", pt: "Reduza o quanto sua carteira oscila junto com o mercado usando o KMLM, o ativo de proteção do Elite (inclui Markov 3 + Dividendos)." },
+    "beta.net": { en: "Market sensitivity now", pt: "Sensibilidade ao mercado hoje" },
+    "beta.book": { en: "Stocks only", pt: "Só as ações" },
     "beta.kmlm": { en: "KMLM β", pt: "β do KMLM" },
-    "beta.curk": { en: "KMLM now", pt: "KMLM atual" },
-    "beta.neutro": { en: "Neutral (0)", pt: "Neutro (0)" },
+    "beta.curk": { en: "In protection (KMLM)", pt: "Em proteção (KMLM)" },
+    "beta.neutro": { en: "Full (0)", pt: "Total (0)" },
     "beta.half": { en: "Half", pt: "Metade" },
-    "beta.moderate": { en: "Moderate", pt: "Moderado" },
+    "beta.moderate": { en: "Light", pt: "Leve" },
     "beta.custom": { en: "Custom", pt: "Personalizado" },
-    "beta.note": { en: "Reallocation model: KMLM (β≈−0.14) is a weak beta hedge, so full neutrality needs a large KMLM sleeve. β is measured over 5 years and updated daily.", pt: "Modelo de realocação: o KMLM (β≈−0,14) é um hedge de beta fraco, então neutro total exige uma fatia grande de KMLM. β medido em 5 anos, atualizado diariamente." },
-    "beta.recLine": { en: "For β-target <b>{b}</b>: KMLM should be <b>{pct}%</b> of the portfolio (equities ~{eq}%).", pt: "Para β-alvo <b>{b}</b>: o KMLM deve ser <b>{pct}%</b> do portfólio (ações ~{eq}%)." },
+    "beta.note": { en: "KMLM moves only slightly against the market (≈ −0.14), so full protection needs a large slice of it. Measured over 5 years, updated daily.", pt: "O KMLM anda só um pouco contra o mercado (≈ −0,14), então proteção total exige uma fatia grande dele. Medido em 5 anos, atualizado todo dia." },
+    "beta.recLine": { en: "To reach <b>{b}</b>: KMLM should be <b>{pct}%</b> of the portfolio (stocks ~{eq}%).", pt: "Para chegar a <b>{b}</b>: o KMLM deve ser <b>{pct}%</b> da carteira (ações ~{eq}%)." },
     "beta.addLine": { en: "→ add {d} percentage points of KMLM.", pt: "→ adicionar {d} pontos percentuais de KMLM." },
     "beta.trimLine": { en: "→ trim {d} percentage points of KMLM.", pt: "→ reduzir {d} pontos percentuais de KMLM." },
     "beta.onTarget": { en: "→ already at target.", pt: "→ já está no alvo." },
@@ -515,6 +540,21 @@
     "pf.openst": { en: "OPEN", pt: "ABERTA" },
     "pf.pending": { en: "PENDING", pt: "PENDENTE" },
     "pf.remove": { en: "Remove", pt: "Remover" },
+    "pf.removeConfirm": { en: "Remove {tk} from your portfolio?", pt: "Remover {tk} do seu portfólio?" },
+    "pf.more": { en: "More options", pt: "Mais opções" },
+    "pf.clearPosD": { en: "Removes every position; keeps your deposit and history.", pt: "Remove todas as posições; mantém o depósito e o histórico." },
+    "pf.resetAllD": { en: "Starts from scratch: positions, history and deposit.", pt: "Começa do zero: posições, histórico e depósito." },
+    "pf.valueH": { en: "deposit + result", pt: "depósito + resultado" },
+    "pf.returnH": { en: "since your first trade", pt: "desde a primeira operação" },
+    "pf.winH": { en: "of trades closed in profit", pt: "das operações fecharam no lucro" },
+    "pf.ddH": { en: "biggest fall from a peak", pt: "maior queda a partir de um topo" },
+    "pf.openH": { en: "trades running now", pt: "operações em andamento" },
+    "pf.tech": { en: "Technical", pt: "Técnico" },
+    "pf.dragH": { en: "return lost to bumpiness", pt: "retorno perdido pelas oscilações" },
+    "pf.betaH": { en: "1.0 = moves like the market", pt: "1,0 = oscila igual ao mercado" },
+    "beta.explain": { en: "1.0 = your portfolio rises and falls like the market · 0 = it no longer depends on the market.", pt: "1,0 = sua carteira sobe e cai igual ao mercado · 0 = ela deixa de depender do mercado." },
+    "beta.ask": { en: "How much protection do you want?", pt: "Quanta proteção você quer?" },
+    "beta.target": { en: "Target", pt: "Alvo" },
     "pf.computing": { en: "Full metrics (drawdown, vol drag, benchmark curve) are computed daily — they'll appear after the next update.", pt: "As métricas completas (drawdown, vol drag, curva comparativa) são calculadas diariamente — aparecem após a próxima atualização." },
     "pf.curveSoon": { en: "Drawdown, vol drag and the benchmark curve for this view are computed daily — they appear after the next update.", pt: "O drawdown, o vol drag e a curva comparativa desta visão são calculados diariamente — aparecem após a próxima atualização." },
     "pf.stratAll": { en: "Combined", pt: "Conjunto" },
@@ -714,6 +754,11 @@
     crown: '<path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/>',
     lock: '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
     user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+    play: '<polygon points="6 3 20 12 6 21 6 3"/>',
+    more: '<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>',
+    down: '<path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/>',
+    fall: '<polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/>',
+    layers: '<path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>',
   };
   const ic = (n, cls = "") => `<svg class="ic ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n] || ""}</svg>`;
   const NAV_HTML = `
@@ -726,7 +771,6 @@
       <div class="nav-collapse" id="navCollapse">
         <nav class="nav-links">
           <a href="performance.html" data-page="performance" style="--tone:var(--c-cyan)">${ic("trend")}<span data-i18n="nav.perf"></span></a>
-          <a href="metrics.html" data-page="metrics" style="--tone:var(--c-violet)">${ic("gauge")}<span data-i18n="nav.metrics"></span></a>
           <a href="dividends.html" data-page="dividends" style="--tone:var(--c-amber)">${ic("coins")}<span data-i18n="nav.dividends"></span></a>
           <a href="signals.html" data-page="signals" style="--tone:var(--c-green)">${ic("live")}<span data-i18n="nav.signals"></span></a>
           <a href="plans.html" data-page="plans" style="--tone:var(--c-rose)">${ic("tag")}<span data-i18n="nav.plans"></span></a>
@@ -749,7 +793,7 @@
       <div class="footer-top">
         <div class="brand"><span class="brand-mark">${MARK_SVG}</span><span class="brand-name">Seven7</span></div>
         <div class="footer-links">
-          <a href="performance.html" data-i18n="nav.perf"></a><a href="metrics.html" data-i18n="nav.metrics"></a><a href="dividends.html" data-i18n="nav.dividends"></a><a href="replay.html" data-i18n="nav.replay"></a><a href="plans.html" data-i18n="nav.plans"></a>
+          <a href="performance.html" data-i18n="nav.perf"></a><a href="performance.html#metrics" data-i18n="nav.metrics"></a><a href="performance.html#replay" data-i18n="card.replayT"></a><a href="dividends.html" data-i18n="nav.dividends"></a><a href="plans.html" data-i18n="nav.plans"></a>
           <a href="terms.html" data-i18n="terms.title"></a><a href="privacy.html" data-i18n="privacy.title"></a><a href="disclosures.html" data-i18n="disc.title"></a>
         </div>
       </div>
@@ -910,6 +954,7 @@
       guard("#trustGrid", buildTrust);
       guard("#homeCards", buildHomeCards);
     }
+    guard("#viewTabs", initViews);
     guard("#divTiles", renderDividends);
     guard("#memberGate", renderMembers);
     guard("#monitorGate", renderMonitor);
@@ -1036,12 +1081,50 @@
       <div class="step-ic">${ic(s.i)}</div>
       <div class="step-t">${t(s.tt)}</div><div class="step-d">${s.d}</div></div>`).join("");
   }
+  // Resultados: 3 abas (Visão geral · Métricas · Mês a mês) numa página só; #hash = aba (link compartilhável)
+  // Abas grandes reutilizáveis: views = [{v, i, c, l, d}], hashMap = #hash → aba (a 1ª aba é a padrão)
+  function setupViews(bar, views, hashMap) {
+    const dflt = views[0].v;
+    bar.innerHTML = views.map(x => `<button class="view-tab" role="tab" data-v="${x.v}" style="--tone:${x.c}">
+      <span class="vt-ic">${ic(x.i)}</span><span class="vt-txt"><b>${t(x.l)}</b><small>${t(x.d)}</small></span></button>`).join("");
+    const show = (v, scrollEl) => {
+      $$(".view[data-view]").forEach(el => { el.hidden = el.dataset.view !== v; });
+      $$(".view-tab", bar).forEach(b => { const on = b.dataset.v === v; b.classList.toggle("on", on); b.setAttribute("aria-selected", on); });
+      redrawCharts();
+      if (scrollEl) setTimeout(() => scrollEl.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
+    };
+    $$(".view-tab", bar).forEach(b => b.onclick = () => {
+      history.replaceState(null, "", b.dataset.v === dflt ? location.pathname : "#" + b.dataset.v);
+      show(b.dataset.v, bar);
+    });
+    const h = location.hash.slice(1);
+    const v = hashMap[h] || dflt;
+    const target = h && hashMap[h] && h !== v ? document.getElementById(h) : null;   // âncora dentro da aba (#cherry)
+    show(v, target);
+  }
+  function initViews() {
+    const bar = $("#viewTabs"); if (!bar) return;
+    setupViews(bar, [
+      { v: "overview", i: "trend", c: "var(--c-cyan)", l: "res.tabOverview", d: "res.tabOverviewD" },
+      { v: "metrics", i: "gauge", c: "var(--c-violet)", l: "res.tabMetrics", d: "res.tabMetricsD" },
+      { v: "replay", i: "history", c: "var(--c-rose)", l: "res.tabReplay", d: "res.tabReplayD" },
+    ], { overview: "overview", metrics: "metrics", cherry: "metrics", hedge: "metrics", replay: "replay" });
+  }
+  function initDeskViews() {
+    const bar = $("#deskTabs"); if (!bar) return;
+    setupViews(bar, [
+      { v: "portfolio", i: "wallet", c: "var(--c-cyan)", l: "desk.tabPf", d: "desk.tabPfD" },
+      { v: "markov3", i: "trend", c: "var(--c-violet)", l: "desk.tabM3", d: "desk.tabM3D" },
+      { v: "dividends", i: "coins", c: "var(--c-amber)", l: "desk.tabDiv", d: "desk.tabDivD" },
+      { v: "videos", i: "play", c: "var(--c-rose)", l: "desk.tabVid", d: "desk.tabVidD" },
+    ], { portfolio: "portfolio", markov3: "markov3", dividends: "dividends", videos: "videos" });
+  }
   function buildHomeCards() {
     const cards = [
       { p: "performance.html", k: "card.perfT", d: "card.perf.d", i: "trend", c: "var(--c-cyan)" },
-      { p: "metrics.html", k: "card.metricsT", d: "card.metrics.d", i: "gauge", c: "var(--c-violet)" },
+      { p: "performance.html#metrics", k: "card.metricsT", d: "card.metrics.d", i: "gauge", c: "var(--c-violet)" },
       { p: "dividends.html", k: "card.divT", d: "card.div.d", i: "coins", c: "var(--c-amber)" },
-      { p: "replay.html", k: "card.replayT", d: "card.replay.d", i: "history", c: "var(--c-rose)" },
+      { p: "performance.html#replay", k: "card.replayT", d: "card.replay.d", i: "history", c: "var(--c-rose)" },
     ];
     $("#homeCards").innerHTML = cards.map(c => `<a class="home-card" href="${c.p}" style="--tone:${c.c}">
       <div class="hc-ic">${ic(c.i)}</div>
@@ -1066,7 +1149,7 @@
     lineChart($("#equityChart"), b.equity_curve, { keys: ["e"], colors: ["var(--series)"], labels: [labelOf(k)], dash: [false], asPctGrowth: true });
     let dd = b.drawdown_curve;
     if (!dd) { let pk = -Infinity; dd = b.equity_curve.map(p => { pk = Math.max(pk, p.e); return { d: p.d, e: p.e / pk - 1 }; }); }
-    $("#ddSub").textContent = `${t("dd.worst")} ${nf(Math.min(...dd.map(p => p.e)) * 100)}%`;
+    $("#ddSub").textContent = `${t("dd.worst")} -${nf(Math.abs(h.max_dd != null ? h.max_dd : Math.min(...dd.map(p => p.e)) * 100))}%`;
     areaChart($("#ddChart"), dd, { color: "var(--neg)" });
   }
   function renderMetrics(k) {
@@ -1133,7 +1216,7 @@
         <div class="ct-sub">${t("cherry.teaserSub")}</div>
         <div class="ct-chips">${chips.map(c => `<span class="ct-chip"><b>${c[0]}</b>${c[1]}</span>`).join("")}</div>
       </div>
-      <a class="btn btn-primary" href="metrics.html#cherry">${t("cherry.teaserCta")}</a>
+      <a class="btn btn-primary" href="performance.html#cherry">${t("cherry.teaserCta")}</a>
     </div>`;
   }
 
@@ -1171,13 +1254,52 @@
   function renderRadar() {
     const host = $("#radarHost"); if (!host) return;
     const asof = $("#radarAsOf"); if (asof) asof.textContent = "";
+    // Prévia BORRADA com dados 100% FICTÍCIOS (tickers mascarados, números sintéticos) — nenhum sinal real
+    // sai daqui; os reais vêm do Supabase (RLS) em renderMemberSignals, que sobrescreve este host p/ membros.
+    let seed = 7;
+    const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+    const rows = Array.from({ length: 7 }, (_, i) => {
+      const px = 40 + rnd() * 260, entry = px * (0.97 + rnd() * 0.04), stop = entry * (0.9 + rnd() * 0.04), tp = entry * (1.06 + rnd() * 0.06);
+      return { mkt: i % 3 === 2 ? "BR" : "US", px, entry, stop, tp, rr: (tp - entry) / (entry - stop) };
+    });
+    const W = 600, H = 170;
+    const pts = Array.from({ length: 60 }, (_, i) => 95 - i * 0.55 + Math.sin(i / 4) * 9 + Math.sin(i / 1.7) * 3);
+    const path = pts.map((y, i) => (i ? "L" : "M") + (i * W / 59).toFixed(1) + " " + y.toFixed(1)).join("");
+    const lvl = (y, c, lab) => `<line x1="0" x2="${W}" y1="${y}" y2="${y}" style="stroke:${c}" stroke-width="1.5" stroke-dasharray="5 4"/><text x="${W - 4}" y="${y - 5}" text-anchor="end" style="fill:${c}" font-size="11" font-weight="700">${lab}</text>`;
+    const us = DATA && DATA.books && DATA.books.US;
+    const nSym = DATA ? Object.values(DATA.books).reduce((a, b) => a + (b.n_symbols_traded || 0), 0) : null;
+    const dt = DATA && /^\d{4}-\d{2}-\d{2}$/.test(DATA.data_through || "") ? new Date(DATA.data_through + "T12:00:00").toLocaleDateString(locale()) : "";
+    const facts = [
+      nSym ? [ic("radar"), fmtNum(nSym), t("radar.fScan"), "var(--c-violet)"] : null,
+      us ? [ic("trophy"), nf(us.track_record.win_rate, 1) + "%", t("radar.fWin"), "var(--c-amber)"] : null,
+      dt ? [ic("history"), dt, t("radar.fUpd"), "var(--c-cyan)"] : null,
+    ].filter(Boolean);
     host.innerHTML = `
-      <div class="radar-gate">
-        <div class="rg-lock">🔒</div>
-        <div class="rg-title">${t("radar.gateT")}</div>
-        <div class="rg-sub">${t("radar.gateS")}</div>
-        <a class="btn btn-primary btn-lg" href="plans.html">${t("radar.gateCta")}</a>
-        <a class="rg-alt" href="metrics.html">${t("radar.gateAlt")}</a>
+      ${facts.length ? `<div class="rp-facts">${facts.map(f => `<div class="rp-fact" style="--tone:${f[3]}"><span class="rp-fic">${f[0]}</span><b>${f[1]}</b><small>${f[2]}</small></div>`).join("")}</div>` : ""}
+      <div class="rp-wrap">
+        <div class="rp-mock" aria-hidden="true">
+          <div class="rp-pills"><span class="rp-pill on"><b>●●</b> ${t("sig.active")}</span><span class="rp-pill"><b>●●</b> ${t("sig.monitoring")}</span></div>
+          <div class="rp-chart"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+            <path d="${path}" fill="none" style="stroke:var(--c-cyan)" stroke-width="2.4"/>
+            ${lvl(40, "var(--pos)", t("sig.tp"))}${lvl(78, "var(--c-cyan)", t("sig.entry"))}${lvl(128, "var(--neg)", t("sig.stop"))}
+          </svg></div>
+          <table class="sig-table rp-table"><thead><tr><th>${t("sig.ticker")}</th><th class="num">${t("sig.price")}</th><th class="num">${t("sig.entry")}</th><th class="num">${t("sig.stop")}</th><th class="num">${t("sig.tp")}</th><th class="num">R:R</th></tr></thead>
+          <tbody>${rows.map(r => `<tr><td class="tk-cell">▮▮▮▮ <span class="mkt">${r.mkt}</span></td><td class="num">${nf(r.px, 2)}</td><td class="num">${nf(r.entry, 2)}</td><td class="num neg">${nf(r.stop, 2)}</td><td class="num pos">${nf(r.tp, 2)}</td><td class="num">${nf(r.rr, 2)}</td></tr>`).join("")}</tbody></table>
+        </div>
+        <div class="rp-overlay">
+          <div class="rp-card">
+            <div class="rp-lock">${ic("lock")}</div>
+            <div class="rg-title">${t("radar.gateT")}</div>
+            <ul class="rp-list">
+              <li>${ic("target")}${t("radar.b1")}</li>
+              <li>${ic("trend")}${t("radar.b2")}</li>
+              <li>${ic("globe")}${t("radar.b3")}</li>
+            </ul>
+            <a class="btn btn-primary btn-lg" href="plans.html">${t("radar.gateCta")}</a>
+            <a class="rg-alt" href="performance.html">${t("radar.gateAlt")}</a>
+            <div class="rp-note">${t("radar.mockNote")}</div>
+          </div>
+        </div>
       </div>`;
   }
   function moLabel(ym) { const [y, m] = ym.split("-"); return `${MONTHS[LANG][+m - 1]}/${y.slice(2)}`; }
@@ -1457,7 +1579,7 @@
         const msg = $("#addMsg"), btn = $("#addPortfolioBtn"); btn.disabled = true;
         const err = await addPosition(s, pct);
         if (err) { msg.textContent = t("sig.addErr"); msg.className = "add-msg err"; }
-        else { msg.innerHTML = `${t("sig.added")} <a href="portfolio.html">${t("sig.goPortfolio")}</a>`; msg.className = "add-msg ok"; }
+        else { msg.innerHTML = `${t("sig.added")} <a href="members.html#portfolio">${t("sig.goPortfolio")}</a>`; msg.className = "add-msg ok"; }
         btn.disabled = false;
       };
     }
@@ -1549,14 +1671,14 @@
     const curKmlmPct = sleeve > 0 ? kAlloc / sleeve * 100 : 0;
     const presets = [["neutro", t("beta.neutro")], ["half", t("beta.half")], ["moderate", t("beta.moderate")], ["custom", t("beta.custom")]];
     host.innerHTML = `<div class="chart-card beta-card">
-      <div class="chart-head"><div><div class="chart-title">${t("beta.title")}</div><div class="chart-sub">${t("beta.sub")}</div></div></div>
+      <div class="chart-head"><div class="beta-head"><span class="beta-hic">${ic("shield")}</span><div><div class="chart-title">${t("beta.title")}</div><div class="chart-sub">${t("beta.sub")}</div></div></div></div>
       <div class="beta-now">
         <div class="beta-metric"><div class="bm-v">${nf(betaNet, 2)}</div><div class="bm-l">${t("beta.net")}</div></div>
         <div class="beta-metric"><div class="bm-v">${nf(betaL, 2)}</div><div class="bm-l">${t("beta.book")}</div></div>
-        <div class="beta-metric"><div class="bm-v">${nf(betaK, 2)}</div><div class="bm-l">${t("beta.kmlm")}</div></div>
         <div class="beta-metric"><div class="bm-v">${nf(curKmlmPct, 0)}%</div><div class="bm-l">${t("beta.curk")}</div></div>
       </div>
-      <div class="beta-eq">| Σ βᵢ·wᵢ | = <b>${nf(Math.abs(betaNet), 2)}</b></div>
+      <div class="beta-explain">${t("beta.explain")}</div>
+      <div class="beta-ask">${t("beta.ask")}</div>
       <div class="seg beta-presets" id="betaPresets">${presets.map(p => `<button data-m="${p[0]}" class="${BETA_MODE === p[0] ? "on" : ""}">${p[1]}</button>`).join("")}</div>
       <div class="beta-slider ${BETA_MODE === "custom" ? "" : "off"}" id="betaSliderWrap">
         <input type="range" id="betaSlider" min="0" max="${Math.max(0.1, betaL).toFixed(2)}" step="0.01" value="${(BETA_CUSTOM != null ? BETA_CUSTOM : betaL / 2).toFixed(2)}">
@@ -1586,7 +1708,7 @@
     const w = betaL > betaK ? (betaL - tgt) / (betaL - betaK) : 0;   // fração do sleeve em KMLM (realocação)
     const kmlmPct = Math.max(0, Math.min(100, w * 100));
     const delta = kmlmPct - curKmlmPct;
-    const sv = $("#betaSliderV"); if (sv) sv.textContent = "β-alvo " + nf(tgt, 2);
+    const sv = $("#betaSliderV"); if (sv) sv.textContent = t("beta.target") + " " + nf(tgt, 2);
     host.innerHTML = `<div class="beta-rec">
       <div class="br-line">${interp(t("beta.recLine"), { pct: nf(kmlmPct, 0), eq: nf(100 - kmlmPct, 0), b: nf(tgt, 2) })}</div>
       ${Math.abs(delta) < 1 ? `<div class="br-ok">${t("beta.onTarget")}</div>`
@@ -1663,14 +1785,23 @@
     const dispRet = frozen ? d.total_return : you;
     const dispWin = frozen ? d.win_rate : cs.win_rate;
 
-    let html = `<div class="pf-deposit">
-      <label>${t("pf.deposit")}</label>
-      <div class="pf-dep-in"><span>${sym}</span><input id="pfDeposit" type="number" value="${deposit}" min="0" step="100"></div>
-      <button class="btn btn-ghost" id="pfSaveDep">${t("pf.save")}</button>
-      ${isElite && positions.length ? `<button class="btn btn-ghost" id="pfExport">⇩ ${t("pf.export")}</button>` : ""}
-      ${positions.length ? `<button class="btn btn-danger" id="pfClear">${t("pf.clearPos")}</button>` : ""}
-      ${(positions.length || frozen) ? `<button class="btn btn-danger" id="pfReset">${t("pf.resetAll")}</button>` : ""}
-      <span class="add-msg" id="pfDepMsg"></span></div>`;
+    // barra: depósito em destaque; ações destrutivas escondidas em "Mais opções" (não competem com Salvar)
+    const danger = (positions.length || frozen) ? `<details class="pf-more">
+        <summary>${ic("more")}${t("pf.more")}</summary>
+        <div class="pf-more-body">
+          ${positions.length ? `<div class="pf-more-row"><div><b>${t("pf.clearPos")}</b><small>${t("pf.clearPosD")}</small></div><button class="btn btn-danger" id="pfClear">${t("pf.clearPos")}</button></div>` : ""}
+          <div class="pf-more-row"><div><b>${t("pf.resetAll")}</b><small>${t("pf.resetAllD")}</small></div><button class="btn btn-danger" id="pfReset">${t("pf.resetAll")}</button></div>
+        </div></details>` : "";
+    let html = `<div class="pf-toolbar">
+      <div class="pf-deposit">
+        <label for="pfDeposit">${ic("wallet")}${t("pf.deposit")}</label>
+        <div class="pf-dep-in"><span>${sym}</span><input id="pfDeposit" type="number" value="${deposit}" min="0" step="100"></div>
+        <button class="btn btn-primary" id="pfSaveDep">${t("pf.save")}</button>
+        ${isElite && positions.length ? `<button class="btn btn-ghost" id="pfExport">${ic("down")}${t("pf.export")}</button>` : ""}
+        <span class="add-msg" id="pfDepMsg"></span>
+      </div>
+      ${danger}
+    </div>`;
 
     if (hasPo3 && hasDiv) {
       html += `<div class="seg pf-stratseg" id="pfStratSeg">
@@ -1685,15 +1816,21 @@
         <div class="pf-empty-s">${t("pf.emptyS")}</div><a class="btn btn-primary" href="signals.html">${t("pf.emptyCta")}</a></div>`;
     } else {
       if (frozen) html += `<div class="hedge-note" style="margin-bottom:14px">${t("pf.frozenNote")}</div>`;
-      html += `<div class="pf-tiles">
-        <div class="stat"><div class="v">${money(dispVal)}</div><div class="l">${t("pf.value")}</div></div>
-        <div class="stat"><div class="v ${dispRet >= 0 ? "pos" : "neg"}">${dispRet == null ? "—" : fmtPct(dispRet)}</div><div class="l">${t("pf.return")}</div></div>
-        <div class="stat"><div class="v">${dispWin != null ? nf(dispWin, 0) + "%" : "—"}</div><div class="l">${t("pf.win")}</div></div>
-        <div class="stat"><div class="v neg">${eng && eng.max_dd != null ? "-" + nf(eng.max_dd, 1) + "%" : "—"}</div><div class="l">${t("pf.dd")}</div></div>
-        <div class="stat"><div class="v">${eng && eng.vol_drag != null ? nf(eng.vol_drag, 2) + "%" : "—"}</div><div class="l">${t("pf.drag")}</div></div>
-        <div class="stat"><div class="v">${pfBeta != null ? nf(pfBeta, 2) : "—"}</div><div class="l">${t("pf.beta")}</div></div>
-        <div class="stat"><div class="v">${cs.n_open}</div><div class="l">${t("pf.open")}</div></div>
-      </div>`;
+      // 5 números principais com ícone e explicação curta; os técnicos (vol drag, beta) numa linha discreta
+      const tiles = [
+        { i: "wallet", c: "var(--c-cyan)", v: money(dispVal), cls: "", l: t("pf.value"), h: t("pf.valueH") },
+        { i: "trend", c: "var(--c-green)", v: dispRet == null ? "—" : fmtPct(dispRet), cls: dispRet >= 0 ? "pos" : "neg", l: t("pf.return"), h: t("pf.returnH") },
+        { i: "trophy", c: "var(--c-amber)", v: dispWin != null ? nf(dispWin, 0) + "%" : "—", cls: "", l: t("pf.win"), h: t("pf.winH") },
+        { i: "fall", c: "var(--c-rose)", v: eng && eng.max_dd != null ? "-" + nf(eng.max_dd, 1) + "%" : "—", cls: "neg", l: t("pf.dd"), h: t("pf.ddH") },
+        { i: "layers", c: "var(--c-violet)", v: String(cs.n_open), cls: "", l: t("pf.open"), h: t("pf.openH") },
+      ];
+      html += `<div class="pf-tiles">${tiles.map(x => `<div class="hstat pf-tile" style="--tone:${x.c}">
+          <div class="hstat-ic">${ic(x.i)}</div>
+          <div><div class="v ${x.cls}">${x.v}</div><div class="l">${x.l}</div><div class="h">${x.h}</div></div></div>`).join("")}</div>
+        <div class="pf-tech">${t("pf.tech")}:
+          <span title="${t("pf.dragH")}">${t("pf.drag")} <b>${eng && eng.vol_drag != null ? nf(eng.vol_drag, 2) + "%" : "—"}</b></span>
+          <span title="${t("pf.betaH")}">${t("pf.beta")} <b>${pfBeta != null ? nf(pfBeta, 2) : "—"}</b> <small>(${t("pf.betaH")})</small></span>
+        </div>`;
       // benchmark headline + chart
       html += `<div class="pf-vs">
         <span class="pf-vs-you">${t("pf.you")}: <b class="${dispRet >= 0 ? "pos" : "neg"}">${dispRet == null ? "—" : fmtPct(dispRet)}</b></span>
@@ -1706,7 +1843,7 @@
       } else {
         html += `<p class="hedge-note">${t("pf.curveSoon")}</p>`;
       }
-      if (!frozen) html += `<div id="betaCtrlHost"></div>`;
+      if (!frozen && isElite) html += `<div id="betaCtrlHost"></div>`;   // ativo de proteção = exclusivo Elite
       // positions table (ou nota quando as posições foram zeradas mas as métricas ficaram)
       if (frozen) {
         html += `<p class="hedge-note" style="margin-top:16px">${t("pf.noOpenPos")}</p>`;
@@ -1720,7 +1857,7 @@
             <td class="num">${fmtNum(p.entry)}</td><td class="num">${fmtNum(p.current_price ?? p.entry)}</td>
             <td><span class="st ${stcls}">${stl}</span></td>
             <td class="num ${retc}">${p.status === "pending" ? "—" : (p.ret_pct == null ? "—" : fmtPct(p.ret_pct))}</td>
-            <td><button class="pf-del" data-id="${p.id}" title="${t("pf.remove")}">✕</button></td></tr>`;
+            <td><button class="pf-del" data-id="${p.id}" data-tk="${esc(p.ticker)}" title="${t("pf.remove")}" aria-label="${t("pf.remove")} ${esc(p.ticker)}">${ic("x")}</button></td></tr>`;
         }).join("");
         html += `<div class="table-wrap blotter-scroll" style="margin-top:18px"><table class="sig-table"><thead><tr>
           <th>${t("sig.ticker")}</th><th>${t("pf.added")}</th><th class="num">${t("pf.alloc")}</th><th class="num">${t("sig.entry")}</th><th class="num">${t("pf.current")}</th><th>${t("sig.state")}</th><th class="num">${t("pf.pl")}</th><th></th>
@@ -1729,7 +1866,7 @@
     }
     host.innerHTML = html;
     cardify(host.querySelector(".blotter-scroll table"));
-    if (!frozen && positions.length) renderBetaControl(positions, deposit);
+    if (!frozen && positions.length && isElite) renderBetaControl(positions, deposit);
 
     const seg = $("#pfStratSeg");
     if (seg) seg.querySelectorAll("button").forEach(b => b.onclick = () => { PF_STRAT = b.dataset.s; renderPortfolio(); });
@@ -1740,6 +1877,8 @@
       const m = $("#pfDepMsg"); m.textContent = error ? t("sig.addErr") : t("pf.saved"); m.className = "add-msg " + (error ? "err" : "ok");
     };
     host.querySelectorAll(".pf-del").forEach(b => b.onclick = async () => {
+      if (!sb || !USER || USER.id === "preview") return;
+      if (!confirm(interp(t("pf.removeConfirm"), { tk: b.dataset.tk || "" }))) return;
       await sb.from("portfolio_positions").delete().eq("id", b.dataset.id); renderPortfolio();
     });
     const exp = $("#pfExport");
@@ -2230,6 +2369,7 @@
     if (!USER) { gate.innerHTML = teaser("mem.gateLogin", "mem.login", "login.html"); if (content) content.hidden = true; return; }
     if (!isMember()) { gate.innerHTML = teaser("mem.gateUpgrade", "mem.plans", "plans.html"); if (content) content.hidden = true; return; }
     gate.innerHTML = ""; if (content) content.hidden = false;
+    initDeskViews();
     if (DATA) guard("#po3Tabs", () => initSection(["US", "BR"], "#po3Tabs", renderPO3Panel));
     renderDividends(); renderVideos(); renderPortfolio(); renderKmlmCard(); renderCoveredCallMembers();
   }
@@ -2683,6 +2823,14 @@
         }), 180);
       });
     }
+  }
+  // redesenha gráficos cuja largura mudou (ex.: estavam numa aba escondida, largura 0)
+  function redrawCharts() {
+    _chartHosts.forEach(h => {
+      if (!h.isConnected) { _chartHosts.delete(h); return; }
+      const w = Math.round(h.clientWidth || 0);
+      if (w > 0 && h._draw && Math.abs(w - (h._lastCW || 0)) >= 8) { h._lastCW = w; h._draw(); }
+    });
   }
   function scaleXY(pts, keys, Wd) {
     let lo = Infinity, hi = -Infinity;

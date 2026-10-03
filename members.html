@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Members — Seven7</title>
-<link rel="stylesheet" href="styles.css?v=56">
+<link rel="stylesheet" href="styles.css?v=57">
 </head>
 <body data-page="members">
 <div id="nav-root"></div>
@@ -19,80 +19,81 @@
 
 <div id="memberContent" hidden>
 
-  <section class="section">
-    <div class="section-head">
-      <div class="kicker" data-i18n="nav.portfolio"></div>
-      <h2 data-i18n="mem.pfH"></h2>
-    </div>
-    <div id="kmlmHost"></div>
-    <div id="portfolioHost"></div>
+  <section class="section view-bar-wrap">
+    <div class="view-tabs view-tabs-4" id="deskTabs" role="tablist"></div>
   </section>
 
-  <section class="section section-alt">
-    <div class="section-head">
-      <div class="kicker" data-i18n="mem.p1kicker"></div>
-      <h2 data-i18n="mem.p1h"></h2>
-      <p class="sub" data-i18n="mem.p1sub"></p>
-    </div>
-    <div class="po3-tabrow"><div class="book-tabs" id="po3Tabs"></div></div>
-    <div id="po3Panel"></div>
-  </section>
+  <!-- ===== Portfólio ===== -->
+  <div class="view" data-view="portfolio">
+    <section class="section">
+      <p class="sub view-intro" data-i18n="desk.pfIntro"></p>
+      <div id="kmlmHost"></div>
+      <div id="portfolioHost"></div>
+    </section>
+  </div>
 
-  <section class="section" id="ccMembersSection" hidden>
-    <div class="section-head">
-      <div class="kicker" data-i18n="mcc.kicker"></div>
-      <h2 data-i18n="mcc.h"></h2>
-      <p class="sub" data-i18n="mcc.sub"></p>
-    </div>
-    <div id="ccMembersHost"></div>
-  </section>
+  <!-- ===== Markov 3 ===== -->
+  <div class="view" data-view="markov3" hidden>
+    <section class="section">
+      <p class="sub view-intro" data-i18n="mem.p1sub"></p>
+      <div class="po3-tabrow"><div class="book-tabs" id="po3Tabs"></div></div>
+      <div id="po3Panel"></div>
+    </section>
 
-  <section class="section section-alt">
-    <div class="section-head">
-      <div class="kicker" data-i18n="mem.p2kicker"></div>
-      <h2 data-i18n="mem.p2h"></h2>
-      <p class="sub" data-i18n="mem.p2sub"></p>
-    </div>
-    <div class="div-markethead"><div class="book-tabs" id="divMarketTabs"></div><span class="div-tier" id="divTier"></span></div>
-    <div id="divTermBar"></div>
-    <div class="quant-grid" id="divTiles"></div>
-    <div class="chart-card term-card">
-      <div class="chart-head term-head">
-        <div><div class="chart-title" data-i18n="divterm.mapTitle"></div><div class="chart-sub" data-i18n="divterm.mapHint"></div></div>
-        <div class="seg term-mode" id="divHeatMode">
-          <button data-m="yoc" class="on" data-i18n="divterm.byYoc"></button>
-          <button data-m="yld" data-i18n="divterm.byYld"></button>
+    <section class="section section-alt" id="ccMembersSection" hidden>
+      <div class="section-head">
+        <div class="kicker" data-i18n="mcc.kicker"></div>
+        <h2 data-i18n="mcc.h"></h2>
+        <p class="sub" data-i18n="mcc.sub"></p>
+      </div>
+      <div id="ccMembersHost"></div>
+    </section>
+  </div>
+
+  <!-- ===== Dividendos ===== -->
+  <div class="view" data-view="dividends" hidden>
+    <section class="section">
+      <p class="sub view-intro" data-i18n="mem.p2sub"></p>
+      <div class="div-markethead"><div class="book-tabs" id="divMarketTabs"></div><span class="div-tier" id="divTier"></span></div>
+      <div id="divTermBar"></div>
+      <div class="quant-grid" id="divTiles"></div>
+      <div class="chart-card term-card">
+        <div class="chart-head term-head">
+          <div><div class="chart-title" data-i18n="divterm.mapTitle"></div><div class="chart-sub" data-i18n="divterm.mapHint"></div></div>
+          <div class="seg term-mode" id="divHeatMode">
+            <button data-m="yoc" class="on" data-i18n="divterm.byYoc"></button>
+            <button data-m="yld" data-i18n="divterm.byYld"></button>
+          </div>
+        </div>
+        <div class="term-treemap" id="divHeat"></div>
+      </div>
+      <div class="mem-subhead" data-i18n="div.sigH"></div>
+      <div id="divSignals"></div>
+      <div class="desk-2col">
+        <div class="chart-card">
+          <div class="chart-head"><div class="chart-title" data-i18n="div.salaryTitle"></div></div>
+          <div class="chart-body" id="divSalary"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-head"><div class="chart-title" data-i18n="divterm.benchTitle"></div></div>
+          <div id="divBench" style="padding:12px 6px"></div>
         </div>
       </div>
-      <div class="term-treemap" id="divHeat"></div>
-    </div>
-    <div class="mem-subhead" data-i18n="div.sigH"></div>
-    <div id="divSignals"></div>
-    <div class="desk-2col">
-      <div class="chart-card">
-        <div class="chart-head"><div class="chart-title" data-i18n="div.salaryTitle"></div></div>
-        <div class="chart-body" id="divSalary"></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-head"><div class="chart-title" data-i18n="divterm.benchTitle"></div></div>
-        <div id="divBench" style="padding:12px 6px"></div>
-      </div>
-    </div>
-  </section>
+    </section>
+  </div>
 
-  <section class="section">
-    <div class="section-head">
-      <div class="kicker" data-i18n="mem.vidKicker"></div>
-      <h2 data-i18n="mem.vidH"></h2>
-      <p class="sub" data-i18n="mem.vidSub"></p>
-    </div>
-    <div id="memberVideos"></div>
-  </section>
+  <!-- ===== Vídeos ===== -->
+  <div class="view" data-view="videos" hidden>
+    <section class="section">
+      <p class="sub view-intro" data-i18n="mem.vidSub"></p>
+      <div id="memberVideos"></div>
+    </section>
+  </div>
 
 </div>
 
 <div id="footer-root"></div>
 <div class="tooltip" id="tooltip" hidden></div>
-<script src="app.js?v=56"></script>
+<script src="app.js?v=57"></script>
 </body>
 </html>
