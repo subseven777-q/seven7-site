@@ -84,15 +84,41 @@
     "nav.plans": { en: "Plans", pt: "Planos" },
     "nav.login": { en: "Log in", pt: "Entrar" },
     "nav.trial": { en: "Free trial", pt: "Teste grátis" },
-    "hero.eyebrow": { en: "QUANTIFIED INVESTING · US + BRAZIL STOCKS", pt: "INVESTIMENTOS QUANTIFICADOS · AÇÕES EUA + BRASIL" },
+    "hero.eyebrow": { en: "Quantified investing · US + Brazil stocks", pt: "Investimentos quantificados · Ações EUA + Brasil" },
     "hero.h1": { en: 'Less promise.<br>More <span class="accent">proof.</span>', pt: 'Menos promessa.<br>Mais <span class="accent">prova.</span>' },
     "hero.lede": {
-      en: "A systematic engine runs the strategy — no opinions, no guesses, no after-the-fact heroes. And, unlike everyone else, you judge by the numbers: <strong>10 years of real, auditable performance</strong>, updated every day.",
-      pt: "Um motor sistemático executa a estratégia — sem opinião, sem palpite, sem herói pós-fato. E, diferente de todo mundo, você julga pelos números: <strong>10 anos de desempenho real e auditável</strong>, atualizado todo dia."
+      en: "A mathematical model picks the stocks and sets the <strong>entry, stop and target</strong> of every trade. No opinions, no guesses — and every result is on the record, updated daily.",
+      pt: "Um modelo matemático escolhe as ações e define <strong>entrada, stop e alvo</strong> de cada operação. Sem opinião, sem palpite — e cada resultado fica registrado, atualizado todo dia."
     },
     "hero.cta1": { en: "Start 7-day free trial", pt: "Começar teste de 7 dias" },
-    "hero.cta2": { en: "See the numbers →", pt: "Ver os números →" },
+    "hero.cta2": { en: "See the results →", pt: "Ver os resultados →" },
+    "hero.perk1": { en: "7 days free", pt: "7 dias grátis" },
+    "hero.perk2": { en: "Cancel anytime", pt: "Cancele quando quiser" },
+    "hero.perk3": { en: "US + Brazil", pt: "EUA + Brasil" },
+    "nav.desk": { en: "My desk", pt: "Minha mesa" },
+    "grow.k": { en: "If you had invested", pt: "Se você tivesse investido" },
+    "grow.in": { en: "in", pt: "em" },
+    "grow.today": { en: "today it would be", pt: "hoje seriam" },
+    "grow.strat": { en: "Seven7 · US stocks", pt: "Seven7 · ações EUA" },
+    "grow.bench": { en: "S&P 500", pt: "S&P 500" },
+    "grow.note": { en: "Historical simulation with costs · past results don't guarantee future ones.", pt: "Simulação histórica com custos · resultado passado não garante futuro." },
+    "hs.sharpeH": { en: "return per unit of risk", pt: "retorno por unidade de risco" },
+    "hs.cagrH": { en: "average per year", pt: "média por ano" },
+    "hs.winH": { en: "of trades closed in profit", pt: "das operações fecharam no lucro" },
+    "hs.assetsH": { en: "stocks scanned every day", pt: "ações analisadas todo dia" },
+    "how.kicker": { en: "HOW IT WORKS", pt: "COMO FUNCIONA" },
+    "how.h2": { en: "Three steps. Zero guesswork.", pt: "Três passos. Zero palpite." },
+    "how.s1t": { en: "The model scans the market", pt: "O modelo varre o mercado" },
+    "how.s1d": { en: "Every day, {n} US and Brazilian stocks go through the same fixed rules. No opinions.", pt: "Todo dia, {n} ações dos EUA e do Brasil passam pelas mesmas regras fixas. Sem opinião." },
+    "how.s2t": { en: "You get the trade, ready", pt: "Você recebe a operação pronta" },
+    "how.s2d": { en: "Each signal comes with entry, stop and target — and the right size for your risk.", pt: "Cada sinal vem com entrada, stop e alvo — e o tamanho certo para o seu risco." },
+    "how.s3t": { en: "Track it in your portfolio", pt: "Acompanhe no seu portfólio" },
+    "how.s3d": { en: "Log your positions and compare your result with the S&P 500 and Ibovespa, live.", pt: "Registre suas posições e compare seu resultado com o S&P 500 e o Ibovespa, ao vivo." },
     "home.explore": { en: "EXPLORE", pt: "EXPLORE" },
+    "card.perfT": { en: "Results", pt: "Resultados" },
+    "card.metricsT": { en: "Metrics", pt: "Métricas" },
+    "card.divT": { en: "Dividends", pt: "Dividendos" },
+    "card.replayT": { en: "Month by month", pt: "Mês a mês" },
     "card.div.d": { en: "A long-term dividend-income strategy, normalized to the S&P 500 risk level.", pt: "Uma estratégia de renda com dividendos de longo prazo, normalizada ao risco do S&P 500." },
     "home.exploreH": { en: "Everything, on the record.", pt: "Tudo, registrado." },
     "card.perf.d": { en: "10-year equity curve, win rate and drawdown — with the tail hedge applied.", pt: "Curva de 10 anos, win rate e drawdown — já com o hedge de cauda aplicado." },
@@ -141,10 +167,10 @@
     "price.billed": { en: "billed", pt: "cobrado" },
     "price.year": { en: "yr", pt: "ano" },
     "price.perMonth": { en: "/ mo", pt: "/ mês" },
-    "hs.sharpe": { en: "Sharpe (US, 10y)", pt: "Sharpe (US, 10a)" },
-    "hs.cagr": { en: "Annual CAGR (US)", pt: "CAGR anual (US)" },
-    "hs.win": { en: "win rate (US)", pt: "win rate (US)" },
-    "hs.assets": { en: "monitored assets", pt: "ativos monitorados" },
+    "hs.sharpe": { en: "Sharpe ratio", pt: "Índice Sharpe" },
+    "hs.cagr": { en: "Return per year", pt: "Retorno ao ano" },
+    "hs.win": { en: "Win rate", pt: "Taxa de acerto" },
+    "hs.assets": { en: "Stocks tracked", pt: "Ações monitoradas" },
     "hs.years": { en: "of real data", pt: "de dados reais" },
     "updated": { en: "Data updated through", pt: "Dados atualizados até" },
     "stat.win": { en: "Win rate", pt: "Win rate" },
@@ -549,8 +575,8 @@
     "perf.markov3": { en: "Markov 3", pt: "Markov 3" },
     "perf.dividends": { en: "Dividends", pt: "Dividendos" },
     "perf.portfolio": { en: "Portfolio 50/50", pt: "Carteira 50/50" },
-    "perf.markov3D": { en: "The systematic breakout strategy (stocks) — stop, target, regime filter and tail hedge. Growth of 1, 10 years.", pt: "A estratégia sistemática de rompimento (ações) — stop, alvo, filtro de regime e hedge de cauda. Crescimento de 1, 10 anos." },
-    "perf.dividendsD": { en: "Buy-and-hold dividend payers, bought only in the buy zone and reinvested (DRIP) — never sold. Time-weighted growth of 1.", pt: "Pagadoras de dividendos compradas só na zona de compra e reinvestidas (DRIP) — nunca vende. Crescimento de 1 (time-weighted)." },
+    "perf.markov3D": { en: "The systematic breakout strategy — stop, target, regime filter and tail hedge. Combined US + Brazil portfolio: how much each $1 became in 10 years.", pt: "A estratégia sistemática de rompimento — stop, alvo, filtro de regime e hedge de cauda. Carteira combinada EUA + Brasil: quanto cada R$1 virou em 10 anos." },
+    "perf.dividendsD": { en: "Dividend payers bought only in the buy zone, every dividend reinvested — never sold. US + Brazil, 50/50: how much each $1 became.", pt: "Pagadoras de dividendos compradas só na zona de compra, cada provento reinvestido — nunca vende. EUA + Brasil, 50/50: quanto cada R$1 virou." },
     "perf.portfolioD": { en: "50% Markov 3 + 50% Dividends, rebalanced daily. The blend lifts return per unit of risk and cuts the dividend book's drawdown.", pt: "50% Markov 3 + 50% Dividendos, rebalanceado diariamente. O blend eleva o retorno por risco e corta o drawdown do livro de dividendos." },
     "disclaimer": { en: "Simulated results over 10 years of real data. A mostly-bull-market window; the Sharpe is optimistic. Software and market information — not investment advice. Past performance does not guarantee future results.", pt: "Resultados simulados sobre 10 anos de dados reais. Janela majoritariamente de bull market; o Sharpe é otimista. Software e informação de mercado — não é recomendação de investimento. Rentabilidade passada não garante resultado futuro." },
     "footer.copy": { en: "© 2026 Seven7 · Quantified Investing. All rights reserved.", pt: "© 2026 Seven7 · Investimentos Quantificados. Todos os direitos reservados." },
@@ -658,6 +684,38 @@
 
   /* ---------------- shared chrome ---------------- */
   const MARK_SVG = `<svg viewBox="0 0 44 44" aria-hidden="true"><defs><linearGradient id="s7g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#43d8f6"/><stop offset="1" stop-color="#12a6cf"/></linearGradient></defs><path d="M7 7 H37 V15 H20 V21 H12 V15 H7 Z" fill="url(#s7g)"/><path d="M25 17 H37 L20 40 H9 Z" fill="url(#s7g)"/><path d="M7 7 L20 21 M37 7 L12 21 M25 17 L9 40 M37 17 L20 40" stroke="#06131d" stroke-width="0.9" opacity=".35" fill="none"/><g fill="#8fecfb"><circle cx="7" cy="7" r="1.7"/><circle cx="37" cy="7" r="1.7"/><circle cx="12" cy="21" r="1.7"/><circle cx="25" cy="17" r="1.7"/><circle cx="9" cy="40" r="1.7"/><circle cx="20" cy="40" r="1.7"/></g></svg>`;
+  // Ícones de traço (estilo Lucide, ISC) — inline, sem dependência externa
+  const ICONS = {
+    trend: '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
+    gauge: '<path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/>',
+    coins: '<circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/>',
+    live: '<path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/>',
+    tag: '<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r="1"/>',
+    history: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/>',
+    desk: '<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/>',
+    shield: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
+    database: '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/>',
+    cpu: '<rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M15 2v2M15 20v2M2 15h2M2 9h2M20 15h2M20 9h2M9 2v2M9 20v2"/>',
+    receipt: '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>',
+    dice: '<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M16 8h.01M8 8h.01M8 16h.01M16 16h.01M12 12h.01"/>',
+    target: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+    radar: '<path d="M19.07 4.93A10 10 0 0 0 6.99 3.34"/><path d="M4 6h.01"/><path d="M2.29 9.62A10 10 0 1 0 21.31 8.35"/><path d="M16.24 7.76A6 6 0 1 0 8.23 16.67"/><path d="M12 18h.01"/><path d="M17.99 11.66A6 6 0 0 1 15.77 16.67"/><circle cx="12" cy="12" r="2"/><path d="m13.41 10.59 5.66-5.66"/>',
+    wallet: '<path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/>',
+    pulse: '<path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/>',
+    trophy: '<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>',
+    globe: '<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>',
+    arrow: '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
+    check: '<path d="M20 6 9 17l-5-5"/>',
+    x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+    star: '<path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/>',
+    sparkles: '<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>',
+    sprout: '<path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"/><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z"/>',
+    rocket: '<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>',
+    crown: '<path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/>',
+    lock: '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+    user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  };
+  const ic = (n, cls = "") => `<svg class="ic ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n] || ""}</svg>`;
   const NAV_HTML = `
     <header class="nav">
       <a class="brand" href="index.html">
@@ -667,13 +725,11 @@
       <button class="nav-burger" id="navBurger" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
       <div class="nav-collapse" id="navCollapse">
         <nav class="nav-links">
-          <a href="performance.html" data-page="performance" data-i18n="nav.perf"></a>
-          <a href="metrics.html" data-page="metrics" data-i18n="nav.metrics"></a>
-          <a href="signals.html" data-page="signals" data-i18n="nav.signals"></a>
-          <a href="dividends.html" data-page="dividends" data-i18n="nav.dividends"></a>
-          <a href="members.html" data-page="members" data-i18n="nav.members"></a>
-          <a href="replay.html" data-page="replay" data-i18n="nav.replay"></a>
-          <a href="plans.html" data-page="plans" data-i18n="nav.plans"></a>
+          <a href="performance.html" data-page="performance" style="--tone:var(--c-cyan)">${ic("trend")}<span data-i18n="nav.perf"></span></a>
+          <a href="metrics.html" data-page="metrics" style="--tone:var(--c-violet)">${ic("gauge")}<span data-i18n="nav.metrics"></span></a>
+          <a href="dividends.html" data-page="dividends" style="--tone:var(--c-amber)">${ic("coins")}<span data-i18n="nav.dividends"></span></a>
+          <a href="signals.html" data-page="signals" style="--tone:var(--c-green)">${ic("live")}<span data-i18n="nav.signals"></span></a>
+          <a href="plans.html" data-page="plans" style="--tone:var(--c-rose)">${ic("tag")}<span data-i18n="nav.plans"></span></a>
         </nav>
         <div class="nav-cta">
           <div class="lang-toggle" id="langToggle">
@@ -693,7 +749,7 @@
       <div class="footer-top">
         <div class="brand"><span class="brand-mark">${MARK_SVG}</span><span class="brand-name">Seven7</span></div>
         <div class="footer-links">
-          <a href="metrics.html" data-i18n="nav.metrics"></a><a href="performance.html" data-i18n="nav.perf"></a><a href="plans.html" data-i18n="nav.plans"></a>
+          <a href="performance.html" data-i18n="nav.perf"></a><a href="metrics.html" data-i18n="nav.metrics"></a><a href="dividends.html" data-i18n="nav.dividends"></a><a href="replay.html" data-i18n="nav.replay"></a><a href="plans.html" data-i18n="nav.plans"></a>
           <a href="terms.html" data-i18n="terms.title"></a><a href="privacy.html" data-i18n="privacy.title"></a><a href="disclosures.html" data-i18n="disc.title"></a>
         </div>
       </div>
@@ -914,25 +970,83 @@
     const us = DATA.books.US;
     const nSym = Object.values(DATA.books).reduce((a, b) => a + b.n_symbols_traded, 0);
     const stats = [
-      { v: us?.headline.sharpe ?? "—", l: t("hs.sharpe") },
-      { v: fmtPct(us?.headline.cagr), l: t("hs.cagr") },
-      { v: nf(us?.track_record.win_rate ?? 0, 1) + "%", l: t("hs.win") },
-      { v: fmtNum(nSym), l: t("hs.assets") },
-      { v: "10", l: t("hs.years") },
+      { v: us?.headline.sharpe != null ? nf(us.headline.sharpe, 2) : "—", l: t("hs.sharpe"), h: t("hs.sharpeH"), i: "pulse", c: "var(--c-cyan)" },
+      { v: fmtPct(us?.headline.cagr), l: t("hs.cagr"), h: t("hs.cagrH"), i: "trend", c: "var(--c-green)" },
+      { v: nf(us?.track_record.win_rate ?? 0, 1) + "%", l: t("hs.win"), h: t("hs.winH"), i: "trophy", c: "var(--c-amber)" },
+      { v: fmtNum(nSym), l: t("hs.assets"), h: t("hs.assetsH"), i: "radar", c: "var(--c-violet)" },
     ];
-    host.innerHTML = stats.map(s => `<div class="hstat"><div class="v">${s.v}</div><div class="l">${s.l}</div></div>`).join("");
-    const up = $("#updated"); if (up) up.innerHTML = `<span class="dot"></span> ${t("updated")} <b style="color:var(--ink-2);margin-left:4px">${DATA.data_through}</b>`;
+    host.innerHTML = stats.map(s => `<div class="hstat" style="--tone:${s.c}">
+      <div class="hstat-ic">${ic(s.i)}</div>
+      <div><div class="v">${s.v}</div><div class="l">${s.l}</div><div class="h">${s.h}</div></div></div>`).join("");
+    const dt = /^\d{4}-\d{2}-\d{2}$/.test(DATA.data_through || "") ? new Date(DATA.data_through + "T12:00:00").toLocaleDateString(locale()) : DATA.data_through;
+    const up = $("#updated"); if (up) up.innerHTML = `<span class="dot"></span> ${t("updated")} <b style="color:var(--ink-2);margin-left:4px">${dt}</b>`;
+    const pk = $("#heroPerks");
+    if (pk) pk.innerHTML = ["hero.perk1", "hero.perk2", "hero.perk3"].map(k => `<li>${ic("check")}${t(k)}</li>`).join("");
+    buildHeroGrowth(us);
+    buildSteps(nSym);
+  }
+  // Cartão-herói: quanto US$10 mil viraram (curva do livro EUA vs S&P 500). Simulação — rotulada.
+  function buildHeroGrowth(us) {
+    const host = $("#heroGrowth"); if (!host || !us || !us.equity_curve) return;
+    const ec = us.equity_curve, n = ec.length;
+    const step = Math.max(1, Math.floor(n / 160));
+    const pts = ec.filter((_, i) => i % step === 0 || i === n - 1);
+    const W = 520, H = 210, P = 6;
+    const vals = pts.flatMap(p => [p.e, p.b ?? p.e]);
+    const lo = Math.min(...vals), hi = Math.max(...vals);
+    const x = i => P + (i / (pts.length - 1)) * (W - 2 * P);
+    const y = v => H - P - ((v - lo) / (hi - lo || 1)) * (H - 2 * P);
+    const line = k => pts.map((p, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(p[k] ?? p.e).toFixed(1)).join("");
+    const area = line("e") + `L${x(pts.length - 1).toFixed(1)} ${H} L${x(0).toFixed(1)} ${H}Z`;
+    const base = 10000, cur = LANG === "pt" ? "US$" : "$";
+    const fin = Math.round(base * ec[n - 1].e / ec[0].e), bfin = Math.round(base * (ec[n - 1].b ?? 1) / (ec[0].b ?? 1));
+    const yr0 = ec[0].d.slice(0, 4);
+    const money = v => cur + " " + fmtNum(v);
+    host.innerHTML = `<div class="grow-card">
+      <div class="grow-top">
+        <div class="grow-k">${t("grow.k")} <b>${money(base)}</b> ${t("grow.in")} ${yr0},<br>${t("grow.today")}</div>
+        <div class="grow-v">${money(fin)}</div>
+        <div class="grow-chips">
+          <span class="gchip pos">${ic("trend")}${fmtPct((fin / base - 1) * 100)}</span>
+          <span class="gchip">${t("grow.bench")}: ${money(bfin)}</span>
+        </div>
+      </div>
+      <svg class="grow-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="ggA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--c-cyan);stop-opacity:.42"/><stop offset="1" style="stop-color:var(--c-violet);stop-opacity:0"/></linearGradient>
+          <linearGradient id="ggL" x1="0" y1="0" x2="1" y2="0"><stop offset="0" style="stop-color:var(--c-cyan)"/><stop offset="1" style="stop-color:var(--c-violet)"/></linearGradient>
+        </defs>
+        <path d="${area}" fill="url(#ggA)"/>
+        <path d="${line("b")}" fill="none" style="stroke:var(--bench)" stroke-width="1.6" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/>
+        <path d="${line("e")}" fill="none" stroke="url(#ggL)" stroke-width="2.6" vector-effect="non-scaling-stroke"/>
+      </svg>
+      <div class="grow-legend"><span><i class="sw sw-s"></i>${t("grow.strat")}</span><span><i class="sw sw-b"></i>${t("grow.bench")}</span></div>
+      <div class="grow-note">${t("grow.note")}</div>
+    </div>`;
+  }
+  function buildSteps(nSym) {
+    const host = $("#howSteps"); if (!host) return;
+    const steps = [
+      { i: "radar", c: "var(--c-cyan)", tt: "how.s1t", d: interp(t("how.s1d"), { n: fmtNum(nSym) }) },
+      { i: "target", c: "var(--c-violet)", tt: "how.s2t", d: t("how.s2d") },
+      { i: "wallet", c: "var(--c-amber)", tt: "how.s3t", d: t("how.s3d") },
+    ];
+    host.innerHTML = steps.map((s, k) => `<div class="step" style="--tone:${s.c}">
+      <div class="step-n">${k + 1}</div>
+      <div class="step-ic">${ic(s.i)}</div>
+      <div class="step-t">${t(s.tt)}</div><div class="step-d">${s.d}</div></div>`).join("");
   }
   function buildHomeCards() {
     const cards = [
-      { p: "performance.html", k: "nav.perf", d: "card.perf.d" },
-      { p: "metrics.html", k: "nav.metrics", d: "card.metrics.d" },
-      { p: "dividends.html", k: "nav.dividends", d: "card.div.d" },
-      { p: "replay.html", k: "nav.replay", d: "card.replay.d" },
+      { p: "performance.html", k: "card.perfT", d: "card.perf.d", i: "trend", c: "var(--c-cyan)" },
+      { p: "metrics.html", k: "card.metricsT", d: "card.metrics.d", i: "gauge", c: "var(--c-violet)" },
+      { p: "dividends.html", k: "card.divT", d: "card.div.d", i: "coins", c: "var(--c-amber)" },
+      { p: "replay.html", k: "card.replayT", d: "card.replay.d", i: "history", c: "var(--c-rose)" },
     ];
-    $("#homeCards").innerHTML = cards.map(c => `<a class="home-card" href="${c.p}">
+    $("#homeCards").innerHTML = cards.map(c => `<a class="home-card" href="${c.p}" style="--tone:${c.c}">
+      <div class="hc-ic">${ic(c.i)}</div>
       <div class="hc-title">${t(c.k)}</div><div class="hc-desc">${t(c.d)}</div>
-      <div class="hc-open">${t("card.open")}</div></a>`).join("");
+      <div class="hc-open">${t("card.open").replace(" →", "")}${ic("arrow")}</div></a>`).join("");
   }
 
   function bookOrCombined(k) {
@@ -1082,7 +1196,9 @@
       <tbody>${body}</tbody></table>`;
   }
   function buildTrust() {
-    $("#trustGrid").innerHTML = ["trust.b1", "trust.b2", "trust.b3", "trust.b4"].map(k => `<div class="rule"><div class="n">✓</div><p>${t(k)}</p></div>`).join("");
+    const tr = [["trust.b1", "database", "var(--c-cyan)"], ["trust.b2", "cpu", "var(--c-violet)"],
+                ["trust.b3", "receipt", "var(--c-amber)"], ["trust.b4", "dice", "var(--c-green)"]];
+    $("#trustGrid").innerHTML = tr.map(([k, i, c]) => `<div class="rule" style="--tone:${c}"><div class="n">${ic(i)}</div><p>${t(k)}</p></div>`).join("");
   }
 
   /* ---- pricing (USD, Stripe-ready) ---- */
@@ -1111,9 +1227,10 @@
       let featList = p.feats.slice();
       if (p.cycleFeat) featList = [featList[0], ...p.cycleFeat[CYCLE], ...featList.slice(1)];
       const feats = featList.map(f => `<li class="${f[0] ? "" : "off"} ${f[2] || ""}">${f[1][LANG]}</li>`).join("");
-      return `<div class="price-card ${p.featured ? "featured" : ""}">
+      const tierUi = { BEGINNER: ["sprout", "var(--c-green)"], PRO: ["rocket", "var(--c-cyan)"], ELITE: ["crown", "var(--c-amber)"] }[p.tier] || ["star", "var(--accent)"];
+      return `<div class="price-card ${p.featured ? "featured" : ""}" style="--tone:${tierUi[1]}">
         ${p.badge ? `<div class="price-badge">${p.badge[LANG]}</div>` : ""}${save}
-        <div class="price-tier">${p.tier}</div>
+        <div class="price-tier"><span class="pt-ic">${ic(tierUi[0])}</span>${p.tier}</div>
         <div class="price-amt">${cur}${price} <span>${t("price.perMonth")}</span></div>
         <div class="price-sub">${sub}</div>
         <ul class="price-feats">${feats}</ul>
@@ -1155,7 +1272,8 @@
     if (USER) {
       const name = USER.user_metadata?.name || USER.email;
       const badge = isMember() ? `<span class="nav-plan">${(PROFILE.plan || "").toUpperCase()}</span>` : "";
-      host.innerHTML = `<a class="nav-user" href="account.html" title="${esc(USER.email)}">${esc(name)}${badge}</a><button class="btn btn-ghost" id="logoutBtn">${t("auth.logout")}</button>`;
+      const desk = `<a class="btn btn-desk" href="members.html">${ic("desk")}${t("nav.desk")}</a>`;
+      host.innerHTML = `${desk}<a class="nav-user" href="account.html" title="${esc(USER.email)}">${ic("user")}<span class="nav-name">${esc(name)}</span>${badge}</a><button class="btn btn-ghost" id="logoutBtn">${t("auth.logout")}</button>`;
       const lb = $("#logoutBtn"); if (lb) lb.onclick = async () => { if (sb) await sb.auth.signOut(); location.href = "index.html"; };
     } else {
       host.innerHTML = `<a class="btn btn-ghost" href="login.html">${t("nav.login")}</a><a class="btn btn-primary" href="register.html">${t("nav.trial")}</a>`;

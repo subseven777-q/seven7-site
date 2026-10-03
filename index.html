@@ -5,26 +5,40 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Seven7 — Quantified Investing</title>
 <meta name="description" content="Seven7 — quantified investing. Systematic stock signals for the US and Brazil, with 10 years of real, auditable results.">
-<link rel="stylesheet" href="styles.css?v=55">
+<link rel="stylesheet" href="styles.css?v=56">
 </head>
 <body data-page="home">
 <div id="nav-root"></div>
 
 <section class="hero" id="top">
-  <div class="hero-inner">
-    <div class="eyebrow" data-i18n="hero.eyebrow"></div>
-    <h1 data-i18n-html="hero.h1"></h1>
-    <p class="lede" data-i18n-html="hero.lede"></p>
-    <div class="hero-actions">
-      <a class="btn btn-primary btn-lg" href="register.html" data-i18n="hero.cta1"></a>
-      <a class="btn btn-ghost btn-lg" href="metrics.html" data-i18n="hero.cta2"></a>
+  <div class="hero-inner hero-split">
+    <div class="hero-copy">
+      <div class="eyebrow-chip"><span class="live-dot"></span><span data-i18n="hero.eyebrow"></span></div>
+      <h1 data-i18n-html="hero.h1"></h1>
+      <p class="lede" data-i18n-html="hero.lede"></p>
+      <div class="hero-actions">
+        <a class="btn btn-primary btn-lg" href="register.html" data-i18n="hero.cta1"></a>
+        <a class="btn btn-ghost btn-lg" href="performance.html" data-i18n="hero.cta2"></a>
+      </div>
+      <ul class="hero-perks" id="heroPerks"></ul>
     </div>
+    <div class="hero-visual" id="heroGrowth"></div>
+  </div>
+  <div class="hero-inner">
     <div class="hero-stats" id="heroStats"></div>
     <div class="updated" id="updated"></div>
   </div>
 </section>
 
-<section class="section" style="padding-bottom:0"><div id="cherryTeaser"></div></section>
+<section class="section" id="howItWorks">
+  <div class="section-head center">
+    <div class="kicker" data-i18n="how.kicker"></div>
+    <h2 data-i18n="how.h2"></h2>
+  </div>
+  <div class="steps" id="howSteps"></div>
+</section>
+
+<section class="section" style="padding-top:0;padding-bottom:0"><div id="cherryTeaser"></div></section>
 
 <section class="section">
   <div class="section-head">
@@ -44,20 +58,22 @@
 </section>
 
 <section class="section" id="homePlans">
-  <div class="section-head">
+  <div class="section-head center">
     <div class="kicker" data-i18n="pricing.kicker"></div>
     <h2 data-i18n="pricing.h2"></h2>
     <p class="sub" data-i18n="pricing.sub"></p>
   </div>
-  <div class="billing-toggle" id="billingToggle">
-    <button class="bt-opt on" data-cycle="monthly" data-i18n="billing.monthly"></button>
-    <button class="bt-opt" data-cycle="annual"><span data-i18n="billing.annual"></span> <span class="bt-save" data-i18n="billing.save"></span></button>
+  <div class="center-row">
+    <div class="billing-toggle" id="billingToggle">
+      <button class="bt-opt on" data-cycle="monthly" data-i18n="billing.monthly"></button>
+      <button class="bt-opt" data-cycle="annual"><span data-i18n="billing.annual"></span> <span class="bt-save" data-i18n="billing.save"></span></button>
+    </div>
   </div>
   <div class="pricing-grid" id="pricingGrid"></div>
   <p class="stat-note" style="margin-top:22px;text-align:center" data-i18n="page.plans.trial"></p>
 </section>
 
 <div id="footer-root"></div>
-<script src="app.js?v=55"></script>
+<script src="app.js?v=56"></script>
 </body>
 </html>
