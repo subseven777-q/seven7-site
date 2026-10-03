@@ -6,6 +6,8 @@
   "use strict";
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  // escapa texto vindo do usuário (nome/e-mail) antes de entrar em innerHTML
+  const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const elh = (tag, c, h) => { const e = document.createElement(tag); if (c) e.className = c; if (h != null) e.innerHTML = h; return e; };
 
   // Supabase (chaves PÚBLICAS — seguras no cliente; a segurança vem das regras RLS)
@@ -568,6 +570,7 @@
     "auth.register.login": { en: "Log in", pt: "Entrar" },
     "auth.soon": { en: "Accounts are launching soon — we saved your interest. We'll email you the moment sign-ups open.", pt: "As contas estão sendo lançadas — registramos seu interesse. Avisaremos por e-mail assim que abrir." },
     "auth.checkEmail": { en: "Account created! Check your inbox to confirm your email — then log in.", pt: "Conta criada! Confira seu e-mail para confirmar o endereço — depois é só entrar." },
+    "auth.pwShort": { en: "Use at least 8 characters for your password.", pt: "Use pelo menos 8 caracteres na senha." },
     "auth.loginOk": { en: "Logged in. Welcome back!", pt: "Login feito. Bem-vindo de volta!" },
     "auth.err": { en: "Couldn't complete: {msg}", pt: "Não deu certo: {msg}" },
     "auth.logout": { en: "Log out", pt: "Sair" },
@@ -712,20 +715,30 @@
       .catch(() => { BETAS = {}; if (cb) cb(); });
   }
   const betaOf = (mkt, tk) => (BETAS && BETAS[mkt] && BETAS[mkt][tk] != null) ? BETAS[mkt][tk] : null;
+  // Dados SÓ-DE-MEMBROS: lidos da tabela member_payloads (RLS). Nunca mais como arquivo público.
+  // retorna undefined = ainda não há sessão (não cacheia); null = sem permissão/sem dado.
+  async function fetchMemberPayload(key) {
+    if (PREVIEW) {   // só localhost: arquivo local (gitignored — nunca publicado)
+      try { return await (await fetch(`data/${key}.json?d=${new Date().toISOString().slice(0, 10)}`)).json(); }
+      catch (e) { return null; }
+    }
+    if (!sb || !USER) return undefined;
+    try {
+      const { data, error } = await sb.from("member_payloads").select("payload").eq("key", key).maybeSingle();
+      if (error) throw error;
+      return data ? data.payload : null;
+    } catch (e) { console.error("member payload", key, e); return null; }
+  }
   let FSCORES = null;
   function loadFscores(cb) {
     if (FSCORES) { if (cb) cb(); return; }
-    fetch("data/fscores.json?d=" + new Date().toISOString().slice(0, 10))
-      .then(r => r.json()).then(d => { FSCORES = d; if (cb) cb(); })
-      .catch(() => { FSCORES = {}; if (cb) cb(); });
+    fetchMemberPayload("fscores").then(d => { if (d === undefined) return; FSCORES = d || {}; if (cb) cb(); });
   }
   // --- Fórmula Mágica (Greenblatt) + Conservadora (van Vliet/Blitz): ranks relativos ao mercado ---
   let FORMULAS = null;
   function loadFormulas(cb) {
     if (FORMULAS) { if (cb) cb(); return; }
-    fetch("data/formulas.json?d=" + new Date().toISOString().slice(0, 10))
-      .then(r => r.json()).then(d => { FORMULAS = d; if (cb) cb(); })
-      .catch(() => { FORMULAS = {}; if (cb) cb(); });
+    fetchMemberPayload("formulas").then(d => { if (d === undefined) return; FORMULAS = d || {}; if (cb) cb(); });
   }
   const formulaOf = (mkt, tk) => (FORMULAS && FORMULAS[mkt] && FORMULAS[mkt][tk]) || null;
   function rankTier(rank, n) {   // rank BAIXO = melhor; topo 1/3 verde, base 1/3 vermelho
@@ -1119,7 +1132,7 @@
   /* ---- auth (Supabase) ---- */
   async function initAuth() {
     try {
-      const mod = await import("https://esm.sh/@supabase/supabase-js@2");
+      const mod = await import("https://esm.sh/@supabase/supabase-js@2.117.2");
       sb = mod.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       const { data } = await sb.auth.getSession();
       // preserva o USER semeado pelo preview localhost (sem sessao real) — nao afeta producao
@@ -1142,7 +1155,7 @@
     if (USER) {
       const name = USER.user_metadata?.name || USER.email;
       const badge = isMember() ? `<span class="nav-plan">${(PROFILE.plan || "").toUpperCase()}</span>` : "";
-      host.innerHTML = `<a class="nav-user" href="account.html" title="${USER.email}">${name}${badge}</a><button class="btn btn-ghost" id="logoutBtn">${t("auth.logout")}</button>`;
+      host.innerHTML = `<a class="nav-user" href="account.html" title="${esc(USER.email)}">${esc(name)}${badge}</a><button class="btn btn-ghost" id="logoutBtn">${t("auth.logout")}</button>`;
       const lb = $("#logoutBtn"); if (lb) lb.onclick = async () => { if (sb) await sb.auth.signOut(); location.href = "index.html"; };
     } else {
       host.innerHTML = `<a class="btn btn-ghost" href="login.html">${t("nav.login")}</a><a class="btn btn-primary" href="register.html">${t("nav.trial")}</a>`;
@@ -1161,6 +1174,7 @@
         if (page === "register") {
           const name = ($("#rg-name") || {}).value?.trim() || "";
           const email = $("#rg-email").value.trim(), pass = $("#rg-pass").value;
+          if (pass.length < 8) { show(t("auth.pwShort"), false); return; }   // mínimo 8 caracteres
           const { error } = await sb.auth.signUp({ email, password: pass, options: { data: { name }, emailRedirectTo: new URL(".", location.href).href } });
           if (error) throw error;
           show(t("auth.checkEmail"), true);
@@ -1434,16 +1448,16 @@
       <div class="beta-note">${t("beta.note")}</div>
     </div>`;
     const rec = () => paintBetaRec(betaL, betaK, curKmlmPct, deposit);
-    $("#betaPresets").querySelectorAll("button").forEach(b => b.onclick = () => {
+    ($("#betaPresets")?.querySelectorAll("button") || []).forEach(b => b.onclick = () => {
       BETA_MODE = b.dataset.m;
-      $("#betaPresets").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+      ($("#betaPresets")?.querySelectorAll("button") || []).forEach(x => x.classList.toggle("on", x === b));
       $("#betaSliderWrap").classList.toggle("off", BETA_MODE !== "custom");
       rec();
     });
     const sl = $("#betaSlider");
     if (sl) sl.oninput = () => {
       BETA_MODE = "custom"; BETA_CUSTOM = parseFloat(sl.value);
-      $("#betaPresets").querySelectorAll("button").forEach(x => x.classList.toggle("on", x.dataset.m === "custom"));
+      ($("#betaPresets")?.querySelectorAll("button") || []).forEach(x => x.classList.toggle("on", x.dataset.m === "custom"));
       $("#betaSliderWrap").classList.remove("off"); rec();
     };
     rec();
@@ -1674,8 +1688,8 @@
     host.innerHTML = `
       <div class="acct-card">
         <div class="acct-grid">
-          <div class="acct-row"><span class="acct-k">${t("acct.name")}</span><span class="acct-v">${(USER.user_metadata && USER.user_metadata.name) || "—"}</span></div>
-          <div class="acct-row"><span class="acct-k">${t("acct.email")}</span><span class="acct-v">${USER.email}</span></div>
+          <div class="acct-row"><span class="acct-k">${t("acct.name")}</span><span class="acct-v">${esc((USER.user_metadata && USER.user_metadata.name) || "—")}</span></div>
+          <div class="acct-row"><span class="acct-k">${t("acct.email")}</span><span class="acct-v">${esc(USER.email)}</span></div>
           <div class="acct-row"><span class="acct-k">${t("acct.plan")}</span><span class="acct-v"><span class="acct-badge ${member ? "on" : ""}">${planName}</span></span></div>
           <div class="acct-row"><span class="acct-k">${t("acct.status")}</span><span class="acct-v">${member ? t("acct.active") : t("acct.inactive")}</span></div>
         </div>
@@ -2022,8 +2036,9 @@
     gate.innerHTML = ""; if (host) host.hidden = false;
     host.innerHTML = `<section class="section mon"><p class="muted-note">${t("sig.loading")}</p></section>`;
     let d;
-    try { d = await (await fetch("data/monitor.json?d=" + new Date().toISOString().slice(0, 10))).json(); }
-    catch (e) { host.innerHTML = `<section class="section mon"><p class="muted-note">${t("mon.nodata")}</p></section>`; return; }
+    // dados do monitor: RLS só entrega ao admin (is_admin no banco, não no navegador)
+    d = await fetchMemberPayload("monitor");
+    if (!d) { host.innerHTML = `<section class="section mon"><p class="muted-note">${t("mon.nodata")}</p></section>`; return; }
     const sub = $("#monSub"); if (sub) sub.textContent = d.sub || "";
     const tiles = (d.tiles || []).map(x =>
       `<div class="mon-tile"><div class="k">${x[0]}</div><div class="v ${x[3] || ""}">${x[1]}</div><div class="dd">${x[2]}</div></div>`).join("");
@@ -2176,9 +2191,10 @@
     const host = $("#po3Panel"); if (!host) return;
     const b = DATA && DATA.books && DATA.books[k]; if (!b) return;
     if (!TRADES) {
-      fetch("data/trades.json?d=" + new Date().toISOString().slice(0, 10))
-        .then(r => r.json()).then(d => { TRADES = d; renderPO3Panel(k); })
-        .catch(() => { TRADES = {}; renderPO3Panel(k); });
+      fetchMemberPayload("trades").then(d => {
+        if (d === undefined) return;          // sem sessão: não renderiza (evita loop)
+        TRADES = d || {}; renderPO3Panel(k);
+      });
       return;
     }
     if (PO3_CUR !== k) { PO3_MONTH = null; PO3_FILTER = "ALL"; PO3_SEARCH = ""; PO3_SORT = { c: "out", d: -1 }; PO3_TK = null; PO3_TKSEARCH = ""; PO3_TKSORT = { c: "totR", d: -1 }; }

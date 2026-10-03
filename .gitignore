@@ -1,1 +1,7 @@
 artifact.html
+
+# dados SO-DE-MEMBROS: enviados ao Supabase (member_payloads) pelo pipeline, nunca publicados
+data/trades.json
+data/monitor.json
+data/fscores.json
+data/formulas.json
