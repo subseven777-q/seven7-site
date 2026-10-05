@@ -14,7 +14,12 @@
   const SUPABASE_URL = "https://ehqxuveyprrmjfcqmkhs.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocXh1dmV5cHJybWpmY3Fta2hzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1ODcwNDgsImV4cCI6MjEwMTE2MzA0OH0.KB2mXvqiFgc7SgKDLQU4uvplC-UGcFgE9SaauCQDAhU";
   let sb = null, USER = null, PROFILE = null, PREVIEW = false;
-  const isMember = () => PROFILE && PROFILE.status === "active";
+  const trialEnd = () => (PROFILE && PROFILE.status === "trial" && PROFILE.trial_end) ? new Date(PROFILE.trial_end) : null;
+  const isTrial = () => { const e = trialEnd(); return !!e && e > new Date(); };
+  const trialExpired = () => { const e = trialEnd(); return !!e && e <= new Date(); };
+  const trialDaysLeft = () => { const e = trialEnd(); return e ? Math.max(0, Math.ceil((e - new Date()) / 86400000)) : 0; };
+  const isMember = () => !!PROFILE && (PROFILE.status === "active" || isTrial());
+  const isElite = () => isMember() && PROFILE.plan === "elite";
 
   let LANG = localStorage.getItem("seven7-lang") || "pt";   // padrão PT-BR (usuário novo entra em português)
   const locale = () => (LANG === "en" ? "en-US" : "pt-BR");
@@ -635,7 +640,15 @@
     "auth.register.have": { en: "Already have an account?", pt: "Já tem conta?" },
     "auth.register.login": { en: "Log in", pt: "Entrar" },
     "auth.soon": { en: "Accounts are launching soon — we saved your interest. We'll email you the moment sign-ups open.", pt: "As contas estão sendo lançadas — registramos seu interesse. Avisaremos por e-mail assim que abrir." },
-    "auth.checkEmail": { en: "Account created! Check your inbox to confirm your email — then log in.", pt: "Conta criada! Confira seu e-mail para confirmar o endereço — depois é só entrar." },
+    "auth.checkEmail": { en: "Account created! Your 7-day Elite trial is on. Confirm your email, then log in.", pt: "Conta criada! Seu teste Elite de 7 dias já está liberado. Confirme o e-mail e depois é só entrar." },
+    "trial.tag": { en: "TRIAL", pt: "TESTE" },
+    "trial.bar": { en: "Free Elite trial: <b>{n} day(s) left</b> — everything unlocked.", pt: "Teste Elite grátis: <b>faltam {n} dia(s)</b> — tudo liberado." },
+    "trial.barLast": { en: "Your free Elite trial <b>ends today</b>.", pt: "Seu teste Elite grátis <b>termina hoje</b>." },
+    "trial.barEnded": { en: "Your free Elite trial has ended. Subscribe to keep access.", pt: "Seu teste Elite grátis terminou. Assine para continuar com acesso." },
+    "trial.cta": { en: "Subscribe", pt: "Assinar" },
+    "trial.statusOn": { en: "Free trial until {d} ({n} day(s) left)", pt: "Teste grátis até {d} (faltam {n} dia(s))" },
+    "trial.statusOff": { en: "Free trial ended on {d}", pt: "Teste grátis encerrado em {d}" },
+    "trial.ended": { en: "Your 7-day Elite trial has ended. Subscribe to unlock the members area again.", pt: "Seu teste Elite de 7 dias terminou. Assine para liberar a área de membros de novo." },
     "auth.pwShort": { en: "Use at least 8 characters for your password.", pt: "Use pelo menos 8 caracteres na senha." },
     "auth.loginOk": { en: "Logged in. Welcome back!", pt: "Login feito. Bem-vindo de volta!" },
     "auth.err": { en: "Couldn't complete: {msg}", pt: "Não deu certo: {msg}" },
@@ -933,7 +946,10 @@
     // preview localhost GLOBAL (vale em todas as páginas, não só members/monitor)
     if (/[?&]preview=1/.test(location.search) && /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
       PREVIEW = true; USER = USER || { id: "preview" };
-      PROFILE = PROFILE || { status: "active", plan: "elite", is_admin: true };
+      // &pvtrial=N simula conta em teste com N dias restantes (N<=0 = teste encerrado) — só localhost
+      const pv = location.search.match(/[?&]pvtrial=(-?\d+)/);
+      PROFILE = PROFILE || (pv ? { status: "trial", plan: "elite", trial_end: new Date(Date.now() + (+pv[1]) * 86400000 - 3600000).toISOString() }
+                               : { status: "active", plan: "elite", is_admin: true });
     }
     injectChrome();
     applyStatic();
@@ -1385,15 +1401,30 @@
     wireAuthForms();
   }
   async function loadProfile() {
+    if (PREVIEW) return;            // preview localhost: mantém o perfil simulado (sem consultar o banco)
     PROFILE = null;
     if (!sb || !USER) return;
     try { const { data } = await sb.from("profiles").select("*").eq("id", USER.id).single(); PROFILE = data || null; } catch (e) { PROFILE = null; }
   }
+  // faixa do teste grátis (abaixo do menu): dias restantes ou aviso de encerramento
+  function renderTrialBar() {
+    const root = $("#nav-root"); if (!root) return;
+    let bar = $("#trialBar");
+    const on = USER && isTrial(), ended = USER && trialExpired();
+    if (!on && !ended) { if (bar) bar.remove(); return; }
+    if (!bar) { bar = document.createElement("div"); bar.id = "trialBar"; root.appendChild(bar); }
+    const n = trialDaysLeft();
+    const msg = ended ? t("trial.barEnded") : n <= 1 ? t("trial.barLast") : interp(t("trial.bar"), { n });
+    bar.className = "trial-bar" + (ended ? " ended" : "");
+    bar.innerHTML = `<span class="tb-ic">${ic(ended ? "lock" : "sparkles")}</span><span class="tb-msg">${msg}</span>
+      <a class="btn btn-primary tb-cta" href="plans.html">${t("trial.cta")}</a>`;
+  }
   function updateAuthUI() {
+    renderTrialBar();
     const host = $("#navAuth"); if (!host) return;
     if (USER) {
       const name = USER.user_metadata?.name || USER.email;
-      const badge = isMember() ? `<span class="nav-plan">${(PROFILE.plan || "").toUpperCase()}</span>` : "";
+      const badge = isMember() ? `<span class="nav-plan">${(PROFILE.plan || "").toUpperCase()}${isTrial() ? " · " + t("trial.tag") : ""}</span>` : "";
       const desk = `<a class="btn btn-desk" href="members.html">${ic("desk")}${t("nav.desk")}</a>`;
       host.innerHTML = `${desk}<a class="nav-user" href="account.html" title="${esc(USER.email)}">${ic("user")}<span class="nav-name">${esc(name)}</span>${badge}</a><button class="btn btn-ghost" id="logoutBtn">${t("auth.logout")}</button>`;
       const lb = $("#logoutBtn"); if (lb) lb.onclick = async () => { if (sb) await sb.auth.signOut(); location.href = "index.html"; };
@@ -1486,7 +1517,7 @@
       vb.querySelectorAll(".sig-vpill").forEach(b => b.onclick = () => { STATE_VIEW = b.dataset.v; SIG_SEL = null; paintSignals(); });
     }
     const rows = mkt.filter(s => s.state === STATE_VIEW);
-    const elite = PROFILE && PROFILE.plan === "elite";
+    const elite = isElite();
     const head = `<thead><tr><th>${t("sig.ticker")}</th><th class="num">${t("sig.price")}</th><th class="num">${t("sig.entry")}</th><th class="num">${t("sig.stop")}</th><th class="num">${t("sig.tp")}</th><th class="num">R:R</th>${elite ? `<th class="num">${t("sig.cc")}</th>` : ""}</tr></thead>`;
     const body = rows.map(s => `<tr data-tk="${s.ticker}" class="${SIG_SEL === s.ticker ? "sel" : ""}">
         <td class="tk-cell">${s.ticker} <span class="mkt">${s.market}</span></td>
@@ -1512,7 +1543,7 @@
     const s = SIGNALS.find(x => x.ticker === ticker); if (!s) return;
     SIG_SEL = ticker;
     document.querySelectorAll("#sigTable tbody tr").forEach(tr => tr.classList.toggle("sel", tr.dataset.tk === ticker));
-    const elite = PROFILE && PROFILE.plan === "elite";
+    const elite = isElite();
     const head = $("#sigChartHead");
     if (head) head.innerHTML = `<div><span class="sig-tk">${s.ticker}</span> <span class="st ${stClass(s.state)}">${stLabel(s.state)}</span></div>
       <a class="sig-tv" href="https://www.tradingview.com/chart/?symbol=${encodeURIComponent(s.tv_symbol)}" target="_blank" rel="noopener">${t("sig.openTV")} ↗</a>`;
@@ -1758,7 +1789,7 @@
     const d = (st.data && st.data.data) || null;
     const sym = cur === "BRL" ? "R$" : "$";
     const money = v => v == null ? "—" : sym + Number(v).toLocaleString(locale(), { maximumFractionDigits: 0 });
-    const isElite = PROFILE && PROFILE.plan === "elite";
+    const isEliteNow = isElite();
     // buy-and-hold (KMLM / dividendos: sem stop/TP) é compra no preço atual → ATIVO na hora,
     // nunca "pendente" (efeito imediato mesmo antes do motor recomputar).
     positions.forEach(p => {
@@ -1797,7 +1828,7 @@
         <label for="pfDeposit">${ic("wallet")}${t("pf.deposit")}</label>
         <div class="pf-dep-in"><span>${sym}</span><input id="pfDeposit" type="number" value="${deposit}" min="0" step="100"></div>
         <button class="btn btn-primary" id="pfSaveDep">${t("pf.save")}</button>
-        ${isElite && positions.length ? `<button class="btn btn-ghost" id="pfExport">${ic("down")}${t("pf.export")}</button>` : ""}
+        ${isEliteNow && positions.length ? `<button class="btn btn-ghost" id="pfExport">${ic("down")}${t("pf.export")}</button>` : ""}
         <span class="add-msg" id="pfDepMsg"></span>
       </div>
       ${danger}
@@ -1843,7 +1874,7 @@
       } else {
         html += `<p class="hedge-note">${t("pf.curveSoon")}</p>`;
       }
-      if (!frozen && isElite) html += `<div id="betaCtrlHost"></div>`;   // ativo de proteção = exclusivo Elite
+      if (!frozen && isEliteNow) html += `<div id="betaCtrlHost"></div>`;   // ativo de proteção = exclusivo Elite
       // positions table (ou nota quando as posições foram zeradas mas as métricas ficaram)
       if (frozen) {
         html += `<p class="hedge-note" style="margin-top:16px">${t("pf.noOpenPos")}</p>`;
@@ -1866,7 +1897,7 @@
     }
     host.innerHTML = html;
     cardify(host.querySelector(".blotter-scroll table"));
-    if (!frozen && positions.length && isElite) renderBetaControl(positions, deposit);
+    if (!frozen && positions.length && isEliteNow) renderBetaControl(positions, deposit);
 
     const seg = $("#pfStratSeg");
     if (seg) seg.querySelectorAll("button").forEach(b => b.onclick = () => { PF_STRAT = b.dataset.s; renderPortfolio(); });
@@ -1941,16 +1972,20 @@
       return;
     }
     const p = PROFILE || {}, member = isMember();
-    const planName = member ? (p.plan || "—").toUpperCase() : t("acct.free");
+    const planName = member ? (p.plan || "—").toUpperCase() + (isTrial() ? " · " + t("trial.tag") : "") : t("acct.free");
+    const endTxt = trialEnd() ? trialEnd().toLocaleDateString(locale()) : "";
+    const statusTxt = isTrial() ? interp(t("trial.statusOn"), { d: endTxt, n: trialDaysLeft() })
+      : trialExpired() ? interp(t("trial.statusOff"), { d: endTxt })
+      : member ? t("acct.active") : t("acct.inactive");
     host.innerHTML = `
       <div class="acct-card">
         <div class="acct-grid">
           <div class="acct-row"><span class="acct-k">${t("acct.name")}</span><span class="acct-v">${esc((USER.user_metadata && USER.user_metadata.name) || "—")}</span></div>
           <div class="acct-row"><span class="acct-k">${t("acct.email")}</span><span class="acct-v">${esc(USER.email)}</span></div>
           <div class="acct-row"><span class="acct-k">${t("acct.plan")}</span><span class="acct-v"><span class="acct-badge ${member ? "on" : ""}">${planName}</span></span></div>
-          <div class="acct-row"><span class="acct-k">${t("acct.status")}</span><span class="acct-v">${member ? t("acct.active") : t("acct.inactive")}</span></div>
+          <div class="acct-row"><span class="acct-k">${t("acct.status")}</span><span class="acct-v">${statusTxt}</span></div>
         </div>
-        ${member
+        ${member && !isTrial()
         ? `<a class="btn btn-ghost btn-block" href="#" id="manageBtn">${t("acct.manage")}</a>`
         : `<div class="acct-upsell"><p>${t("acct.upsell")}</p><a class="btn btn-primary btn-block" href="plans.html">${t("acct.subscribe")}</a></div>`}
         <button class="btn btn-ghost btn-block" id="acctLogout">${t("auth.logout")}</button>
@@ -2150,7 +2185,7 @@
     let rows = (data || []).filter(r => !DIV_MKT || r.market === DIV_MKT);
     if (!rows.length) {
       DIV_ROWS = []; const hh = $("#divHeat"); if (hh) hh.innerHTML = `<p class="muted-note">—</p>`;
-      const plan = (PROFILE && PROFILE.plan) || "";
+      const plan = (isMember() && PROFILE.plan) || "";
       if (DIV_MKT === "US" && plan === "beginner") { host.innerHTML = teaser("div.sig.proTeaser", "div.sig.upgrade", "plans.html"); return; }
       host.innerHTML = `<p class="muted-note">${t("div.sig.none")}</p>`; return;
     }
@@ -2367,7 +2402,7 @@
     const teaser = (msgKey, btnKey, href) =>
       `<section class="section"><div class="div-siglock" style="max-width:640px;margin:0 auto"><p>${t(msgKey)}</p><a class="btn btn-primary" href="${href}">${t(btnKey)}</a></div></section>`;
     if (!USER) { gate.innerHTML = teaser("mem.gateLogin", "mem.login", "login.html"); if (content) content.hidden = true; return; }
-    if (!isMember()) { gate.innerHTML = teaser("mem.gateUpgrade", "mem.plans", "plans.html"); if (content) content.hidden = true; return; }
+    if (!isMember()) { gate.innerHTML = teaser(trialExpired() ? "trial.ended" : "mem.gateUpgrade", "mem.plans", "plans.html"); if (content) content.hidden = true; return; }
     gate.innerHTML = ""; if (content) content.hidden = false;
     initDeskViews();
     if (DATA) guard("#po3Tabs", () => initSection(["US", "BR"], "#po3Tabs", renderPO3Panel));
@@ -2375,7 +2410,7 @@
   }
   async function renderKmlmCard() {
     const host = $("#kmlmHost"); if (!host) return;
-    const elite = PROFILE && PROFILE.plan === "elite";
+    const elite = isElite();
     if (!sb || !USER || !elite) { host.innerHTML = ""; return; }
     let hedge = null, positions = [];
     try {
@@ -2416,7 +2451,7 @@
   }
   function renderCoveredCallMembers() {
     const sec = $("#ccMembersSection"), host = $("#ccMembersHost"); if (!host) return;
-    const elite = PROFILE && PROFILE.plan === "elite";
+    const elite = isElite();
     const cc = DATA && DATA.cherry;
     if (!elite || !cc || !cc.stocks_only || !cc.with) { if (sec) sec.hidden = true; return; }
     if (sec) sec.hidden = false;
