@@ -66,8 +66,10 @@
      (posicionamento institucional conservador, coerente com o alvo de 6.5% VaR). */
   /* Sizing por RISCO/trade, normalizado a 6,5% VaR (= risco do S&P 500). Para esta
      estratégia, o livro a 6,5% VaR corresponde a ~0,15% de risco por trade. Sem Kelly. */
-  const RISK_LEVELS = [0.10, 0.15, 0.20];
-  const RISK_DEFAULT = 0.15;                       // 6,5% VaR ≈ risco do S&P 500
+  // risco por operação (% do depósito). Liberdade total: o usuário escolhe — o painel "Quanto arriscar"
+  // mostra o que cada nível fez em 10 anos (conta à vista e alavancada). 0,15% = padrão.
+  const RISK_LEVELS = [0.10, 0.15, 0.20, 0.25, 0.5, 1, 2];
+  const RISK_DEFAULT = 0.15;
   const savedRisk = () => { const v = parseFloat(localStorage.getItem("seven7-risk")); return RISK_LEVELS.includes(v) ? v : RISK_DEFAULT; };
 
   /* ---------------- i18n dictionary ---------------- */
@@ -268,8 +270,31 @@
     "sig.stFlat": { en: "CASH", pt: "CAIXA" },
     "sig.openTV": { en: "Open in TradingView", pt: "Abrir no TradingView" },
     "sig.riskLbl": { en: "Risk per trade", pt: "Risco por trade" },
-    "sig.spLevel": { en: "S&P 500 level (6.5% VaR)", pt: "nível S&P 500 (6,5% VaR)" },
-    "sig.riskHint": { en: "Sized by <b>risk</b>, normalized to <b>6.5% VaR — the same risk as holding the S&P 500</b>. Each trade risks this % of your deposit; the stop caps the loss. We compute how many shares to buy from your stop distance. Fractional shares/lots work on MT5 brokers (e.g. Exness, from 0.01).", pt: "Dimensionado por <b>risco</b>, normalizado a <b>6,5% VaR — o mesmo risco de segurar o S&P 500</b>. Cada trade arrisca essa % do seu depósito; o stop limita a perda. Calculamos quantas ações comprar a partir da distância do seu stop. Frações de ação/lote funcionam em corretoras MT5 (ex.: Exness, a partir de 0,01)." },
+    "sig.spLevel": { en: "default", pt: "padrão" },
+    "risk.high": { en: "high risk", pt: "risco alto" },
+    "risk.note": { en: "At <b>{lv}%</b> per trade, over 10 years: <b>{cagr}/yr</b> with a max drop of <b>-{dd}%</b> in a cash account.", pt: "Com <b>{lv}%</b> por operação, em 10 anos: <b>{cagr} ao ano</b> e queda máxima de <b>-{dd}%</b> na conta à vista." },
+    "risk.noteLev": { en: "With leverage: {cagr}/yr and -{dd}%.", pt: "Com alavancagem: {cagr} ao ano e -{dd}%." },
+    "risk.noteRuin": { en: "With leverage, <b>the account was wiped out ({d})</b>.", pt: "Com alavancagem, <b>a conta zerou ({d})</b>." },
+    "risk.compare": { en: "Compare risk levels", pt: "Comparar níveis de risco" },
+    "risk.title": { en: "How much to risk per trade?", pt: "Quanto arriscar por operação?" },
+    "risk.sub": { en: "What each level did over 10 years following the signals. The choice is yours.", pt: "O que cada nível fez em 10 anos seguindo os sinais. A escolha é sua." },
+    "risk.f1": { en: "<b>More risk always means bigger drops.</b> Return does not always follow.", pt: "<b>Mais risco sempre traz quedas maiores.</b> O retorno nem sempre acompanha." },
+    "risk.f2": { en: "<b>Cash account:</b> above ~0.25% the money runs out and most signals don't fit — risk grows, return doesn't.", pt: "<b>Conta à vista:</b> acima de ~0,25% o dinheiro acaba e a maioria dos sinais não cabe — o risco cresce, o retorno não." },
+    "risk.f3": { en: "<b>With leverage (CFD/margin):</b> return grows, but drops get much bigger — and the highest levels wiped the account out.", pt: "<b>Com alavancagem (CFD/margem):</b> o retorno cresce, mas as quedas ficam muito maiores — e os níveis mais altos zeraram a conta." },
+    "risk.cash": { en: "Cash account", pt: "Conta à vista" },
+    "risk.lev": { en: "With leverage", pt: "Com alavancagem" },
+    "risk.hLevel": { en: "Risk/trade", pt: "Risco/operação" },
+    "risk.hCagr": { en: "Return/yr", pt: "Retorno/ano" },
+    "risk.hDD": { en: "Max drop", pt: "Queda máxima" },
+    "risk.hWorst": { en: "Worst year", pt: "Pior ano" },
+    "risk.hVol": { en: "Volatility", pt: "Volatilidade" },
+    "risk.hExpo": { en: "Avg exposure", pt: "Exposição média" },
+    "risk.hFit": { en: "Signals followed", pt: "Sinais seguidos" },
+    "risk.ruinRow": { en: "Account wiped out in {d} — lost everything", pt: "Conta zerada em {d} — perdeu tudo" },
+    "risk.footCash": { en: "Cash account: no leverage; when money runs out the position is partial or skipped (signals followed = taken in full).", pt: "Conta à vista: sem alavancagem; quando o dinheiro acaba, a posição é parcial ou fica de fora (sinais seguidos = os tomados por inteiro)." },
+    "risk.footLev": { en: "With leverage: follows every signal at full size; borrowed money pays {fin}%/yr interest. Exposure above 100% = leverage.", pt: "Com alavancagem: segue todos os sinais no tamanho cheio; o dinheiro emprestado paga {fin}% a.a. de juros. Exposição acima de 100% = alavancagem." },
+    "risk.foot": { en: "Simulation over 10 years of real prices, costs included, following only the stock signals with a fixed risk per trade — without the book's beta sleeve, hedge and volatility target, so it differs from the Results page. Past results do not guarantee future ones.", pt: "Simulação de 10 anos com preços reais e custos, seguindo só os sinais de ações com risco fixo por operação — sem o sleeve de beta, o hedge e o alvo de volatilidade do livro, por isso difere da página Resultados. Resultado passado não garante futuro." },
+    "sig.riskHint": { en: "Sized by <b>risk</b>: each trade risks this % of your deposit and the stop caps the loss. We compute how many shares to buy from the stop distance. 0.15% is the default; higher levels are open to you — see what each did below. Fractional shares/lots work on MT5 brokers (e.g. Exness, from 0.01).", pt: "Dimensionado por <b>risco</b>: cada operação arrisca essa % do seu depósito e o stop limita a perda. Calculamos quantas ações comprar a partir da distância do stop. 0,15% é o padrão; níveis maiores estão liberados — veja abaixo o que cada um fez. Frações de ação/lote funcionam em corretoras MT5 (ex.: Exness, a partir de 0,01)." },
     "sig.buyCalc": { en: "Buy ≈ <b>{shares}</b> shares · {notional} ({consumed}% of portfolio) · <b>risk {risk} ({riskpct}% of deposit)</b>, capped by the stop", pt: "Comprar ≈ <b>{shares}</b> ações · {notional} ({consumed}% do portfólio) · <b>risco {risk} ({riskpct}% do depósito)</b>, limitado pelo stop" },
     "sig.buyCalcBR": { en: "Buy <b>{shares}</b> whole share(s) · {notional} ({consumed}% of portfolio) · <b>risk {risk} ({riskpct}%)</b>, capped by the stop. B3 trades whole shares only.", pt: "Comprar <b>{shares}</b> ação(ões) inteira(s) · {notional} ({consumed}% do portfólio) · <b>risco {risk} ({riskpct}%)</b>, limitado pelo stop. A B3 negocia só ações inteiras." },
     "sig.buyNoDep": { en: "Set your initial deposit on the Portfolio page to see exactly how much to buy.", pt: "Defina seu depósito inicial na página Portfólio para ver exatamente quanto comprar." },
@@ -493,6 +518,11 @@
     "mem.login": { en: "Log in", pt: "Entrar" },
     "mem.plans": { en: "See plans", pt: "Ver planos" },
     "sig.addBtn": { en: "＋ Portfolio", pt: "＋ Portfólio" },
+    "sig.addOrder": { en: "＋ Add buy-stop order", pt: "＋ Adicionar ordem buy stop" },
+    "sig.addLate": { en: "Enter anyway (at market)", pt: "Entrar mesmo assim (a mercado)" },
+    "sig.orderHint": { en: "Place a <b>BUY STOP order at {entry}</b> (stop {stop} · target {tp}). In your portfolio it stays <b>pending</b> and only opens when the price closes above the entry.", pt: "Coloque uma <b>ordem BUY STOP em {entry}</b> (stop {stop} · alvo {tp}). No seu portfólio ela fica <b>pendente</b> e só abre quando o preço fechar acima da entrada." },
+    "sig.lateWarn": { en: "<b>Entry already reached.</b> The price passed {entry} and is at {price} ({pct}% above). The ideal is <b>not to enter</b> and wait for the next signal — entering late worsens the risk/return. It's your call: if you enter, it is at market, at the current price.", pt: "<b>Entrada já atingida.</b> O preço passou de {entry} e está em {price} ({pct}% acima). O ideal é <b>não entrar</b> e esperar o próximo sinal — entrar atrasado piora o risco/retorno. A decisão é sua: se entrar, é a mercado, no preço atual." },
+    "sig.lateConfirm": { en: "This signal already passed its entry. Entering now is at market, at a worse price than the strategy's. Enter anyway?", pt: "Este sinal já passou da entrada. Entrar agora é a mercado, num preço pior que o da estratégia. Entrar mesmo assim?" },
     "sig.added": { en: "Added ✓", pt: "Adicionado ✓" },
     "held.tag": { en: "In portfolio", pt: "No portfólio" },
     "held.box": { en: "Already in your portfolio — added on {d}.", pt: "Já está no seu portfólio — adicionado em {d}." },
@@ -547,7 +577,7 @@
     "pf.won": { en: "WON", pt: "GANHOU" },
     "pf.lost": { en: "LOST", pt: "PERDEU" },
     "pf.openst": { en: "OPEN", pt: "ABERTA" },
-    "pf.pending": { en: "PENDING", pt: "PENDENTE" },
+    "pf.pending": { en: "BUY STOP", pt: "ORDEM BUY STOP" },
     "pf.remove": { en: "Remove", pt: "Remover" },
     "pf.removeConfirm": { en: "Remove {tk} from your portfolio?", pt: "Remover {tk} do seu portfólio?" },
     "pf.more": { en: "More options", pt: "Mais opções" },
@@ -1526,11 +1556,62 @@
         <div class="sig-trailnote" id="sigTrailNote"></div>
         <div class="sig-add" id="sigAdd"></div>
       </div>
-      <div class="sig-tablewrap"><table class="sig-table" id="sigTable"></table></div>`;
+      <div class="sig-tablewrap"><table class="sig-table" id="sigTable"></table></div>
+      <div id="riskCmp"></div>`;
     await loadHeld();
     paintSignals();
+    renderRiskCmp();
   }
 
+  // ---- Quanto arriscar por operação: métricas completas por nível (risk_levels.json, 10 anos) ----
+  let RISKLV = null, RC_MKT = "US", RC_ACC = "cash";
+  function loadRiskLevels(cb) {
+    if (RISKLV) { if (cb) cb(); return; }
+    fetch("data/risk_levels.json?d=" + new Date().toISOString().slice(0, 10))
+      .then(r => r.json()).then(d => { RISKLV = d; if (cb) cb(); }).catch(() => { RISKLV = {}; if (cb) cb(); });
+  }
+  const fmtMonth = d => { const [y, m] = String(d).split("-"); return `${MONTHS[LANG][+m - 1]}/${y}`; };
+  function renderRiskCmp() {
+    const host = $("#riskCmp"); if (!host) return;
+    loadRiskLevels(() => {
+      const b = RISKLV && RISKLV.books && RISKLV.books[RC_MKT]; if (!b) { host.innerHTML = ""; return; }
+      const sel = parseFloat(lsGet("seven7-risk")) || RISK_DEFAULT;
+      const rows = (RISKLV.levels || []).map(lv => {
+        const m = b[RC_ACC][String(lv)]; if (!m) return "";
+        const cls = [lv === sel ? "sel" : "", lv >= 1 ? "high" : lv >= 0.5 ? "mid" : ""].join(" ");
+        const lvl = `<td class="rc-lv">${nf(lv, 2)}%${lv === RISK_DEFAULT ? `<small>${t("sig.spLevel")}</small>` : ""}</td>`;
+        if (m.ruin) return `<tr class="${cls} ruin">${lvl}<td colspan="7" class="rc-ruin">${ic("x")}${interp(t("risk.ruinRow"), { d: fmtMonth(m.ruin) })}</td></tr>`;
+        const fit = RC_ACC === "cash" ? `${nf((m.taken - m.partial) / b.n_trades * 100, 0)}%` : "100%";
+        return `<tr class="${cls}">${lvl}
+          <td class="num ${m.cagr >= 0 ? "pos" : "neg"}">${fmtPct(m.cagr)}</td>
+          <td class="num neg">${nf(m.max_dd, 1)}%</td>
+          <td class="num ${m.worst_year >= 0 ? "" : "neg"}">${nf(m.worst_year, 1)}%</td>
+          <td class="num">${m.vol != null ? nf(m.vol, 1) + "%" : "—"}</td>
+          <td class="num">${m.sharpe != null ? nf(m.sharpe, 2) : "—"}</td>
+          <td class="num">${m.expo_avg != null ? nf(m.expo_avg, 0) + "%" : "—"}</td>
+          <td class="num">${fit}</td></tr>`;
+      }).join("");
+      const seg = (id, opts, cur) => `<div class="seg" id="${id}">${opts.map(o => `<button data-v="${o[0]}" class="${cur === o[0] ? "on" : ""}">${o[1]}</button>`).join("")}</div>`;
+      host.innerHTML = `<div class="chart-card rc-card">
+        <div class="rc-head"><span class="rc-ic">${ic("gauge")}</span><div>
+          <div class="chart-title">${t("risk.title")}</div><div class="chart-sub">${t("risk.sub")}</div></div></div>
+        <ul class="rc-facts">
+          <li>${ic("fall")}<span>${t("risk.f1")}</span></li>
+          <li>${ic("wallet")}<span>${t("risk.f2")}</span></li>
+          <li>${ic("trend")}<span>${t("risk.f3")}</span></li>
+        </ul>
+        <div class="rc-controls">${seg("rcMkt", [["US", t("book.us")], ["BR", t("book.br")]], RC_MKT)}
+          ${seg("rcAcc", [["cash", t("risk.cash")], ["lev", t("risk.lev")]], RC_ACC)}</div>
+        <div class="table-wrap"><table class="sig-table rc-table"><thead><tr>
+          <th>${t("risk.hLevel")}</th><th class="num">${t("risk.hCagr")}</th><th class="num">${t("risk.hDD")}</th>
+          <th class="num">${t("risk.hWorst")}</th><th class="num">${t("risk.hVol")}</th><th class="num">Sharpe</th>
+          <th class="num">${t("risk.hExpo")}</th><th class="num">${t("risk.hFit")}</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <p class="rc-foot">${interp(t(RC_ACC === "cash" ? "risk.footCash" : "risk.footLev"), { fin: nf(((RISKLV.fin || {})[RC_MKT] || 0) * 100, 0) })} ${t("risk.foot")}</p>
+      </div>`;
+      $$("#rcMkt button").forEach(bt => bt.onclick = () => { RC_MKT = bt.dataset.v; renderRiskCmp(); });
+      $$("#rcAcc button").forEach(bt => bt.onclick = () => { RC_ACC = bt.dataset.v; renderRiskCmp(); });
+    });
+  }
   function paintSignals() {
     const mkt = SIGNALS.filter(s => SIG_FILTER === "ALL" || s.market === SIG_FILTER);
     const cnt = st => mkt.filter(s => s.state === st).length;
@@ -1605,22 +1686,32 @@
         <a href="members.html#portfolio">${t("held.go")} →</a></div>`;
     } else if (add) {
       const cur = s.market === "BR" ? "R$" : "$";
+      // Sequência: MONITORANDO = ordem BUY STOP na entrada (fica pendente até o preço chegar);
+      // ATIVO = a entrada já passou -> só a mercado, no preço atual (o ideal é não entrar; a escolha é do usuário).
+      const late = s.state === "ACTIVE";
+      const fillPx = late ? (s.price || s.entry) : s.entry;
       const dep = PROFILE && PROFILE.portfolio_deposit ? Number(PROFILE.portfolio_deposit) : null;
       const chosen = savedRisk();
       const opts = RISK_LEVELS.map(r =>
-        `<option value="${r}" ${r === chosen ? "selected" : ""}>${nf(r, 2)}%${r === RISK_DEFAULT ? " · " + t("sig.spLevel") : ""}</option>`).join("");
-      add.innerHTML = `<span class="alloc-lbl">${t("sig.riskLbl")}</span>
+        `<option value="${r}" ${r === chosen ? "selected" : ""}>${nf(r, 2)}%${r === RISK_DEFAULT ? " · " + t("sig.spLevel") : r >= 1 ? " · " + t("risk.high") : ""}</option>`).join("");
+      const moneyLvl = v => (s.market === "BR" ? "R$ " : "$") + fmtNum(v);
+      const upPct = (late && s.entry > 0 && s.price) ? (s.price / s.entry - 1) * 100 : null;
+      const flow = late
+        ? `<div class="late-box">${ic("lock")}<div>${interp(t("sig.lateWarn"), { entry: moneyLvl(s.entry), price: moneyLvl(fillPx), pct: upPct != null ? nf(upPct, 1) : "—" })}</div></div>`
+        : `<div class="order-box">${ic("target")}<div>${interp(t("sig.orderHint"), { entry: moneyLvl(s.entry), stop: moneyLvl(s.stop), tp: moneyLvl(s.tp) })}</div></div>`;
+      add.innerHTML = `${flow}<span class="alloc-lbl">${t("sig.riskLbl")}</span>
         <select id="riskSel" class="alloc-in alloc-sel">${opts}</select>
-        <button class="btn btn-primary" id="addPortfolioBtn">${t("sig.addBtn")}</button>
+        <button class="btn ${late ? "btn-ghost" : "btn-primary"}" id="addPortfolioBtn">${late ? t("sig.addLate") : t("sig.addOrder")}</button>
         <span class="add-msg" id="addMsg"></span>
         <div class="buy-calc" id="buyCalc"></div>
+        <div class="risk-note" id="riskNote"></div>
         <div class="kelly-hint">${t("sig.riskHint")}</div>`;
       const money = v => cur + Number(v).toLocaleString(locale(), { maximumFractionDigits: v >= 1000 ? 0 : 2 });
       // sizing por RISCO: ações = (risco% × depósito) / (entry − stop). BR = ação inteira.
       const sizeTrade = riskPct => {
-        const px = s.entry || s.price;
+        const px = fillPx;                                  // ordem: entrada do sinal; atrasado: preço atual
         const whole = s.market === "BR";
-        const perShare = (s.entry > 0 && s.stop > 0 && s.entry > s.stop) ? (s.entry - s.stop) : null;
+        const perShare = (px > 0 && s.stop > 0 && px > s.stop) ? (px - s.stop) : null;
         if (!perShare || !dep || px <= 0) return { riskPct, shares: 0, whole, notional: 0, consumedPct: null, realRiskPct: null };
         let shares = (dep * riskPct / 100) / perShare;
         if (whole) shares = Math.max(1, Math.floor(shares));
@@ -1640,16 +1731,30 @@
           riskpct: z.realRiskPct != null ? nf(z.realRiskPct, 2) : "—",
         });
       };
-      paintBuy();
-      $("#riskSel").onchange = () => { localStorage.setItem("seven7-risk", $("#riskSel").value); paintBuy(); };
+      const paintRiskNote = () => {
+        const el = $("#riskNote"); if (!el) return;
+        const lv = parseFloat($("#riskSel").value);
+        loadRiskLevels(() => {
+          const b = RISKLV && RISKLV.books && RISKLV.books[s.market]; if (!b) { el.innerHTML = ""; return; }
+          const c = b.cash[String(lv)], l = b.lev[String(lv)]; if (!c || !l) { el.innerHTML = ""; return; }
+          const levTxt = l.ruin ? interp(t("risk.noteRuin"), { d: fmtMonth(l.ruin) })
+            : (l.expo_max != null && l.expo_max > 100) ? interp(t("risk.noteLev"), { cagr: fmtPct(l.cagr), dd: nf(Math.abs(l.max_dd), 0) }) : "";
+          el.className = "risk-note" + (lv >= 1 ? " high" : lv >= 0.5 ? " mid" : "");
+          el.innerHTML = `${ic(lv >= 0.5 ? "fall" : "shield")}<div>${interp(t("risk.note"), { lv: nf(lv, 2), cagr: fmtPct(c.cagr), dd: nf(Math.abs(c.max_dd), 0) })} ${levTxt}
+            <a href="#riskCmp" class="risk-cmp-link">${t("risk.compare")} ↓</a></div>`;
+        });
+      };
+      paintBuy(); paintRiskNote();
+      $("#riskSel").onchange = () => { localStorage.setItem("seven7-risk", $("#riskSel").value); paintBuy(); paintRiskNote(); renderRiskCmp(); };
       $("#addPortfolioBtn").onclick = async () => {
+        if (late && !confirm(t("sig.lateConfirm"))) return;
         const rk = parseFloat($("#riskSel").value) || RISK_DEFAULT;
         localStorage.setItem("seven7-risk", String(rk));
         const z = sizeTrade(rk);
         // grava o % de notional consumido (motor reconstrói as mesmas ações)
         const pct = Math.min(100, Math.max(0.01, z.consumedPct != null ? z.consumedPct : 1));
         const msg = $("#addMsg"), btn = $("#addPortfolioBtn"); btn.disabled = true;
-        const err = await addPosition(s, pct);
+        const err = await addPosition(s, pct, late ? "market" : "stop", fillPx);
         if (err) { msg.textContent = t("sig.addErr"); msg.className = "add-msg err"; btn.disabled = false; return; }
         await loadHeld(true);       // passa a constar como "No portfólio" na lista e no painel
         paintSignals();
@@ -1657,13 +1762,23 @@
     }
     showTVChart(s.tv_symbol);
   }
-  async function addPosition(sig, allocPct) {
-    if (!sb || !USER) return "no-auth";
-    const { error } = await sb.from("portfolio_positions").insert({
-      ticker: sig.ticker, tv_symbol: sig.tv_symbol, market: sig.market,
-      entry: sig.entry, stop: sig.stop, tp: sig.tp, alloc_pct: allocPct,
-    });
+  // grava a posição já com o status certo: ordem buy stop = PENDENTE; a mercado = ABERTA
+  async function insertPosition(row) {
+    let { error } = await sb.from("portfolio_positions").insert(row);
+    if (error && /entry_type/i.test(error.message || "")) {     // banco ainda sem a coluna (migração pendente)
+      const { entry_type, ...rest } = row;
+      ({ error } = await sb.from("portfolio_positions").insert(rest));
+    }
     return error;
+  }
+  async function addPosition(sig, allocPct, entryType = "stop", fillPx = null) {
+    if (!sb || !USER) return "no-auth";
+    const market = entryType === "market";
+    return insertPosition({
+      ticker: sig.ticker, tv_symbol: sig.tv_symbol, market: sig.market,
+      entry: market && fillPx ? fillPx : sig.entry, stop: sig.stop, tp: sig.tp, alloc_pct: allocPct,
+      status: market ? "open" : "pending", entry_type: entryType,
+    });
   }
 
   function ensureTV() {
@@ -1708,6 +1823,7 @@
       { id: "p3", ticker: "KMLM", market: "US", tv_symbol: "AMEX:KMLM", entry: 28.8, current_price: 29.5, alloc_pct: 15, status: "open", ret_pct: 2.4, added_at: "2025-09-01", strategy: "po3" },
       { id: "p4", ticker: "TAEE11", market: "BR", tv_symbol: "BMFBOVESPA:TAEE11", entry: 34, current_price: 36, alloc_pct: 10, status: "open", ret_pct: 5.9, added_at: "2025-08-01", strategy: "dividends" },
       { id: "p5", ticker: "BBSE3", market: "BR", tv_symbol: "BMFBOVESPA:BBSE3", entry: 38, current_price: 40, alloc_pct: 7, status: "open", ret_pct: 5.3, added_at: "2025-07-01", strategy: "dividends" },
+      { id: "p6", ticker: "META", market: "US", tv_symbol: "META", entry: 735, stop: 661.5, tp: 845, current_price: 712, alloc_pct: 4, status: "pending", ret_pct: 0, added_at: "2026-10-05", strategy: "po3", entry_type: "stop" },
     ];
     const stats = {
       value: 11800, total_return: 18.0, win_rate: 62, max_dd: 9.2, vol_drag: 1.1, spy_return: 10, bova_return: 5, curve: mkCurve(0.18),
@@ -1801,7 +1917,7 @@
     try { const { data } = await sb.from("signals").select("price").eq("ticker", "__HEDGE__").maybeSingle(); price = data && data.price; } catch (e) {}
     if (!price) { if (msg) { msg.textContent = t("beta.noPrice"); msg.className = "add-msg err"; } if (apply) apply.disabled = false; return; }
     await sb.from("portfolio_positions").delete().eq("user_id", USER.id).eq("ticker", "KMLM");
-    const { error } = await sb.from("portfolio_positions").insert({ ticker: "KMLM", tv_symbol: "AMEX:KMLM", market: "US", entry: price, stop: null, tp: null, alloc_pct: Math.round(kmlmPct * 10) / 10 });
+    const error = await insertPosition({ ticker: "KMLM", tv_symbol: "AMEX:KMLM", market: "US", entry: price, stop: null, tp: null, alloc_pct: Math.round(kmlmPct * 10) / 10, status: "open", entry_type: "market" });
     if (msg) { msg.textContent = error ? t("sig.addErr") : t("beta.applied"); msg.className = "add-msg " + (error ? "err" : "ok"); }
     if (!error) renderPortfolio();
   }
@@ -2254,7 +2370,7 @@
       mk("TMO", "TMO", 615, 607.5, 546.75, 698.62, 668.25, 1.5, "ACTIVE"),
       mk("NVDA", "NVDA", 140, 136.5, 121.5, 159, 151.5, 1.5, "ACTIVE"),
       mk("BMY", "BMY", 68.2, 67.5, 60.75, 77.62, 74.25, 1.5, "ACTIVE"),
-      mk("PGR", "PGR", 224, 222.75, 202.5, 251.99, 243.0, 1.44, "WAITING"),
+      mk("PGR", "PGR", 218, 222.75, 202.5, 251.99, 243.0, 1.44, "MONITORING"),
     ];
   }
   function previewDivRows() {
@@ -2360,9 +2476,10 @@
     const pct = parseFloat(String(raw).replace(",", "."));
     if (!(pct > 0)) return;
     btn.disabled = true;
-    const { error } = await sb.from("portfolio_positions").insert({
+    const error = await insertPosition({
       ticker: tk, tv_symbol: decodeURIComponent(btn.dataset.tv), market: btn.dataset.mkt,
       entry: Number(btn.dataset.px), stop: null, tp: null, alloc_pct: pct, strategy: "dividends",
+      status: "open", entry_type: "market",
     });
     if (error) { btn.textContent = "✕"; setTimeout(() => { btn.textContent = "＋"; btn.disabled = false; }, 1500); return; }
     await loadHeld(true);           // passa a constar como "No portfólio" (tabela e mapa)
@@ -2497,9 +2614,9 @@
     const add = $("#kmlmAdd");
     if (add) add.onclick = async () => {
       add.disabled = true;
-      const { error } = await sb.from("portfolio_positions").insert({
+      const error = await insertPosition({
         ticker: "KMLM", tv_symbol: "AMEX:KMLM", market: "US",
-        entry: hedge.price, stop: null, tp: null, alloc_pct: rec,
+        entry: hedge.price, stop: null, tp: null, alloc_pct: rec, status: "open", entry_type: "market",
       });
       const m = $("#kmlmMsg"); if (m) { m.textContent = error ? t("sig.addErr") : t("kmlm.added"); m.className = "add-msg " + (error ? "err" : "ok"); }
       renderKmlmCard(); if (document.body.dataset.page === "members") renderPortfolio();

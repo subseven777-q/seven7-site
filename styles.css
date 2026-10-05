@@ -1104,6 +1104,49 @@ tr.held td.tk-cell,tr.held:hover td,tr.held.sel td{opacity:1}
 .pf-held .ic{width:14px;height:14px;stroke-width:3}
 .tm-held{color:#fff;font-weight:800}
 
+/* Ao vivo: sequência monitorando (ordem buy stop) x ativo (entrada já passou) */
+.order-box,.late-box{display:flex;gap:10px;align-items:flex-start;width:100%;padding:11px 13px;border-radius:12px;font-size:13px;line-height:1.5;margin-bottom:10px}
+.order-box{background:color-mix(in srgb,var(--c-cyan) 9%,var(--surface-2));border:1px solid color-mix(in srgb,var(--c-cyan) 30%,var(--border));color:var(--ink-2)}
+.order-box .ic{color:var(--c-cyan);width:18px;height:18px;flex:none;margin-top:1px}
+.late-box{background:color-mix(in srgb,var(--c-amber) 11%,var(--surface-2));border:1px solid color-mix(in srgb,var(--c-amber) 38%,var(--border));color:var(--ink-2)}
+.late-box .ic{color:var(--c-amber);width:18px;height:18px;flex:none;margin-top:1px}
+.order-box b,.late-box b{color:var(--ink)}
+
+/* nota do nível de risco escolhido */
+.risk-note{display:flex;gap:9px;align-items:flex-start;width:100%;margin-top:8px;padding:10px 12px;border-radius:11px;font-size:12.5px;line-height:1.5;
+  color:var(--ink-2);background:var(--surface-2);border:1px solid var(--border)}
+.risk-note:empty{display:none}
+.risk-note .ic{width:16px;height:16px;flex:none;margin-top:2px;color:var(--c-green)}
+.risk-note.mid{border-color:color-mix(in srgb,var(--c-amber) 40%,var(--border));background:color-mix(in srgb,var(--c-amber) 8%,var(--surface-2))}
+.risk-note.mid .ic{color:var(--c-amber)}
+.risk-note.high{border-color:color-mix(in srgb,var(--neg) 45%,var(--border));background:color-mix(in srgb,var(--neg) 9%,var(--surface-2))}
+.risk-note.high .ic{color:var(--neg)}
+.risk-note b{color:var(--ink)}
+.risk-cmp-link{display:inline-block;margin-left:6px;font-weight:700;color:var(--c-cyan)}
+
+/* painel: quanto arriscar por operação */
+.rc-card{margin-top:22px;scroll-margin-top:84px}
+.rc-head{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+.rc-ic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;flex:none;color:var(--c-violet);background:color-mix(in srgb,var(--c-violet) 14%,transparent)}
+.rc-ic .ic{width:21px;height:21px}
+.rc-facts{list-style:none;padding:0;margin:0 0 14px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.rc-facts li{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;line-height:1.45;color:var(--ink-2);background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:10px 12px}
+.rc-facts li b{color:var(--ink)}
+.rc-facts .ic{width:16px;height:16px;flex:none;margin-top:2px;color:var(--c-violet)}
+.rc-controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.rc-table td,.rc-table th{white-space:nowrap}
+.rc-table .rc-lv{font-weight:800;font-variant-numeric:tabular-nums}
+.rc-table .rc-lv small{display:block;font-size:10px;font-weight:600;color:var(--muted)}
+.rc-table tr.mid .rc-lv{color:var(--c-amber)}
+.rc-table tr.high .rc-lv{color:var(--neg)}
+.rc-table tr.sel td{background:color-mix(in srgb,var(--c-cyan) 12%,transparent)}
+.rc-table tr.sel .rc-lv::after{content:" ◀";color:var(--c-cyan)}
+.rc-table tr.ruin td{background:color-mix(in srgb,var(--neg) 9%,transparent)}
+.rc-ruin{color:var(--neg);font-weight:700}
+.rc-ruin .ic{width:14px;height:14px;margin-right:6px;stroke-width:3}
+.rc-foot{font-size:11.5px;color:var(--muted);line-height:1.5;margin:12px 2px 4px}
+@media(max-width:860px){.rc-facts{grid-template-columns:1fr}}
+
 /* rodapé: quebra linha (corrige a rolagem lateral no celular) */
 .footer-links{flex-wrap:wrap;gap:10px 22px}
 
