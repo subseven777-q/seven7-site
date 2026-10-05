@@ -494,6 +494,10 @@
     "mem.plans": { en: "See plans", pt: "Ver planos" },
     "sig.addBtn": { en: "＋ Portfolio", pt: "＋ Portfólio" },
     "sig.added": { en: "Added ✓", pt: "Adicionado ✓" },
+    "held.tag": { en: "In portfolio", pt: "No portfólio" },
+    "held.box": { en: "Already in your portfolio — added on {d}.", pt: "Já está no seu portfólio — adicionado em {d}." },
+    "held.go": { en: "See portfolio", pt: "Ver no portfólio" },
+    "held.hide": { en: "Hide the ones already in my portfolio ({n})", pt: "Ocultar os que já estão no meu portfólio ({n})" },
     "sig.goPortfolio": { en: "view portfolio →", pt: "ver portfólio →" },
     "sig.addErr": { en: "Couldn't add.", pt: "Não deu para adicionar." },
     "pf.needLoginSub": { en: "Log in to build and track your portfolio.", pt: "Entre para montar e acompanhar seu portfólio." },
@@ -1466,6 +1470,28 @@
 
   /* ---- members signals dashboard ---- */
   let SIGNALS = [], SIG_FILTER = "ALL", SIG_SEL = null, STATE_VIEW = "ACTIVE", tvLoading = false;
+  // ---- o que o usuário JÁ TEM no portfólio (p/ marcar "No portfólio" e deixar só o novo em destaque) ----
+  // Só posições em aberto contam: operação encerrada (ganhou/perdeu) não bloqueia um sinal novo no mesmo ativo.
+  let HELD = null;   // Map "estratégia:mercado:ticker" -> posição
+  const heldKey = (strategy, market, tk) => `${strategy || "po3"}:${market}:${String(tk).replace(/\.SA$/, "")}`;
+  const heldInfo = (strategy, market, tk) => (HELD && HELD.get(heldKey(strategy, market, tk))) || null;
+  const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+  function setHeld(positions) {
+    HELD = new Map();
+    (positions || []).forEach(p => { if (p.status === "won" || p.status === "lost") return; HELD.set(heldKey(p.strategy, p.market, p.ticker), p); });
+  }
+  async function loadHeld(force) {
+    if (HELD && !force) return HELD;
+    if (PREVIEW) { setHeld(previewPortfolio().positions); return HELD; }
+    if (!sb || !USER || !isMember()) { HELD = new Map(); return HELD; }
+    try { const { data } = await sb.from("portfolio_positions").select("ticker,market,strategy,status,added_at"); setHeld(data); }
+    catch (e) { HELD = new Map(); }
+    return HELD;
+  }
+  const heldDate = p => p && p.added_at ? new Date(String(p.added_at).slice(0, 10) + "T12:00:00").toLocaleDateString(locale()) : "";
+  const heldTag = () => `<span class="held-tag">${ic("check")}${t("held.tag")}</span>`;
+  const onlyNewToggle = (id, on, n) => `<label class="only-new"><input type="checkbox" id="${id}" ${on ? "checked" : ""}> ${interp(t("held.hide"), { n })}</label>`;
   const stClass = s => (s === "ACTIVE" ? "active" : s === "MONITORING" ? "wait" : "flat");
   const stLabel = s => (s === "ACTIVE" ? t("sig.stActive") : s === "MONITORING" ? t("sig.stMon") : t("sig.stFlat"));
 
@@ -1474,11 +1500,11 @@
     const host = $("#radarHost"), tabsHost = $("#radarTabs");
     if (!host) return;
     let data = null, error = null;
-    if (sb && isMember()) {
+    if (PREVIEW) {
+      data = previewSignals();                 // localhost preview only (nunca lê o banco com o id falso)
+    } else if (sb && isMember()) {
       host.innerHTML = `<p class="muted-note">${t("sig.loading")}</p>`;
       ({ data, error } = await sb.from("signals").select("*"));
-    } else if (PREVIEW) {
-      data = previewSignals();                 // localhost preview only
     } else { return; }
     if (error) { host.innerHTML = `<p class="muted-note">${t("sig.err")}</p>`; return; }
     SIGNALS = (data || []).filter(s => !s.ticker.startsWith("__")).sort((a, b) => a.ticker.localeCompare(b.ticker));  // ordem alfabética; exclui meta (__HEDGE__)
@@ -1501,6 +1527,7 @@
         <div class="sig-add" id="sigAdd"></div>
       </div>
       <div class="sig-tablewrap"><table class="sig-table" id="sigTable"></table></div>`;
+    await loadHeld();
     paintSignals();
   }
 
@@ -1513,14 +1540,23 @@
     const vb = $("#sigViewbar");
     if (vb) {
       vb.innerHTML = views.map(v => `<button class="sig-vpill ${STATE_VIEW === v[0] ? "on" : ""}" data-v="${v[0]}"><span class="vn ${v[3]}">${v[2]}</span><span class="vl">${v[1]}</span></button>`).join("")
-        + `<div class="sig-vupd"><span class="vn">${DATA ? DATA.data_through : ""}</span><span class="vl">${t("sig.updated")}</span></div>`;
+        + `<div class="sig-vupd"><span class="vn">${DATA && /^\d{4}-\d{2}-\d{2}$/.test(DATA.data_through || "") ? new Date(DATA.data_through + "T12:00:00").toLocaleDateString(locale()) : (DATA ? DATA.data_through : "")}</span><span class="vl">${t("sig.updated")}</span></div>`;
       vb.querySelectorAll(".sig-vpill").forEach(b => b.onclick = () => { STATE_VIEW = b.dataset.v; SIG_SEL = null; paintSignals(); });
     }
-    const rows = mkt.filter(s => s.state === STATE_VIEW);
+    // já no portfólio -> marcado e no fim da lista (ou oculto, se o usuário pedir)
+    const isHeld = s => !!heldInfo("po3", s.market, s.ticker);
+    const allRows = mkt.filter(s => s.state === STATE_VIEW);
+    const nHeld = allRows.filter(isHeld).length;
+    const onlyNew = lsGet("seven7-onlynew-sig") === "1";
+    const rows = allRows.filter(s => !(onlyNew && isHeld(s))).sort((a, b) => isHeld(a) - isHeld(b));
+    if (vb && nHeld) {
+      vb.insertAdjacentHTML("beforeend", onlyNewToggle("sigOnlyNew", onlyNew, nHeld));
+      $("#sigOnlyNew").onchange = e => { lsSet("seven7-onlynew-sig", e.target.checked ? "1" : "0"); SIG_SEL = null; paintSignals(); };
+    }
     const elite = isElite();
     const head = `<thead><tr><th>${t("sig.ticker")}</th><th class="num">${t("sig.price")}</th><th class="num">${t("sig.entry")}</th><th class="num">${t("sig.stop")}</th><th class="num">${t("sig.tp")}</th><th class="num">R:R</th>${elite ? `<th class="num">${t("sig.cc")}</th>` : ""}</tr></thead>`;
-    const body = rows.map(s => `<tr data-tk="${s.ticker}" class="${SIG_SEL === s.ticker ? "sel" : ""}">
-        <td class="tk-cell">${s.ticker} <span class="mkt">${s.market}</span></td>
+    const body = rows.map(s => `<tr data-tk="${s.ticker}" class="${SIG_SEL === s.ticker ? "sel" : ""} ${isHeld(s) ? "held" : ""}">
+        <td class="tk-cell">${s.ticker} <span class="mkt">${s.market}</span>${isHeld(s) ? heldTag() : ""}</td>
         <td class="num">${fmtNum(s.price)}</td>
         <td class="num">${fmtNum(s.entry)}</td>
         <td class="num neg">${fmtNum(s.stop)}</td>
@@ -1562,7 +1598,12 @@
     const tn = $("#sigTrailNote");
     if (tn && trailStop != null && tpOld != null) tn.innerHTML = interp(t("sig.trailNote"), { old: fmtNum(tpOld), trail: fmtNum(trailStop), tp: fmtNum(s.tp) });
     const add = $("#sigAdd");
-    if (add) {
+    const held = heldInfo("po3", s.market, s.ticker);
+    if (add && held) {
+      // já está no portfólio: mostra a data e o atalho, sem botão de adicionar (evita duplicar)
+      add.innerHTML = `<div class="held-box">${ic("check")}<span>${interp(t("held.box"), { d: heldDate(held) })}</span>
+        <a href="members.html#portfolio">${t("held.go")} →</a></div>`;
+    } else if (add) {
       const cur = s.market === "BR" ? "R$" : "$";
       const dep = PROFILE && PROFILE.portfolio_deposit ? Number(PROFILE.portfolio_deposit) : null;
       const chosen = savedRisk();
@@ -1609,9 +1650,9 @@
         const pct = Math.min(100, Math.max(0.01, z.consumedPct != null ? z.consumedPct : 1));
         const msg = $("#addMsg"), btn = $("#addPortfolioBtn"); btn.disabled = true;
         const err = await addPosition(s, pct);
-        if (err) { msg.textContent = t("sig.addErr"); msg.className = "add-msg err"; }
-        else { msg.innerHTML = `${t("sig.added")} <a href="members.html#portfolio">${t("sig.goPortfolio")}</a>`; msg.className = "add-msg ok"; }
-        btn.disabled = false;
+        if (err) { msg.textContent = t("sig.addErr"); msg.className = "add-msg err"; btn.disabled = false; return; }
+        await loadHeld(true);       // passa a constar como "No portfólio" na lista e no painel
+        paintSignals();
       };
     }
     showTVChart(s.tv_symbol);
@@ -1787,6 +1828,8 @@
     const cur = (pr.data && pr.data.portfolio_currency) || "USD";
     const positions = po.data || [];
     const d = (st.data && st.data.data) || null;
+    setHeld(positions);
+    if (DIV_ROWS && DIV_ROWS.length && $("#divSignals")) { paintDivSignals(); drawDivHeat(); }
     const sym = cur === "BRL" ? "R$" : "$";
     const money = v => v == null ? "—" : sym + Number(v).toLocaleString(locale(), { maximumFractionDigits: 0 });
     const isEliteNow = isElite();
@@ -2190,6 +2233,7 @@
       host.innerHTML = `<p class="muted-note">${t("div.sig.none")}</p>`; return;
     }
     DIV_ROWS = rows;
+    await loadHeld();
     drawDivHeat();
     paintDivSignals();
     loadFscores(() => paintDivSignals());
@@ -2208,6 +2252,7 @@
          cc_strike: ccstrike, cc_premium_pct: 0.8, rr, pct_in_range: 12.5 });
     return [
       mk("TMO", "TMO", 615, 607.5, 546.75, 698.62, 668.25, 1.5, "ACTIVE"),
+      mk("NVDA", "NVDA", 140, 136.5, 121.5, 159, 151.5, 1.5, "ACTIVE"),
       mk("BMY", "BMY", 68.2, 67.5, 60.75, 77.62, 74.25, 1.5, "ACTIVE"),
       mk("PGR", "PGR", 224, 222.75, 202.5, 251.99, 243.0, 1.44, "WAITING"),
     ];
@@ -2240,21 +2285,28 @@
       const base = active ? "var(--heat-pos)" : "var(--accent)";
       const flex = (2 + v / maxV * 6).toFixed(2);
       return `<div class="tm-tile ${active ? "dz" : ""}" data-tv="${encodeURIComponent(r.tv_symbol || r.ticker)}" style="flex:${flex} 1 62px;background:color-mix(in srgb, ${base} ${mag.toFixed(0)}%, var(--heat-mid))" title="${r.ticker} · ${active ? t("div.sig.buyzone") : t("div.sig.watch")} · YoC ${nf(r.yield_on_cost_pct, 1)}% · ${t("div.sig.hYield")} ${nf(r.trailing_yield_pct, 1)}%">
-        <span class="tm-tk">${r.ticker}${active ? ' <span class="tm-live">●</span>' : ""}</span><span class="tm-v">${nf(v, 1)}%</span></div>`;
+        <span class="tm-tk">${r.ticker}${active ? ' <span class="tm-live">●</span>' : ""}${heldInfo("dividends", r.market, r.ticker) ? ' <span class="tm-held">✓</span>' : ""}</span><span class="tm-v">${nf(v, 1)}%</span></div>`;
     }).join("");
     host.querySelectorAll(".tm-tile").forEach(el => el.onclick = () =>
       window.open("https://www.tradingview.com/chart/?symbol=" + el.dataset.tv, "_blank", "noopener"));
   }
   function paintDivSignals() {
     const host = $("#divSignals"); if (!host) return;
-    const rows = (DIV_ROWS || []).slice();
-    if (!rows.length) return;
-    const nA = rows.filter(r => r.state === "ACTIVE").length, nM = rows.length - nA;
+    const isHeld = r => !!heldInfo("dividends", r.market, r.ticker);
+    const nHeld = (DIV_ROWS || []).filter(isHeld).length;
+    const onlyNew = lsGet("seven7-onlynew-div") === "1";
+    const rows = (DIV_ROWS || []).filter(r => !(onlyNew && isHeld(r)));
+    if (!(DIV_ROWS || []).length) return;
+    const nA = DIV_ROWS.filter(r => r.state === "ACTIVE").length, nM = DIV_ROWS.length - nA;
     const c = DIV_SIGSORT.c, dir = DIV_SIGSORT.d;
     const key = r => c === "state" ? (r.state === "ACTIVE" ? 0 : 1)
       : c === "ticker" ? r.ticker
       : (r[c] == null ? -Infinity : r[c]);
-    rows.sort((a, b) => { const x = key(a), y = key(b); return (x < y ? -1 : x > y ? 1 : 0) * dir; });
+    rows.sort((a, b) => {
+      // ordem padrão (situação): o que já está no portfólio vai p/ o fim — o novo fica em destaque
+      if (c === "state") { const h = isHeld(a) - isHeld(b); if (h) return h; }
+      const x = key(a), y = key(b); return (x < y ? -1 : x > y ? 1 : 0) * dir;
+    });
     const stBadge = s => s === "ACTIVE"
       ? `<span class="dsig-badge buy">● ${t("div.sig.buyzone")}</span>`
       : `<span class="dsig-badge watch">${t("div.sig.watch")}</span>`;
@@ -2265,14 +2317,14 @@
       `<button data-m="annual" class="${FS_MODE === "annual" ? "on" : ""}">${t("fs.mAnnual")}</button>` +
       `<button data-m="ttm" class="${FS_MODE === "ttm" ? "on" : ""}">${t("fs.mTTM")}</button></div>` +
       `<span class="fs-modehint">${FS_MODE === "annual" ? t("fs.hintAnnual") : t("fs.hintTTM")}</span></div>` +
-      `<div class="dsig-count">${interp(t("div.sig.count"), { a: nA, m: nM })}</div>` +
+      `<div class="dsig-count">${interp(t("div.sig.count"), { a: nA, m: nM })}${nHeld ? onlyNewToggle("divOnlyNew", onlyNew, nHeld) : ""}</div>` +
       `<div class="table-wrap term-scroll"><table class="sig-table dsig-table term-screener"><thead><tr>` +
       th("ticker", t("div.sig.hTicker")) + th("state", t("div.sig.hState")) +
       th("price", t("div.sig.hPrice"), 1) + th("trailing_yield_pct", t("div.sig.hYield"), 1) +
       th("yield_on_cost_pct", t("div.sig.hYoc"), 1) +
       `<th class="num">${t("div.sig.hF")}</th><th class="num">${t("fm.hMagic")}</th><th class="num">${t("fm.hCons")}</th><th></th></tr></thead><tbody>` +
-      rows.map(r => `<tr class="${r.state === "ACTIVE" ? "dsig-on" : ""}">` +
-        `<td class="tk-cell">${r.ticker} <span class="mkt">${r.market}</span></td>` +
+      rows.map(r => `<tr class="${r.state === "ACTIVE" ? "dsig-on" : ""} ${isHeld(r) ? "held" : ""}">` +
+        `<td class="tk-cell">${r.ticker} <span class="mkt">${r.market}</span>${isHeld(r) ? heldTag() : ""}</td>` +
         `<td>${stBadge(r.state)}</td>` +
         `<td class="num">${fmtP(r.price)}</td>` +
         `<td class="num pos">${r.trailing_yield_pct != null ? nf(r.trailing_yield_pct, 1) + "%" : "—"}</td>` +
@@ -2280,7 +2332,9 @@
         `<td class="num">${fsBadge(r.market, r.ticker)}</td>` +
         `<td class="num">${magicBadge(r.market, r.ticker)}</td>` +
         `<td class="num">${consBadge(r.market, r.ticker)}</td>` +
-        `<td class="dsig-actions"><button class="pf-addbtn" title="${t("div.addTitle")}" data-tk="${r.ticker}" data-mkt="${r.market}" data-px="${r.price}" data-tv="${encodeURIComponent(r.tv_symbol || r.ticker)}">＋</button>` +
+        `<td class="dsig-actions">${isHeld(r)
+          ? `<span class="pf-held" title="${interp(t("held.box"), { d: heldDate(heldInfo("dividends", r.market, r.ticker)) })}">${ic("check")}</span>`
+          : `<button class="pf-addbtn" title="${t("div.addTitle")}" data-tk="${r.ticker}" data-mkt="${r.market}" data-px="${r.price}" data-tv="${encodeURIComponent(r.tv_symbol || r.ticker)}">＋</button>`}` +
         `<a class="dsig-tv" href="https://www.tradingview.com/chart/?symbol=${encodeURIComponent(r.tv_symbol || r.ticker)}" target="_blank" rel="noopener">${t("div.sig.tv")}</a></td>` +
         `</tr>`).join("") +
       `</tbody></table></div><div id="divFDrill"></div>`;
@@ -2290,6 +2344,7 @@
     host.querySelectorAll(".fs-clk").forEach(el => el.onclick = () => renderFDrill(el.dataset.fsMkt, el.dataset.fsTk));
     if (FS_SEL) { const [mk, tk] = FS_SEL.split(":"); FS_SEL = null; renderFDrill(mk, tk); }   // preserva o detalhe aberto no repaint
     host.querySelectorAll(".pf-addbtn").forEach(b => b.onclick = () => addDivPosition(b));
+    const onb = $("#divOnlyNew"); if (onb) onb.onchange = e => { lsSet("seven7-onlynew-div", e.target.checked ? "1" : "0"); paintDivSignals(); };
     host.querySelectorAll(".th-sort").forEach(el => el.onclick = () => {
       const cc = el.dataset.c;
       if (DIV_SIGSORT.c === cc) DIV_SIGSORT.d *= -1; else DIV_SIGSORT = { c: cc, d: (cc === "ticker" || cc === "state") ? 1 : -1 };
@@ -2309,9 +2364,10 @@
       ticker: tk, tv_symbol: decodeURIComponent(btn.dataset.tv), market: btn.dataset.mkt,
       entry: Number(btn.dataset.px), stop: null, tp: null, alloc_pct: pct, strategy: "dividends",
     });
-    btn.textContent = error ? "✕" : "✓";
-    setTimeout(() => { btn.textContent = "＋"; btn.disabled = false; }, 1500);
-    if (!error && document.body.dataset.page === "members") renderPortfolio();
+    if (error) { btn.textContent = "✕"; setTimeout(() => { btn.textContent = "＋"; btn.disabled = false; }, 1500); return; }
+    await loadHeld(true);           // passa a constar como "No portfólio" (tabela e mapa)
+    paintDivSignals(); drawDivHeat();
+    if (document.body.dataset.page === "members") renderPortfolio();
   }
   /* ---- monitor (admin-only) ---- */
   async function renderMonitor() {

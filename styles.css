@@ -1085,6 +1085,25 @@ body{background:
 .trial-bar .tb-ic .ic{width:16px;height:16px}
 .trial-bar .tb-cta{padding:5px 14px;font-size:12.5px}
 
+/* já no portfólio: marcado e esmaecido p/ o novo ficar em destaque */
+.held-tag{display:inline-flex;align-items:center;gap:4px;margin-left:8px;padding:2px 8px;border-radius:999px;vertical-align:middle;
+  font-size:10.5px;font-weight:700;letter-spacing:.02em;color:var(--pos);
+  background:color-mix(in srgb,var(--pos) 13%,transparent);border:1px solid color-mix(in srgb,var(--pos) 30%,transparent)}
+.held-tag .ic{width:11px;height:11px;stroke-width:3}
+tr.held td{opacity:.55}
+tr.held td.tk-cell,tr.held:hover td,tr.held.sel td{opacity:1}
+.held-box{display:flex;align-items:center;gap:10px;flex-wrap:wrap;width:100%;padding:12px 14px;border-radius:12px;font-size:13.5px;
+  color:var(--ink);background:color-mix(in srgb,var(--pos) 10%,var(--surface-2));border:1px solid color-mix(in srgb,var(--pos) 30%,var(--border))}
+.held-box .ic{width:18px;height:18px;color:var(--pos);stroke-width:2.6}
+.held-box a{margin-left:auto;font-weight:700;color:var(--c-cyan)}
+.only-new{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-2);cursor:pointer;margin-left:auto;padding:6px 4px}
+.only-new input{accent-color:var(--c-cyan);width:15px;height:15px;cursor:pointer}
+.dsig-count{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.pf-held{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:6px;color:var(--pos);
+  background:color-mix(in srgb,var(--pos) 14%,transparent);border:1px solid color-mix(in srgb,var(--pos) 35%,transparent)}
+.pf-held .ic{width:14px;height:14px;stroke-width:3}
+.tm-held{color:#fff;font-weight:800}
+
 /* rodapé: quebra linha (corrige a rolagem lateral no celular) */
 .footer-links{flex-wrap:wrap;gap:10px 22px}
 
