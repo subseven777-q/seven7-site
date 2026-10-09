@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-08 19:31",
+  "generated": "2026-10-09 19:32",
   "data_through": "2026-10-06",
   "markets": {
     "BR": {
@@ -8,11 +8,11 @@
       "currency": "R$",
       "years": 10,
       "headline": {
-        "yield_on_cost_pct": 9.9,
+        "yield_on_cost_pct": 9.98,
         "total_return_drip_pct": 159.0,
         "total_return_income_pct": 123.0,
         "div_collected_pct": 47.1,
-        "annual_income_per_100k": 9902.0,
+        "annual_income_per_100k": 9976.0,
         "invested_base": 760000.0
       },
       "benchmarks": [
@@ -29,7 +29,7 @@
         {
           "key": "riskfree",
           "label": "CDI",
-          "ret": 69.1
+          "ret": 69.2
         }
       ],
       "salary_by_year": {
@@ -60,9 +60,9 @@
           "n": 5,
           "total_return_drip_pct": 191.1,
           "total_return_income_pct": 147.5,
-          "yield_on_cost_pct": 10.1,
-          "current_yield_pct": 5.07,
-          "annual_income_per_100k": 10140.0
+          "yield_on_cost_pct": 10.4,
+          "current_yield_pct": 5.21,
+          "annual_income_per_100k": 10422.0
         },
         "cons": {
           "n": 5,
