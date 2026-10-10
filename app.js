@@ -27,6 +27,7 @@
   const pixExpired = () => { const e = pixUntil(); return !!e && e.getTime() + PIX_GRACE_DAYS * 86400000 <= Date.now(); };
   const isMember = () => !!PROFILE && ((PROFILE.status === "active" && !pixExpired()) || isTrial());
   const isElite = () => isMember() && PROFILE.plan === "elite";
+  const hasHedge = () => isMember() && (PROFILE.plan === "elite" || PROFILE.plan === "pro");   // sinal de hedge: Pro e Elite
 
   let LANG = localStorage.getItem("seven7-lang") || "pt";   // padrão PT-BR (usuário novo entra em português)
   const locale = () => (LANG === "en" ? "en-US" : "pt-BR");
@@ -160,9 +161,9 @@
     "heatmap.title": { en: "Monthly returns (%)", pt: "Retornos mensais (%)" },
     "heatmap.sub": { en: "Green = positive month · red = negative. YTD column on the right.", pt: "Verde = mês positivo · vermelho = negativo. Coluna do ano à direita." },
     "heatmap.year": { en: "Year", pt: "Ano" },
-    "hedge.kicker": { en: "PROTECTION · TAIL HEDGE · ELITE", pt: "PROTEÇÃO · HEDGE DE CAUDA · ELITE" },
+    "hedge.kicker": { en: "PROTECTION · TAIL HEDGE · PRO & ELITE", pt: "PROTEÇÃO · HEDGE DE CAUDA · PRO E ELITE" },
     "hedge.h2": { en: "Insurance that pays for itself.", pt: "Um seguro que se paga." },
-    "hedge.sub": { en: "Under market stress, the portfolio automatically raises protection in an <em>uncorrelated asset</em>. Which asset? Exclusive to Elite members.", pt: "Em estresse de mercado, a carteira eleva a proteção em um <em>ativo descorrelacionado</em>. Qual é o ativo? Exclusivo de quem é Elite." },
+    "hedge.sub": { en: "Under market stress, the portfolio automatically raises protection in an <em>uncorrelated asset</em>. Which asset? Included in the Pro and Elite plans.", pt: "Em estresse de mercado, a carteira eleva a proteção em um <em>ativo descorrelacionado</em>. Qual é o ativo? Incluso nos planos Pro e Elite." },
     "radar.kicker": { en: "QUANTITATIVE STRATEGY", pt: "ESTRATÉGIA QUANTITATIVA" },
     "radar.h2": { en: "The strategy, live.", pt: "A estratégia, ao vivo." },
     "radar.subA": { en: "Members-only.", pt: "Exclusivo para membros." },
@@ -555,7 +556,7 @@
     "pf.frozenNote": { en: "Positions cleared — the metrics below are kept from your portfolio history. Use “Reset portfolio” to zero everything.", pt: "Posições zeradas — as métricas abaixo são mantidas do histórico do portfólio. Use “Zerar portfólio” para zerar tudo." },
     "pf.noOpenPos": { en: "No open positions.", pt: "Nenhuma posição aberta." },
     "beta.title": { en: "Portfolio protection", pt: "Proteção da carteira" },
-    "beta.sub": { en: "Reduce how much your portfolio moves with the market using KMLM, the Elite protection asset (Markov 3 + Dividends included).", pt: "Reduza o quanto sua carteira oscila junto com o mercado usando o KMLM, o ativo de proteção do Elite (inclui Markov 3 + Dividendos)." },
+    "beta.sub": { en: "Reduce how much your portfolio moves with the market using KMLM, the Pro/Elite protection asset (Markov 3 + Dividends included).", pt: "Reduza o quanto sua carteira oscila junto com o mercado usando o KMLM, o ativo de proteção dos planos Pro e Elite (inclui Markov 3 + Dividendos)." },
     "beta.net": { en: "Market sensitivity now", pt: "Sensibilidade ao mercado hoje" },
     "beta.book": { en: "Stocks only", pt: "Só as ações" },
     "beta.kmlm": { en: "KMLM β", pt: "β do KMLM" },
@@ -626,9 +627,9 @@
     "hg.rSharpe": { en: "Sharpe", pt: "Sharpe" },
     "hg.rVol": { en: "Annual volatility", pt: "Volatilidade anual" },
     "hg.rCagr": { en: "CAGR", pt: "CAGR" },
-    "hg.eliteT": { en: "The asset is Elite-exclusive", pt: "O ativo é exclusivo do Elite" },
-    "hg.eliteS": { en: "{base}% of capital in protection at all times, raised to {stress}% under stress. Elite members get which asset it is and the signal to switch.", pt: "{base}% do capital em proteção sempre, elevado a {stress}% em estresse. Membros Elite recebem qual é o ativo e o sinal de quando alternar." },
-    "hg.eliteCta": { en: "Subscribe to Elite", pt: "Assinar Elite" },
+    "hg.eliteT": { en: "The asset is for Pro and Elite members", pt: "O ativo é dos planos Pro e Elite" },
+    "hg.eliteS": { en: "{base}% of capital in protection at all times, raised to {stress}% under stress. Pro and Elite members get which asset it is and the signal to switch.", pt: "{base}% do capital em proteção sempre, elevado a {stress}% em estresse. Membros Pro e Elite recebem qual é o ativo e o sinal de quando alternar." },
+    "hg.eliteCta": { en: "See Pro and Elite plans", pt: "Ver planos Pro e Elite" },
     "hg.note": { en: "Measured over {years} years — a window that includes the 2022 stress. Correlation to the portfolio: {corr}.", pt: "Avaliado ao longo de {years} anos — janela que inclui o estresse de 2022. Correlação com a carteira: {corr}." },
     // cherry on top (mistério — mecanismo oculto, só métricas)
     "cc.kicker": { en: "THE CHERRY ON TOP · ELITE", pt: "A CEREJA DO BOLO · ELITE" },
@@ -764,7 +765,7 @@
         [true, { en: "Live positions + watchlist", pt: "Posições ao vivo + watchlist" }],
         [true, { en: "Complete quantitative metrics", pt: "Métricas quantitativas completas" }],
         [true, { en: "YouTube members area — weekly videos & community", pt: "Área de membros no YouTube — vídeos semanais e comunidade" }],
-        [false, { en: "Exclusive Hedge signal", pt: "Sinal de Hedge exclusivo" }],
+        [true, { en: "Exclusive Hedge signal — an uncorrelated protection asset for market stress", pt: "Sinal de Hedge exclusivo — ativo de proteção descorrelacionado para o estresse de mercado" }, "hot"],
         [false, { en: "🍒 The cherry — an exclusive income layer", pt: "🍒 A cereja — camada de renda exclusiva" }],
       ],
       cta: { en: "Get Pro", pt: "Assinar Pro" },
@@ -2099,7 +2100,7 @@
       } else {
         html += `<p class="hedge-note">${t("pf.curveSoon")}</p>`;
       }
-      if (!frozen && isEliteNow) html += `<div id="betaCtrlHost"></div>`;   // ativo de proteção = exclusivo Elite
+      if (!frozen && hasHedge()) html += `<div id="betaCtrlHost"></div>`;   // ativo de proteção = Pro e Elite
       // positions table (ou nota quando as posições foram zeradas mas as métricas ficaram)
       if (frozen) {
         html += `<p class="hedge-note" style="margin-top:16px">${t("pf.noOpenPos")}</p>`;
@@ -2122,7 +2123,7 @@
     }
     host.innerHTML = html;
     cardify(host.querySelector(".blotter-scroll table"));
-    if (!frozen && positions.length && isEliteNow) renderBetaControl(positions, deposit);
+    if (!frozen && positions.length && hasHedge()) renderBetaControl(positions, deposit);
 
     const seg = $("#pfStratSeg");
     if (seg) seg.querySelectorAll("button").forEach(b => b.onclick = () => { PF_STRAT = b.dataset.s; renderPortfolio(); });
@@ -2668,8 +2669,7 @@
   }
   async function renderKmlmCard() {
     const host = $("#kmlmHost"); if (!host) return;
-    const elite = isElite();
-    if (!sb || !USER || !elite) { host.innerHTML = ""; return; }
+    if (!sb || !USER || !hasHedge()) { host.innerHTML = ""; return; }
     let hedge = null, positions = [];
     try {
       const [hg, po] = await Promise.all([
