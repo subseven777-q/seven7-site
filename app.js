@@ -18,7 +18,13 @@
   const isTrial = () => { const e = trialEnd(); return !!e && e > new Date(); };
   const trialExpired = () => { const e = trialEnd(); return !!e && e <= new Date(); };
   const trialDaysLeft = () => { const e = trialEnd(); return e ? Math.max(0, Math.ceil((e - new Date()) / 86400000)) : 0; };
-  const isMember = () => !!PROFILE && (PROFILE.status === "active" || isTrial());
+  // Pix (Stripe BR = pagamento avulso por ciclo): o acesso vale até paid_until + 3 dias de tolerância
+  const PIX_GRACE_DAYS = 3, PIX_MAX_BRL = 3000;
+  const PIX_ENABLED = false;   // liga o botão "Pagar com Pix" depois que a função create-pix-checkout estiver no ar
+  const pixUntil = () => (PROFILE && PROFILE.billing === "pix" && PROFILE.paid_until) ? new Date(PROFILE.paid_until) : null;
+  const pixDaysLeft = () => { const e = pixUntil(); return e ? Math.ceil((e - new Date()) / 86400000) : null; };   // < 0 = vencido
+  const pixExpired = () => { const e = pixUntil(); return !!e && e.getTime() + PIX_GRACE_DAYS * 86400000 <= Date.now(); };
+  const isMember = () => !!PROFILE && ((PROFILE.status === "active" && !pixExpired()) || isTrial());
   const isElite = () => isMember() && PROFILE.plan === "elite";
 
   let LANG = localStorage.getItem("seven7-lang") || "pt";   // padrão PT-BR (usuário novo entra em português)
@@ -676,6 +682,24 @@
     "auth.soon": { en: "Accounts are launching soon — we saved your interest. We'll email you the moment sign-ups open.", pt: "As contas estão sendo lançadas — registramos seu interesse. Avisaremos por e-mail assim que abrir." },
     "auth.checkEmail": { en: "Account created! Your 7-day Elite trial is on. Confirm your email, then log in.", pt: "Conta criada! Seu teste Elite de 7 dias já está liberado. Confirme o e-mail e depois é só entrar." },
     "trial.tag": { en: "TRIAL", pt: "TESTE" },
+    "pix.pay": { en: "Pay with Pix", pt: "Pagar com Pix" },
+    "pix.subM": { en: "One Pix = 30 days of access. Renew when it's due.", pt: "Um Pix = 30 dias de acesso. Você renova quando vencer." },
+    "pix.subA": { en: "One Pix = 12 months of access (same date next year).", pt: "Um Pix = 12 meses de acesso (mesma data no ano seguinte)." },
+    "pix.limitNote": { en: "Pix is capped at R$ 3,000 per payment — this plan is card-only.", pt: "O Pix tem limite de R$ 3.000 por pagamento — este plano é só no cartão." },
+    "pix.opening": { en: "Opening Pix…", pt: "Abrindo o Pix…" },
+    "pix.err": { en: "Couldn't open the Pix payment. Try again in a moment.", pt: "Não deu para abrir o pagamento Pix. Tente de novo em instantes." },
+    "pix.renew": { en: "Renew with Pix", pt: "Renovar com Pix" },
+    "pix.renewAcct": { en: "Renew with Pix · {p} {c}", pt: "Renovar com Pix · {p} {c}" },
+    "pix.renewHint": { en: "Paying early adds to the current due date — you don't lose days.", pt: "Pagar antes do vencimento soma ao prazo atual — você não perde dias." },
+    "pix.bar": { en: "Your plan (Pix) is due in <b>{n} days</b> ({d}).", pt: "Seu plano (Pix) vence em <b>{n} dias</b> ({d})." },
+    "pix.barLast": { en: "Your plan (Pix) is <b>due tomorrow</b>.", pt: "Seu plano (Pix) <b>vence amanhã</b>." },
+    "pix.barGrace": { en: "Your plan was due on {d}. Renew by <b>{g}</b> to keep access.", pt: "Seu plano venceu em {d}. Renove até <b>{g}</b> para não perder o acesso." },
+    "pix.barEnded": { en: "Your plan (Pix) expired on {d}. Renew to unlock it again.", pt: "Seu plano (Pix) venceu em {d}. Renove para liberar de novo." },
+    "pix.statusOn": { en: "Paid with Pix ({c}) until {d} ({n} day(s) left)", pt: "Pago com Pix ({c}) até {d} (faltam {n} dia(s))" },
+    "pix.statusGrace": { en: "Pix plan due on {d} — renew within the grace period", pt: "Plano Pix venceu em {d} — renove dentro da tolerância" },
+    "pix.statusOff": { en: "Pix plan expired on {d}", pt: "Plano Pix vencido em {d}" },
+    "pix.waiting": { en: "Payment received! Access is unlocked as soon as the bank confirms the Pix (usually seconds). This page updates by itself.", pt: "Pagamento recebido! O acesso é liberado assim que o banco confirmar o Pix (normalmente em segundos). Esta página se atualiza sozinha." },
+    "pix.ended": { en: "Your Pix plan expired. Renew to unlock the members area again.", pt: "Seu plano Pix venceu. Renove para liberar a área de membros de novo." },
     "trial.bar": { en: "Free Elite trial: <b>{n} day(s) left</b> — everything unlocked.", pt: "Teste Elite grátis: <b>faltam {n} dia(s)</b> — tudo liberado." },
     "trial.barLast": { en: "Your free Elite trial <b>ends today</b>.", pt: "Seu teste Elite grátis <b>termina hoje</b>." },
     "trial.barEnded": { en: "Your free Elite trial has ended. Subscribe to keep access.", pt: "Seu teste Elite grátis terminou. Assine para continuar com acesso." },
@@ -982,6 +1006,8 @@
       PREVIEW = true; USER = USER || { id: "preview" };
       // &pvtrial=N simula conta em teste com N dias restantes (N<=0 = teste encerrado) — só localhost
       const pv = location.search.match(/[?&]pvtrial=(-?\d+)/);
+      const pp = location.search.match(/[?&]pvpix=(-?\d+)/);
+      if (pp) PROFILE = PROFILE || { status: "active", plan: "pro", billing: "pix", billing_cycle: "monthly", paid_until: new Date(Date.now() + (+pp[1]) * 86400000 - 3600000).toISOString() };
       PROFILE = PROFILE || (pv ? { status: "trial", plan: "elite", trial_end: new Date(Date.now() + (+pv[1]) * 86400000 - 3600000).toISOString() }
                                : { status: "active", plan: "elite", is_admin: true });
     }
@@ -1384,6 +1410,26 @@
     if (USER.email) u.searchParams.set("prefilled_email", USER.email);
     location.href = u.toString();
   }
+  const PIX_SVG = `<svg class="ic pix-ic" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.6 9.2 5.4l2.1 2.1a1 1 0 0 0 1.4 0l2.1-2.1L12 2.6Zm6.6 6.6-2.1 2.1a1 1 0 0 0 0 1.4l2.1 2.1 2.8-2.8-2.8-2.8Zm-13.2 0L2.6 12l2.8 2.8 2.1-2.1a1 1 0 0 0 0-1.4L5.4 9.2Zm6.6 6.6a1 1 0 0 0-.7.3l-2.1 2.1 2.8 2.8 2.8-2.8-2.1-2.1a1 1 0 0 0-.7-.3Zm-2.3-6.9a2 2 0 0 1 1.4-.6h1.8a2 2 0 0 1 1.4.6l2.6 2.6a.8.8 0 0 1 0 1.1l-2.6 2.6a2 2 0 0 1-1.4.6h-1.8a2 2 0 0 1-1.4-.6l-2.6-2.6a.8.8 0 0 1 0-1.1l2.6-2.6Z"/></svg>`;
+  async function payPix(tier, cycle, btn) {
+    if (!USER || PREVIEW) { lsSet("seven7-intent", String(tier).toUpperCase() + ":" + cycle); location.href = PREVIEW ? "plans.html" : "register.html"; return; }
+    if (!sb) return;
+    const { data } = await sb.auth.getSession();
+    const token = data && data.session && data.session.access_token;
+    if (!token) { location.href = "login.html"; return; }
+    const old = btn ? btn.innerHTML : ""; if (btn) { btn.disabled = true; btn.innerHTML = t("pix.opening"); }
+    try {
+      const r = await fetch(`${SUPABASE_URL}/functions/v1/create-pix-checkout`, {
+        method: "POST",
+        headers: { "content-type": "application/json", authorization: "Bearer " + token, apikey: SUPABASE_ANON_KEY },
+        body: JSON.stringify({ tier: String(tier).toLowerCase(), cycle }),
+      });
+      const j = await r.json().catch(() => ({}));
+      if (j.url) { location.href = j.url; return; }
+      alert(t(j.error === "pix_limit" ? "pix.limitNote" : "pix.err"));
+    } catch (e) { alert(t("pix.err")); }
+    if (btn) { btn.disabled = false; btn.innerHTML = old; }
+  }
   function renderPricing() {
     const brl = brlOn();
     const cur = brl ? "R$" : "$";
@@ -1407,9 +1453,14 @@
         <div class="price-sub">${sub}</div>
         <ul class="price-feats">${feats}</ul>
         <a class="btn ${p.featured ? "btn-primary" : "btn-ghost"} btn-block" data-tier="${p.tier}" href="#">${p.cta[LANG]}</a>
+        ${brl && PIX_ENABLED ? ((CYCLE === "annual" ? annualBilled : mo) > PIX_MAX_BRL
+          ? `<div class="pix-note">${PIX_SVG}${t("pix.limitNote")}</div>`
+          : `<button class="btn btn-pix btn-block" data-pix="${p.tier}">${PIX_SVG}${t("pix.pay")}</button>
+             <div class="pix-sub">${t(CYCLE === "annual" ? "pix.subA" : "pix.subM")}</div>`) : ""}
       </div>`;
     }).join("");
     $$("#pricingGrid a[data-tier]").forEach(a => a.onclick = ev => { ev.preventDefault(); subscribe(a.dataset.tier); });
+    $$("#pricingGrid button[data-pix]").forEach(b => b.onclick = () => payPix(b.dataset.pix, CYCLE, b));
   }
   function initBilling() {
     const tg = $("#billingToggle"); if (!tg) return;
@@ -1444,6 +1495,20 @@
   function renderTrialBar() {
     const root = $("#nav-root"); if (!root) return;
     let bar = $("#trialBar");
+    const pd = USER ? pixDaysLeft() : null;
+    if (pd != null && pd <= 5) {
+      if (!bar) { bar = document.createElement("div"); bar.id = "trialBar"; root.appendChild(bar); }
+      const until = pixUntil().toLocaleDateString(locale());
+      const graceEnd = new Date(pixUntil().getTime() + PIX_GRACE_DAYS * 86400000).toLocaleDateString(locale());
+      const msg = pixExpired() ? interp(t("pix.barEnded"), { d: until })
+        : pd <= 0 ? interp(t("pix.barGrace"), { d: until, g: graceEnd })
+        : pd === 1 ? t("pix.barLast") : interp(t("pix.bar"), { n: pd, d: until });
+      bar.className = "trial-bar" + (pd <= 0 ? " ended" : "");
+      bar.innerHTML = `<span class="tb-ic">${PIX_SVG}</span><span class="tb-msg">${msg}</span>
+        <button class="btn btn-primary tb-cta" id="pixRenewBar">${t("pix.renew")}</button>`;
+      $("#pixRenewBar").onclick = e => payPix(PROFILE.plan, PROFILE.billing_cycle || "monthly", e.currentTarget);
+      return;
+    }
     const on = USER && isTrial(), ended = USER && trialExpired();
     if (!on && !ended) { if (bar) bar.remove(); return; }
     if (!bar) { bar = document.createElement("div"); bar.id = "trialBar"; root.appendChild(bar); }
@@ -2133,7 +2198,11 @@
     const p = PROFILE || {}, member = isMember();
     const planName = member ? (p.plan || "—").toUpperCase() + (isTrial() ? " · " + t("trial.tag") : "") : t("acct.free");
     const endTxt = trialEnd() ? trialEnd().toLocaleDateString(locale()) : "";
-    const statusTxt = isTrial() ? interp(t("trial.statusOn"), { d: endTxt, n: trialDaysLeft() })
+    const pu = pixUntil(), pdl = pixDaysLeft();
+    const statusTxt = pu ? (pixExpired() ? interp(t("pix.statusOff"), { d: pu.toLocaleDateString(locale()) })
+        : interp(t(pdl > 0 ? "pix.statusOn" : "pix.statusGrace"), { d: pu.toLocaleDateString(locale()), n: Math.max(0, pdl),
+            c: t(p.billing_cycle === "annual" ? "billing.annual" : "billing.monthly") }))
+      : isTrial() ? interp(t("trial.statusOn"), { d: endTxt, n: trialDaysLeft() })
       : trialExpired() ? interp(t("trial.statusOff"), { d: endTxt })
       : member ? t("acct.active") : t("acct.inactive");
     host.innerHTML = `
@@ -2144,7 +2213,11 @@
           <div class="acct-row"><span class="acct-k">${t("acct.plan")}</span><span class="acct-v"><span class="acct-badge ${member ? "on" : ""}">${planName}</span></span></div>
           <div class="acct-row"><span class="acct-k">${t("acct.status")}</span><span class="acct-v">${statusTxt}</span></div>
         </div>
-        ${member && !isTrial()
+        ${new URLSearchParams(location.search).get("pix") === "ok" && !(pu && pdl > 0) ? `<div class="pix-wait" id="pixWait">${PIX_SVG}<span>${t("pix.waiting")}</span></div>` : ""}
+        ${pu ? `<button class="btn btn-pix btn-block" id="pixRenewAcct">${PIX_SVG}${interp(t("pix.renewAcct"), { p: (p.plan || "").toUpperCase(),
+            c: t(p.billing_cycle === "annual" ? "billing.annual" : "billing.monthly") })}</button>
+          <p class="pix-sub">${t("pix.renewHint")}</p>`
+        : member && !isTrial()
         ? `<a class="btn btn-ghost btn-block" href="#" id="manageBtn">${t("acct.manage")}</a>`
         : `<div class="acct-upsell"><p>${t("acct.upsell")}</p><a class="btn btn-primary btn-block" href="plans.html">${t("acct.subscribe")}</a></div>`}
         <button class="btn btn-ghost btn-block" id="acctLogout">${t("auth.logout")}</button>
@@ -2159,6 +2232,17 @@
         <p class="acct-redeem-msg" id="redeemMsg"></p>
       </div>`;
     const lo = $("#acctLogout"); if (lo) lo.onclick = async () => { if (sb) await sb.auth.signOut(); location.href = "index.html"; };
+    const pr = $("#pixRenewAcct"); if (pr) pr.onclick = () => payPix(p.plan, p.billing_cycle || "monthly", pr);
+    // voltou do checkout Pix: o banco confirma em segundos -> recarrega o perfil até o acesso aparecer
+    if ($("#pixWait") && !PREVIEW && !window.__pixPoll) {
+      window.__pixPoll = true; let tries = 0;
+      const tick = async () => {
+        tries++; await loadProfile();
+        if ((pixDaysLeft() || 0) > 0 || tries >= 24) { window.__pixPoll = false; updateAuthUI(); renderAccount(); return; }
+        setTimeout(tick, 5000);
+      };
+      setTimeout(tick, 4000);
+    }
     const mb = $("#manageBtn");
     if (mb) mb.onclick = ev => {
       ev.preventDefault();
@@ -2575,7 +2659,7 @@
     const teaser = (msgKey, btnKey, href) =>
       `<section class="section"><div class="div-siglock" style="max-width:640px;margin:0 auto"><p>${t(msgKey)}</p><a class="btn btn-primary" href="${href}">${t(btnKey)}</a></div></section>`;
     if (!USER) { gate.innerHTML = teaser("mem.gateLogin", "mem.login", "login.html"); if (content) content.hidden = true; return; }
-    if (!isMember()) { gate.innerHTML = teaser(trialExpired() ? "trial.ended" : "mem.gateUpgrade", "mem.plans", "plans.html"); if (content) content.hidden = true; return; }
+    if (!isMember()) { gate.innerHTML = teaser(pixExpired() ? "pix.ended" : trialExpired() ? "trial.ended" : "mem.gateUpgrade", "mem.plans", "plans.html"); if (content) content.hidden = true; return; }
     gate.innerHTML = ""; if (content) content.hidden = false;
     initDeskViews();
     if (DATA) guard("#po3Tabs", () => initSection(["US", "BR"], "#po3Tabs", renderPO3Panel));
