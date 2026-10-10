@@ -20,7 +20,8 @@
   const trialDaysLeft = () => { const e = trialEnd(); return e ? Math.max(0, Math.ceil((e - new Date()) / 86400000)) : 0; };
   // Pix (Stripe BR = pagamento avulso por ciclo): o acesso vale até paid_until + 3 dias de tolerância
   const PIX_GRACE_DAYS = 3, PIX_MAX_BRL = 3000;
-  const PIX_ENABLED = false;   // liga o botão "Pagar com Pix" depois que a função create-pix-checkout estiver no ar
+  const PIX_ENABLED = true;
+  const PIX_FN = "bright-action";   // nome da Edge Function no Supabase (código: supabase/functions/create-pix-checkout)
   const pixUntil = () => (PROFILE && PROFILE.billing === "pix" && PROFILE.paid_until) ? new Date(PROFILE.paid_until) : null;
   const pixDaysLeft = () => { const e = pixUntil(); return e ? Math.ceil((e - new Date()) / 86400000) : null; };   // < 0 = vencido
   const pixExpired = () => { const e = pixUntil(); return !!e && e.getTime() + PIX_GRACE_DAYS * 86400000 <= Date.now(); };
@@ -1419,7 +1420,7 @@
     if (!token) { location.href = "login.html"; return; }
     const old = btn ? btn.innerHTML : ""; if (btn) { btn.disabled = true; btn.innerHTML = t("pix.opening"); }
     try {
-      const r = await fetch(`${SUPABASE_URL}/functions/v1/create-pix-checkout`, {
+      const r = await fetch(`${SUPABASE_URL}/functions/v1/${PIX_FN}`, {
         method: "POST",
         headers: { "content-type": "application/json", authorization: "Bearer " + token, apikey: SUPABASE_ANON_KEY },
         body: JSON.stringify({ tier: String(tier).toLowerCase(), cycle }),
