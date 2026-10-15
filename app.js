@@ -275,10 +275,13 @@
     "sig.dStop": { en: "To stop", pt: "Até stop" },
     "sig.dTp": { en: "To target", pt: "Até alvo" },
     "sig.intraUS": { en: "US price · NY time", pt: "Preço EUA · hora NY" },
+    "sig.intraBR": { en: "Brazil price · Brasília time", pt: "Preço Brasil · hora de Brasília" },
     "intra.delay": { en: "{n}-min delayed", pt: "atraso de {n} min" },
     "intra.rt": { en: "real-time", pt: "tempo real" },
     "intra.title": { en: "US market now", pt: "Mercado americano agora" },
+    "intra.titleBR": { en: "Brazilian market now", pt: "Mercado brasileiro agora" },
     "intra.sub": { en: "Prices of the {n} US stocks in the strategy's universe · {t} New York · {d} · updated every 15 min during the session. No signal or level is shown here.", pt: "Preços das {n} ações americanas do universo da estratégia · {t} Nova York · {d} · atualizado a cada 15 min no pregão. Nenhum sinal ou nível aparece aqui." },
+    "intra.subBR": { en: "Prices of the {n} Brazilian stocks in the strategy's universe · {t} Brasília · {d} · updated every 15 min during the B3 session. No signal or level is shown here.", pt: "Preços das {n} ações brasileiras do universo da estratégia · {t} Brasília · {d} · atualizado a cada 15 min no pregão da B3. Nenhum sinal ou nível aparece aqui." },
     "intra.last": { en: "last session", pt: "último pregão" },
     "intra.chg": { en: "Day", pt: "Dia" },
     "sig.trailNote": { en: "Enhanced dynamic: when price reaches {old} (the original target), move the stop up to {trail} — this halves your risk — and let it run to the target {tp}. The covered call (Elite) stays written at the original target {old}.", pt: "Dinâmica aprimorada: ao atingir {old} (o alvo original), suba o stop para {trail} — isso corta o risco pela metade — e deixe correr até o alvo {tp}. O covered call (Elite) permanece no alvo original {old}." },
@@ -1342,36 +1345,41 @@
   // ---- Intraday EUA (intraday_us.py via IB Gateway, a cada 15 min no pregão) ----
   // Público: só preço + variação do universo (sem estado nem níveis). Membros: o preço vem da tabela
   // signals (RLS por plano); este arquivo só informa o horário e o atraso.
+  // INTRA = { US: {...}, BR: {...} } — arquivos data/intraday_us.json (IBKR) e data/intraday_br.json (Yahoo)
   let INTRA = null;
+  const INTRA_TZ = { US: "America/New_York", BR: "America/Sao_Paulo" };
   function loadIntraday() {
     if (INTRA) return Promise.resolve(INTRA);
     const bucket = Math.floor(Date.now() / 60000);   // fura o cache do navegador a cada minuto
-    return fetch("data/intraday_us.json?t=" + bucket).then(r => (r.ok ? r.json() : null))
-      .then(d => (INTRA = d)).catch(() => null);
+    const one = m => fetch(`data/intraday_${m.toLowerCase()}.json?t=${bucket}`).then(r => (r.ok ? r.json() : null)).catch(() => null);
+    return Promise.all([one("US"), one("BR")]).then(([us, br]) => (INTRA = { US: us, BR: br }));
   }
-  const nyToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date());
-  function intraStamp(d) {
-    const [day, hm] = String(d.asof_ny || "").split(" ");
-    const isToday = day === nyToday();
+  function intraStamp(d, mkt) {
+    const [day, hm] = String(d.asof_local || d.asof_ny || "").split(" ");
+    const isToday = day === new Intl.DateTimeFormat("en-CA", { timeZone: INTRA_TZ[mkt] }).format(new Date());
     const lbl = isToday ? hm
       : `${new Date(day + "T12:00:00").toLocaleDateString(locale(), { day: "2-digit", month: "2-digit" })} ${hm} · ${t("intra.last")}`;
     const delay = d.delay_min ? interp(t("intra.delay"), { n: d.delay_min }) : t("intra.rt");
     return { lbl, delay, isToday };
   }
+  function intraCard(d, mkt) {
+    if (!d || !d.quotes) return "";
+    const q = Object.entries(d.quotes).sort((a, b) => a[0].localeCompare(b[0]));
+    const st = intraStamp(d, mkt);
+    return `<div class="chart-card">
+        <div class="chart-title">${t(mkt === "BR" ? "intra.titleBR" : "intra.title")}</div>
+        <div class="chart-sub">${interp(t(mkt === "BR" ? "intra.subBR" : "intra.sub"), { n: q.length, t: st.lbl, d: st.delay })}</div>
+        <div class="table-wrap blotter-scroll" style="margin-top:14px"><table class="sig-table"><thead><tr>
+          <th>${t("sig.ticker")}</th><th class="num">${t("sig.price")}</th><th class="num">${t("intra.chg")}</th></tr></thead>
+          <tbody>${q.map(([tk, v]) => `<tr><td class="tk-cell">${tk} <span class="mkt">${mkt}</span></td><td class="num">${fmtNum(v.last)}</td>
+            <td class="num ${v.chg_pct > 0 ? "pos" : v.chg_pct < 0 ? "neg" : ""}">${v.chg_pct != null ? fmtPct(v.chg_pct) : "—"}</td></tr>`).join("")}</tbody></table></div>
+      </div>`;
+  }
   function renderIntraPublic() {
     const host = $("#intraHost"); if (!host) return;
     loadIntraday().then(d => {
-      if (!d || !d.quotes || !document.getElementById("intraHost")) return;
-      const q = Object.entries(d.quotes).sort((a, b) => a[0].localeCompare(b[0]));
-      const st = intraStamp(d);
-      host.innerHTML = `<div class="chart-card">
-        <div class="chart-title">${t("intra.title")}</div>
-        <div class="chart-sub">${interp(t("intra.sub"), { n: q.length, t: st.lbl, d: st.delay })}</div>
-        <div class="table-wrap blotter-scroll" style="margin-top:14px"><table class="sig-table"><thead><tr>
-          <th>${t("sig.ticker")}</th><th class="num">${t("sig.price")}</th><th class="num">${t("intra.chg")}</th></tr></thead>
-          <tbody>${q.map(([tk, v]) => `<tr><td class="tk-cell">${tk} <span class="mkt">US</span></td><td class="num">${fmtNum(v.last)}</td>
-            <td class="num ${v.chg_pct > 0 ? "pos" : v.chg_pct < 0 ? "neg" : ""}">${v.chg_pct != null ? fmtPct(v.chg_pct) : "—"}</td></tr>`).join("")}</tbody></table></div>
-      </div>`;
+      if (!document.getElementById("intraHost")) return;
+      host.innerHTML = intraCard(d.US, "US") + intraCard(d.BR, "BR");
     });
   }
 
@@ -1737,8 +1745,12 @@
     if (vb) {
       vb.innerHTML = views.map(v => `<button class="sig-vpill ${STATE_VIEW === v[0] ? "on" : ""}" data-v="${v[0]}"><span class="vn ${v[3]}">${v[2]}</span><span class="vl">${v[1]}</span></button>`).join("")
         + `<div class="sig-vupd"><span class="vn">${DATA && /^\d{4}-\d{2}-\d{2}$/.test(DATA.data_through || "") ? new Date(DATA.data_through + "T12:00:00").toLocaleDateString(locale()) : (DATA ? DATA.data_through : "")}</span><span class="vl">${t("sig.updated")}</span></div>`
-        + (INTRA && SIG_FILTER !== "BR" && intraStamp(INTRA).isToday
-          ? `<div class="sig-vupd"><span class="vn">${intraStamp(INTRA).lbl}</span><span class="vl">${t("sig.intraUS")} · ${intraStamp(INTRA).delay}</span></div>` : "");
+        + ["US", "BR"].map(m => {
+          const d = INTRA && INTRA[m];
+          if (!d || (SIG_FILTER !== "ALL" && SIG_FILTER !== m)) return "";
+          const st = intraStamp(d, m);
+          return st.isToday ? `<div class="sig-vupd"><span class="vn">${st.lbl}</span><span class="vl">${t(m === "BR" ? "sig.intraBR" : "sig.intraUS")} · ${st.delay}</span></div>` : "";
+        }).join("");
       vb.querySelectorAll(".sig-vpill").forEach(b => b.onclick = () => { STATE_VIEW = b.dataset.v; SIG_SEL = null; paintSignals(); });
     }
     // já no portfólio -> marcado e no fim da lista (ou oculto, se o usuário pedir)
