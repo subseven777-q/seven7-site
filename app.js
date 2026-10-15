@@ -271,6 +271,16 @@
     "sig.tp": { en: "Target", pt: "Alvo" },
     "sig.cc": { en: "Covered call", pt: "Covered call" },
     "sig.trail": { en: "Trail stop", pt: "Stop do trailing" },
+    "sig.dEntry": { en: "To entry", pt: "Até entrada" },
+    "sig.dStop": { en: "To stop", pt: "Até stop" },
+    "sig.dTp": { en: "To target", pt: "Até alvo" },
+    "sig.intraUS": { en: "US price · NY time", pt: "Preço EUA · hora NY" },
+    "intra.delay": { en: "{n}-min delayed", pt: "atraso de {n} min" },
+    "intra.rt": { en: "real-time", pt: "tempo real" },
+    "intra.title": { en: "US market now", pt: "Mercado americano agora" },
+    "intra.sub": { en: "Prices of the {n} US stocks in the strategy's universe · {t} New York · {d} · updated every 15 min during the session. No signal or level is shown here.", pt: "Preços das {n} ações americanas do universo da estratégia · {t} Nova York · {d} · atualizado a cada 15 min no pregão. Nenhum sinal ou nível aparece aqui." },
+    "intra.last": { en: "last session", pt: "último pregão" },
+    "intra.chg": { en: "Day", pt: "Dia" },
     "sig.trailNote": { en: "Enhanced dynamic: when price reaches {old} (the original target), move the stop up to {trail} — this halves your risk — and let it run to the target {tp}. The covered call (Elite) stays written at the original target {old}.", pt: "Dinâmica aprimorada: ao atingir {old} (o alvo original), suba o stop para {trail} — isso corta o risco pela metade — e deixe correr até o alvo {tp}. O covered call (Elite) permanece no alvo original {old}." },
     "sig.upgradeNote": { en: "Strategy enhanced on 2026-09-02 (extended target + trailing). Historical track record reflects the rules in force at the time — we never rewrite past results.", pt: "Estratégia aprimorada em 02/09/2026 (alvo estendido + trailing). O histórico reflete as regras vigentes à época — nunca reescrevemos resultados passados." },
     "sig.stActive": { en: "ACTIVE", pt: "ATIVO" },
@@ -1329,6 +1339,42 @@
       </div>
       <p class="hedge-note">${interp(t("hg.note"), { years: nf(h.period.years), corr: h.corr_to_equity })}</p>`;
   }
+  // ---- Intraday EUA (intraday_us.py via IB Gateway, a cada 15 min no pregão) ----
+  // Público: só preço + variação do universo (sem estado nem níveis). Membros: o preço vem da tabela
+  // signals (RLS por plano); este arquivo só informa o horário e o atraso.
+  let INTRA = null;
+  function loadIntraday() {
+    if (INTRA) return Promise.resolve(INTRA);
+    const bucket = Math.floor(Date.now() / 60000);   // fura o cache do navegador a cada minuto
+    return fetch("data/intraday_us.json?t=" + bucket).then(r => (r.ok ? r.json() : null))
+      .then(d => (INTRA = d)).catch(() => null);
+  }
+  const nyToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date());
+  function intraStamp(d) {
+    const [day, hm] = String(d.asof_ny || "").split(" ");
+    const isToday = day === nyToday();
+    const lbl = isToday ? hm
+      : `${new Date(day + "T12:00:00").toLocaleDateString(locale(), { day: "2-digit", month: "2-digit" })} ${hm} · ${t("intra.last")}`;
+    const delay = d.delay_min ? interp(t("intra.delay"), { n: d.delay_min }) : t("intra.rt");
+    return { lbl, delay, isToday };
+  }
+  function renderIntraPublic() {
+    const host = $("#intraHost"); if (!host) return;
+    loadIntraday().then(d => {
+      if (!d || !d.quotes || !document.getElementById("intraHost")) return;
+      const q = Object.entries(d.quotes).sort((a, b) => a[0].localeCompare(b[0]));
+      const st = intraStamp(d);
+      host.innerHTML = `<div class="chart-card">
+        <div class="chart-title">${t("intra.title")}</div>
+        <div class="chart-sub">${interp(t("intra.sub"), { n: q.length, t: st.lbl, d: st.delay })}</div>
+        <div class="table-wrap blotter-scroll" style="margin-top:14px"><table class="sig-table"><thead><tr>
+          <th>${t("sig.ticker")}</th><th class="num">${t("sig.price")}</th><th class="num">${t("intra.chg")}</th></tr></thead>
+          <tbody>${q.map(([tk, v]) => `<tr><td class="tk-cell">${tk} <span class="mkt">US</span></td><td class="num">${fmtNum(v.last)}</td>
+            <td class="num ${v.chg_pct > 0 ? "pos" : v.chg_pct < 0 ? "neg" : ""}">${v.chg_pct != null ? fmtPct(v.chg_pct) : "—"}</td></tr>`).join("")}</tbody></table></div>
+      </div>`;
+    });
+  }
+
   function renderRadar() {
     const host = $("#radarHost"); if (!host) return;
     const asof = $("#radarAsOf"); if (asof) asof.textContent = "";
@@ -1354,6 +1400,7 @@
     ].filter(Boolean);
     host.innerHTML = `
       ${facts.length ? `<div class="rp-facts">${facts.map(f => `<div class="rp-fact" style="--tone:${f[3]}"><span class="rp-fic">${f[0]}</span><b>${f[1]}</b><small>${f[2]}</small></div>`).join("")}</div>` : ""}
+      <div id="intraHost"></div>
       <div class="rp-wrap">
         <div class="rp-mock" aria-hidden="true">
           <div class="rp-pills"><span class="rp-pill on"><b>●●</b> ${t("sig.active")}</span><span class="rp-pill"><b>●●</b> ${t("sig.monitoring")}</span></div>
@@ -1379,6 +1426,7 @@
           </div>
         </div>
       </div>`;
+    renderIntraPublic();
   }
   function moLabel(ym) { const [y, m] = ym.split("-"); return `${MONTHS[LANG][+m - 1]}/${y.slice(2)}`; }
   function renderReplay(k) {
@@ -1625,7 +1673,7 @@
       </div>
       <div class="sig-tablewrap"><table class="sig-table" id="sigTable"></table></div>
       <div id="riskCmp"></div>`;
-    await loadHeld();
+    await Promise.all([loadHeld(), loadIntraday()]);
     paintSignals();
     renderRiskCmp();
   }
@@ -1688,7 +1736,9 @@
     const vb = $("#sigViewbar");
     if (vb) {
       vb.innerHTML = views.map(v => `<button class="sig-vpill ${STATE_VIEW === v[0] ? "on" : ""}" data-v="${v[0]}"><span class="vn ${v[3]}">${v[2]}</span><span class="vl">${v[1]}</span></button>`).join("")
-        + `<div class="sig-vupd"><span class="vn">${DATA && /^\d{4}-\d{2}-\d{2}$/.test(DATA.data_through || "") ? new Date(DATA.data_through + "T12:00:00").toLocaleDateString(locale()) : (DATA ? DATA.data_through : "")}</span><span class="vl">${t("sig.updated")}</span></div>`;
+        + `<div class="sig-vupd"><span class="vn">${DATA && /^\d{4}-\d{2}-\d{2}$/.test(DATA.data_through || "") ? new Date(DATA.data_through + "T12:00:00").toLocaleDateString(locale()) : (DATA ? DATA.data_through : "")}</span><span class="vl">${t("sig.updated")}</span></div>`
+        + (INTRA && SIG_FILTER !== "BR" && intraStamp(INTRA).isToday
+          ? `<div class="sig-vupd"><span class="vn">${intraStamp(INTRA).lbl}</span><span class="vl">${t("sig.intraUS")} · ${intraStamp(INTRA).delay}</span></div>` : "");
       vb.querySelectorAll(".sig-vpill").forEach(b => b.onclick = () => { STATE_VIEW = b.dataset.v; SIG_SEL = null; paintSignals(); });
     }
     // já no portfólio -> marcado e no fim da lista (ou oculto, se o usuário pedir)
@@ -1702,17 +1752,22 @@
       $("#sigOnlyNew").onchange = e => { lsSet("seven7-onlynew-sig", e.target.checked ? "1" : "0"); SIG_SEL = null; paintSignals(); };
     }
     const elite = isElite();
-    const head = `<thead><tr><th>${t("sig.ticker")}</th><th class="num">${t("sig.price")}</th><th class="num">${t("sig.entry")}</th><th class="num">${t("sig.stop")}</th><th class="num">${t("sig.tp")}</th><th class="num">R:R</th>${elite ? `<th class="num">${t("sig.cc")}</th>` : ""}</tr></thead>`;
+    // distância do preço atual (intraday p/ US no pregão) até cada nível, em %
+    const dist = (lvl, px) => (lvl && px ? fmtPct((lvl / px - 1) * 100) : "—");
+    const head = `<thead><tr><th>${t("sig.ticker")}</th><th class="num">${t("sig.price")}</th><th class="num">${t("sig.dEntry")}</th><th class="num">${t("sig.dStop")}</th><th class="num">${t("sig.dTp")}</th><th class="num">${t("sig.entry")}</th><th class="num">${t("sig.stop")}</th><th class="num">${t("sig.tp")}</th><th class="num">R:R</th>${elite ? `<th class="num">${t("sig.cc")}</th>` : ""}</tr></thead>`;
     const body = rows.map(s => `<tr data-tk="${s.ticker}" class="${SIG_SEL === s.ticker ? "sel" : ""} ${isHeld(s) ? "held" : ""}">
         <td class="tk-cell">${s.ticker} <span class="mkt">${s.market}</span>${isHeld(s) ? heldTag() : ""}</td>
         <td class="num">${fmtNum(s.price)}</td>
+        <td class="num">${dist(s.entry, s.price)}</td>
+        <td class="num neg">${dist(s.stop, s.price)}</td>
+        <td class="num pos">${dist(s.tp, s.price)}</td>
         <td class="num">${fmtNum(s.entry)}</td>
         <td class="num neg">${fmtNum(s.stop)}</td>
         <td class="num pos">${fmtNum(s.tp)}</td>
         <td class="num">${s.rr != null ? nf(s.rr, 2) : "—"}</td>
         ${elite ? `<td class="num">@${fmtNum(s.cc_strike)} · ${nf(s.cc_premium_pct, 1)}%</td>` : ""}
       </tr>`).join("");
-    const cols = elite ? 7 : 6;
+    const cols = elite ? 10 : 9;
     const tbl = $("#sigTable");
     if (tbl) {
       tbl.innerHTML = head + `<tbody>${body || `<tr><td colspan="${cols}" class="muted-note" style="padding:22px;text-align:center">${t("sig.none")}</td></tr>`}</tbody>`;
