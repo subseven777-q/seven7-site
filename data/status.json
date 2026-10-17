@@ -1,5 +1,5 @@
 {
-  "last_run": "2026-10-16T22:05:19+00:00",
+  "last_run": "2026-10-17T22:03:23+00:00",
   "success": true,
   "data_through": "2026-10-16",
   "steps": [
@@ -7,19 +7,19 @@
       "step": "update_data",
       "ok": true,
       "returncode": 0,
-      "seconds": 50.0
+      "seconds": 47.0
     },
     {
       "step": "build_metrics",
       "ok": true,
       "returncode": 0,
-      "seconds": 21.0
+      "seconds": 20.0
     },
     {
       "step": "build_risk_levels",
       "ok": true,
       "returncode": 0,
-      "seconds": 26.0
+      "seconds": 28.0
     },
     {
       "step": "compute_fscores",
@@ -37,7 +37,7 @@
       "step": "build_dividends",
       "ok": true,
       "returncode": 0,
-      "seconds": 163.0
+      "seconds": 50.0
     },
     {
       "step": "push_signals",
@@ -55,7 +55,7 @@
       "step": "update_portfolios",
       "ok": true,
       "returncode": 0,
-      "seconds": 33.0
+      "seconds": 31.0
     },
     {
       "step": "compute_betas",
