@@ -1,13 +1,13 @@
 {
-  "last_run": "2026-10-19T22:07:01+00:00",
+  "last_run": "2026-10-20T22:04:53+00:00",
   "success": true,
-  "data_through": "2026-10-19",
+  "data_through": "2026-10-20",
   "steps": [
     {
       "step": "update_data",
       "ok": true,
       "returncode": 0,
-      "seconds": 51.0
+      "seconds": 43.0
     },
     {
       "step": "build_metrics",
@@ -19,13 +19,13 @@
       "step": "build_risk_levels",
       "ok": true,
       "returncode": 0,
-      "seconds": 24.0
+      "seconds": 28.0
     },
     {
       "step": "compute_fscores",
       "ok": true,
       "returncode": 0,
-      "seconds": 3.0
+      "seconds": 4.0
     },
     {
       "step": "compute_formulas",
@@ -37,13 +37,13 @@
       "step": "build_dividends",
       "ok": true,
       "returncode": 0,
-      "seconds": 113.0
+      "seconds": 138.0
     },
     {
       "step": "push_signals",
       "ok": true,
       "returncode": 0,
-      "seconds": 3.0
+      "seconds": 4.0
     },
     {
       "step": "push_dividend_signals",
@@ -73,7 +73,7 @@
       "step": "markov3_monitor",
       "ok": true,
       "returncode": 0,
-      "seconds": 153.0
+      "seconds": 4.0
     },
     {
       "step": "push_member_payloads",

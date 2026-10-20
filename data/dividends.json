@@ -1,6 +1,6 @@
 {
-  "generated": "2026-10-19 19:03",
-  "data_through": "2026-10-16",
+  "generated": "2026-10-20 19:03",
+  "data_through": "2026-10-20",
   "markets": {
     "BR": {
       "code": "BR",
@@ -9,8 +9,8 @@
       "years": 10,
       "headline": {
         "yield_on_cost_pct": 10.11,
-        "total_return_drip_pct": 157.3,
-        "total_return_income_pct": 121.8,
+        "total_return_drip_pct": 159.2,
+        "total_return_income_pct": 123.2,
         "div_collected_pct": 47.1,
         "annual_income_per_100k": 10107.0,
         "invested_base": 761000.0
@@ -19,17 +19,17 @@
         {
           "key": "index",
           "label": "BOVA11",
-          "ret": 102.7
+          "ret": 105.5
         },
         {
           "key": "divetf",
           "label": "DIVO11",
-          "ret": 131.1
+          "ret": 132.5
         },
         {
           "key": "riskfree",
           "label": "CDI",
-          "ret": 69.3
+          "ret": 69.4
         }
       ],
       "salary_by_year": {
@@ -50,26 +50,26 @@
         "years": 10,
         "fscore": {
           "n": 5,
-          "total_return_drip_pct": 206.6,
-          "total_return_income_pct": 156.1,
+          "total_return_drip_pct": 208.1,
+          "total_return_income_pct": 157.5,
           "yield_on_cost_pct": 10.9,
-          "current_yield_pct": 5.16,
+          "current_yield_pct": 5.12,
           "annual_income_per_100k": 10938.0
         },
         "magic": {
           "n": 5,
-          "total_return_drip_pct": 258.7,
-          "total_return_income_pct": 204.4,
+          "total_return_drip_pct": 262.0,
+          "total_return_income_pct": 206.9,
           "yield_on_cost_pct": 12.6,
-          "current_yield_pct": 4.95,
+          "current_yield_pct": 4.9,
           "annual_income_per_100k": 12560.0
         },
         "cons": {
           "n": 5,
-          "total_return_drip_pct": 159.3,
-          "total_return_income_pct": 118.9,
+          "total_return_drip_pct": 159.8,
+          "total_return_income_pct": 119.3,
           "yield_on_cost_pct": 12.4,
-          "current_yield_pct": 8.09,
+          "current_yield_pct": 8.07,
           "annual_income_per_100k": 12402.0
         }
       }
@@ -81,22 +81,22 @@
       "years": 10,
       "headline": {
         "yield_on_cost_pct": 4.86,
-        "total_return_drip_pct": 113.4,
-        "total_return_income_pct": 101.3,
+        "total_return_drip_pct": 113.8,
+        "total_return_income_pct": 101.7,
         "div_collected_pct": 18.5,
-        "annual_income_per_100k": 4864.0,
-        "invested_base": 914000.0
+        "annual_income_per_100k": 4861.0,
+        "invested_base": 915000.0
       },
       "benchmarks": [
         {
           "key": "index",
           "label": "S&P 500",
-          "ret": 95.3
+          "ret": 96.7
         },
         {
           "key": "divetf",
           "label": "SCHD",
-          "ret": 70.4
+          "ret": 71.8
         },
         {
           "key": "riskfree",
@@ -119,26 +119,26 @@
         "years": 10,
         "fscore": {
           "n": 5,
-          "total_return_drip_pct": 102.0,
-          "total_return_income_pct": 95.9,
+          "total_return_drip_pct": 103.8,
+          "total_return_income_pct": 97.6,
           "yield_on_cost_pct": 4.7,
-          "current_yield_pct": 2.54,
+          "current_yield_pct": 2.52,
           "annual_income_per_100k": 4665.0
         },
         "magic": {
           "n": 5,
-          "total_return_drip_pct": 65.7,
-          "total_return_income_pct": 59.4,
+          "total_return_drip_pct": 70.2,
+          "total_return_income_pct": 63.3,
           "yield_on_cost_pct": 4.0,
-          "current_yield_pct": 2.72,
+          "current_yield_pct": 2.65,
           "annual_income_per_100k": 3954.0
         },
         "cons": {
           "n": 5,
-          "total_return_drip_pct": 91.0,
-          "total_return_income_pct": 74.9,
+          "total_return_drip_pct": 91.3,
+          "total_return_income_pct": 75.2,
           "yield_on_cost_pct": 6.2,
-          "current_yield_pct": 4.14,
+          "current_yield_pct": 4.13,
           "annual_income_per_100k": 6219.0
         }
       }
