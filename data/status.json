@@ -1,31 +1,31 @@
 {
-  "last_run": "2026-10-20T22:04:53+00:00",
+  "last_run": "2026-10-21T22:06:50+00:00",
   "success": true,
-  "data_through": "2026-10-20",
+  "data_through": "2026-10-21",
   "steps": [
     {
       "step": "update_data",
       "ok": true,
       "returncode": 0,
-      "seconds": 43.0
+      "seconds": 53.0
     },
     {
       "step": "build_metrics",
       "ok": true,
       "returncode": 0,
-      "seconds": 22.0
+      "seconds": 29.0
     },
     {
       "step": "build_risk_levels",
       "ok": true,
       "returncode": 0,
-      "seconds": 28.0
+      "seconds": 27.0
     },
     {
       "step": "compute_fscores",
       "ok": true,
       "returncode": 0,
-      "seconds": 4.0
+      "seconds": 113.0
     },
     {
       "step": "compute_formulas",
@@ -37,25 +37,25 @@
       "step": "build_dividends",
       "ok": true,
       "returncode": 0,
-      "seconds": 138.0
+      "seconds": 135.0
     },
     {
       "step": "push_signals",
       "ok": true,
       "returncode": 0,
-      "seconds": 4.0
+      "seconds": 2.0
     },
     {
       "step": "push_dividend_signals",
       "ok": true,
       "returncode": 0,
-      "seconds": 2.0
+      "seconds": 1.0
     },
     {
       "step": "update_portfolios",
       "ok": true,
       "returncode": 0,
-      "seconds": 34.0
+      "seconds": 35.0
     },
     {
       "step": "compute_betas",
@@ -67,25 +67,25 @@
       "step": "measure_theta",
       "ok": true,
       "returncode": 0,
-      "seconds": 3.0
+      "seconds": 2.0
     },
     {
       "step": "markov3_monitor",
       "ok": true,
       "returncode": 0,
-      "seconds": 4.0
+      "seconds": 3.0
     },
     {
       "step": "push_member_payloads",
       "ok": true,
       "returncode": 0,
-      "seconds": 2.0
+      "seconds": 1.0
     },
     {
       "step": "build_artifact",
       "ok": true,
       "returncode": 0,
-      "seconds": 1.0
+      "seconds": 0.0
     }
   ]
 }
