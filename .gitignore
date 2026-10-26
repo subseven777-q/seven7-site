@@ -5,3 +5,5 @@ data/trades.json
 data/monitor.json
 data/fscores.json
 data/formulas.json
+data/term_news.json
+data/term_macro.json

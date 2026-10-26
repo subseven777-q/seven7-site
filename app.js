@@ -111,6 +111,10 @@
     "hero.perk2": { en: "Cancel anytime", pt: "Cancele quando quiser" },
     "hero.perk3": { en: "US + Brazil", pt: "EUA + Brasil" },
     "nav.desk": { en: "My desk", pt: "Minha mesa" },
+    "nav.terminal": { en: "Terminal", pt: "Terminal" },
+    "desk.termT": { en: "Seven7 Terminal", pt: "Terminal Seven7" },
+    "desk.termD": { en: "Markets, news, economic calendar, charts, fundamentals and your signals — in one keyboard-driven screen.", pt: "Mercados, notícias, calendário econômico, gráficos, fundamentos e seus sinais — numa tela só, operada pelo teclado." },
+    "desk.termOpen": { en: "Open terminal", pt: "Abrir terminal" },
     "grow.k": { en: "If you had invested", pt: "Se você tivesse investido" },
     "grow.in": { en: "in", pt: "em" },
     "grow.today": { en: "today it would be", pt: "hoje seriam" },
@@ -1048,6 +1052,7 @@
     guard("#viewTabs", initViews);
     guard("#divTiles", renderDividends);
     guard("#memberGate", renderMembers);
+    guard("#termGate", renderTerminal);
     guard("#monitorGate", renderMonitor);
     guard("#pricingGrid", () => { renderPricing(); initBilling(); });
     initAuth();
@@ -1536,9 +1541,9 @@
       // preserva o USER semeado pelo preview localhost (sem sessao real) — nao afeta producao
       USER = data?.session?.user || (PREVIEW ? USER : null);
       await loadProfile();
-      updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio(); renderDivSignals(); renderMembers(); renderKmlmCard(); renderMonitor();
+      updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio(); renderDivSignals(); renderMembers(); renderKmlmCard(); renderMonitor(); renderTerminal();
       sb.auth.onAuthStateChange(async (_ev, session) => {
-        USER = session?.user || (PREVIEW ? USER : null); await loadProfile(); updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio(); renderDivSignals(); renderMembers(); renderKmlmCard(); renderMonitor();
+        USER = session?.user || (PREVIEW ? USER : null); await loadProfile(); updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio(); renderDivSignals(); renderMembers(); renderKmlmCard(); renderMonitor(); renderTerminal();
       });
     } catch (e) { console.error("auth init failed", e); renderAccount(); }
     wireAuthForms();
@@ -1582,7 +1587,8 @@
     if (USER) {
       const name = USER.user_metadata?.name || USER.email;
       const badge = isMember() ? `<span class="nav-plan">${(PROFILE.plan || "").toUpperCase()}${isTrial() ? " · " + t("trial.tag") : ""}</span>` : "";
-      const desk = `<a class="btn btn-desk" href="members.html">${ic("desk")}${t("nav.desk")}</a>`;
+      const desk = `<a class="btn btn-desk" href="members.html">${ic("desk")}${t("nav.desk")}</a>`
+        + (isMember() ? `<a class="btn btn-desk btn-term" href="terminal.html">${ic("gauge")}${t("nav.terminal")}</a>` : "");
       host.innerHTML = `${desk}<a class="nav-user" href="account.html" title="${esc(USER.email)}">${ic("user")}<span class="nav-name">${esc(name)}</span>${badge}</a><button class="btn btn-ghost" id="logoutBtn">${t("auth.logout")}</button>`;
       const lb = $("#logoutBtn"); if (lb) lb.onclick = async () => { if (sb) await sb.auth.signOut(); location.href = "index.html"; };
     } else {
@@ -2730,9 +2736,29 @@
     if (!USER) { gate.innerHTML = teaser("mem.gateLogin", "mem.login", "login.html"); if (content) content.hidden = true; return; }
     if (!isMember()) { gate.innerHTML = teaser(pixExpired() ? "pix.ended" : trialExpired() ? "trial.ended" : "mem.gateUpgrade", "mem.plans", "plans.html"); if (content) content.hidden = true; return; }
     gate.innerHTML = ""; if (content) content.hidden = false;
+    const tc = $("#termCta");
+    if (tc) tc.innerHTML = `<a class="term-cta" href="terminal.html"><span class="term-cta-ic">${ic("gauge")}</span>
+      <span class="term-cta-txt"><b>${t("desk.termT")}</b><small>${t("desk.termD")}</small></span>
+      <span class="btn btn-primary">${t("desk.termOpen")} →</span></a>`;
     initDeskViews();
     if (DATA) guard("#po3Tabs", () => initSection(["US", "BR"], "#po3Tabs", renderPO3Panel));
     renderDividends(); renderVideos(); renderPortfolio(); renderKmlmCard(); renderCoveredCallMembers();
+  }
+  // ---- Terminal (terminal.html): portão de membros + entrega uma API mínima ao terminal.js ----
+  function renderTerminal() {
+    const root = $("#termRoot"), gate = $("#termGate"); if (!root || !gate) return;
+    if (/[?&]preview=1/.test(location.search) && /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
+      PREVIEW = true;
+      USER = USER || { id: "preview" }; PROFILE = PROFILE || { status: "active", plan: "elite" };
+    }
+    const teaser = (msgKey, btnKey, href) =>
+      `<section class="section"><div class="div-siglock" style="max-width:640px;margin:0 auto"><p>${t(msgKey)}</p><a class="btn btn-primary" href="${href}">${t(btnKey)}</a></div></section>`;
+    if (!USER) { gate.innerHTML = teaser("mem.gateLogin", "mem.login", "login.html"); root.hidden = true; return; }
+    if (!isMember()) { gate.innerHTML = teaser(pixExpired() ? "pix.ended" : trialExpired() ? "trial.ended" : "mem.gateUpgrade", "mem.plans", "plans.html"); root.hidden = true; return; }
+    gate.innerHTML = ""; root.hidden = false;
+    // terminal.js pode ainda não ter carregado: deixa a API pendente e ele dá o boot quando chegar
+    const api = { sb, user: USER, plan: (PROFILE && PROFILE.plan) || "", lang: LANG, preview: PREVIEW, payload: fetchMemberPayload };
+    if (window.S7Terminal) window.S7Terminal.boot(api); else window.__S7_TERM_API = api;
   }
   async function renderKmlmCard() {
     const host = $("#kmlmHost"); if (!host) return;

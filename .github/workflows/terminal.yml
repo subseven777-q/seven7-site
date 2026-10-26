@@ -1,0 +1,28 @@
+# Coletor do TERMINAL Seven7 (notícias + macro) — roda na nuvem, independente do notebook.
+# Escreve só no Supabase (member_payloads: term_news, term_macro); não faz commit neste repositório.
+# Requer o secret SUPABASE_SERVICE_KEY (Settings → Secrets and variables → Actions).
+name: terminal-coletor
+on:
+  schedule:
+    - cron: "*/15 * * * *"      # a cada 15 min (o GitHub pode atrasar alguns minutos em horário de pico)
+  workflow_dispatch: {}          # botão "Run workflow" para rodar na hora
+concurrency:
+  group: terminal-coletor
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  coleta:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: _terminal
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Coletar e enviar ao Supabase
+        env:
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python _terminal/coletor.py
