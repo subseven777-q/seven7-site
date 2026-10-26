@@ -172,7 +172,7 @@
       <th class="num">${tx("Entrada", "Entry")}</th><th class="num">${tx("Até entrada", "To entry")}</th><th class="num">Stop</th><th class="num">${tx("Alvo", "Target")}</th></tr></thead><tbody>
       ${rows.map(s => `<tr><td><a class="term-tk" data-go="${s.ticker} GP">${esc(s.ticker)}</a> <small>${s.market}</small></td>
         <td><span class="term-st ${s.state === "ACTIVE" ? "up" : ""}">${s.state === "ACTIVE" ? tx("ATIVO", "ACTIVE") : tx("MONIT.", "WATCH")}</span></td>
-        <td class="num">${nf(s.price)}</td><td class="num">${nf(s.entry)}</td><td class="num ${cls(-(s.d || 0))}">${pct(s.d, 1)}</td>
+        <td class="num">${nf(s.price)}</td><td class="num">${nf(s.entry)}</td><td class="num ${cls(s.d)}">${pct(s.d, 1)}</td>
         <td class="num dn">${nf(s.stop)}</td><td class="num up">${nf(s.tp)}</td></tr>`).join("")}</tbody></table></div>`;
   }
   async function port(host) {
