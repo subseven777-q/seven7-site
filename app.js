@@ -557,6 +557,37 @@
     "sig.addErr": { en: "Couldn't add.", pt: "Não deu para adicionar." },
     "pf.needLoginSub": { en: "Log in to build and track your portfolio.", pt: "Entre para montar e acompanhar seu portfólio." },
     "pf.deposit": { en: "Initial deposit", pt: "Depósito inicial" },
+    "pf.currency": { en: "Portfolio currency", pt: "Moeda do portfólio" },
+    "pf.freeAdd": { en: "Add any position", pt: "Adicionar qualquer posição" },
+    "pf.freeNote": { en: "Positions outside Seven7 strategies: no signal from us — they enter your risk analysis (volatility, drawdown, frontier, HRP). Prices update daily; fixed income accrues by its index/rate.", pt: "Posições fora das estratégias Seven7: não damos sinal — elas entram na sua análise de risco (volatilidade, drawdown, fronteira, HRP). Preços atualizam diariamente; renda fixa rende pelo indexador/taxa." },
+    "pf.fType": { en: "Type", pt: "Tipo" },
+    "pf.fCode": { en: "Ticker", pt: "Código" },
+    "pf.fQty": { en: "Quantity", pt: "Quantidade" },
+    "pf.fPrice": { en: "Average price", pt: "Preço médio" },
+    "pf.fDate": { en: "Date", pt: "Data" },
+    "pf.fName": { en: "Name (e.g. CDB Bank X)", pt: "Nome (ex.: CDB Banco X)" },
+    "pf.fInvested": { en: "Amount invested", pt: "Valor aplicado" },
+    "pf.fIndex": { en: "Index", pt: "Indexador" },
+    "pf.fRate": { en: "Rate", pt: "Taxa" },
+    "pf.fRateH": { en: "CDI/Selic: % of the index · IPCA: real rate % p.a. · fixed/Treasury: % p.a.", pt: "CDI/Selic: % do índice · IPCA: taxa real % a.a. · pré/Treasury: % a.a." },
+    "pf.fMat": { en: "Maturity", pt: "Vencimento" },
+    "pf.fCcy": { en: "Currency", pt: "Moeda" },
+    "pf.fAdd": { en: "Add to portfolio", pt: "Adicionar ao portfólio" },
+    "pf.fBad": { en: "Fill in the fields correctly.", pt: "Preencha os campos corretamente." },
+    "pf.fMig": { en: "Free positions are not enabled yet (database update pending).", pt: "Posições livres ainda não habilitadas (atualização do banco pendente)." },
+    "pf.fOk": { en: "Added ✓ — the risk analysis includes it at the next daily run (19:00).", pt: "Adicionada ✓ — a análise de risco inclui na próxima rodada diária (19:00)." },
+    "pf.tAcaoBr": { en: "Brazilian stock / ETF (B3)", pt: "Ação / ETF Brasil (B3)" },
+    "pf.tFii": { en: "Real estate fund (FII)", pt: "Fundo imobiliário (FII)" },
+    "pf.tAcaoUs": { en: "US stock / ETF", pt: "Ação / ETF EUA" },
+    "pf.tCripto": { en: "Crypto", pt: "Cripto" },
+    "pf.tRfBr": { en: "Brazilian fixed income (CDB, Tesouro, LCI…)", pt: "Renda fixa Brasil (CDB, Tesouro, LCI…)" },
+    "pf.tRfUs": { en: "US fixed income (Treasury, T-bill)", pt: "Renda fixa EUA (Treasury, T-bill)" },
+    "pf.tOutro": { en: "Other (Yahoo Finance ticker)", pt: "Outro (código do Yahoo Finance)" },
+    "pf.stratFree": { en: "Free", pt: "Livres" },
+    "pf.free": { en: "FREE", pt: "LIVRE" },
+    "pf.noSignal": { en: "NO SIGNAL", pt: "SEM SINAL" },
+    "pf.quantH": { en: "Quant analysis of your portfolio", pt: "Análise quant do seu portfólio" },
+    "pf.quantSub": { en: "Everything you hold — Seven7 strategies and free positions — consolidated in your currency.", pt: "Tudo o que você tem — estratégias Seven7 e posições livres — consolidado na sua moeda." },
     "pf.save": { en: "Save", pt: "Salvar" },
     "pf.export": { en: "Export CSV", pt: "Exportar CSV" },
     "pf.saved": { en: "Saved ✓ (metrics update at the next daily run)", pt: "Salvo ✓ (as métricas atualizam no próximo ciclo diário)" },
@@ -1911,6 +1942,76 @@
     }
     return error;
   }
+  // ---- posições LIVRES (fora das estratégias): quantidade × preço; renda fixa por valor + indexador ----
+  const FREE_TYPES = [["acao_br", "pf.tAcaoBr"], ["fii", "pf.tFii"], ["acao_us", "pf.tAcaoUs"], ["cripto", "pf.tCripto"],
+                      ["rf_br", "pf.tRfBr"], ["rf_us", "pf.tRfUs"], ["outro", "pf.tOutro"]];
+  function freePositionForm() {
+    const today = new Date().toISOString().slice(0, 10);
+    return `<details class="pf-free" id="pfFree"><summary><span class="btn btn-ghost">＋ ${t("pf.freeAdd")}</span></summary>
+      <div class="pf-free-body">
+        <label>${t("pf.fType")}<select id="ffType">${FREE_TYPES.map(([v, k]) => `<option value="${v}">${t(k)}</option>`).join("")}</select></label>
+        <div class="ff-grid ff-mkt">
+          <label>${t("pf.fCode")}<input id="ffCode" placeholder="HGLG11 · BTC · AAPL" autocomplete="off"></label>
+          <label>${t("pf.fQty")}<input id="ffQty" type="number" min="0" step="any"></label>
+          <label>${t("pf.fPrice")}<input id="ffPrice" type="number" min="0" step="any"></label>
+          <label class="ff-ccy" hidden>${t("pf.fCcy")}<select id="ffCcy"><option>BRL</option><option>USD</option></select></label>
+        </div>
+        <div class="ff-grid ff-rf" hidden>
+          <label>${t("pf.fName")}<input id="ffName" autocomplete="off"></label>
+          <label>${t("pf.fInvested")}<input id="ffInv" type="number" min="0" step="any"></label>
+          <label>${t("pf.fIndex")}<select id="ffIdx"></select></label>
+          <label title="${t("pf.fRateH")}">${t("pf.fRate")} <small>(${t("pf.fRateH")})</small><input id="ffRate" type="number" step="any"></label>
+          <label>${t("pf.fMat")}<input id="ffMat" type="date"></label>
+        </div>
+        <div class="ff-grid"><label>${t("pf.fDate")}<input id="ffDate" type="date" value="${today}" max="${today}"></label></div>
+        <button class="btn btn-primary" id="ffSave">${t("pf.fAdd")}</button><span class="add-msg" id="ffMsg"></span>
+        <p class="hedge-note">${t("pf.freeNote")}</p>
+      </div></details>`;
+  }
+  function wireFreePositionForm() {
+    const ty = $("#ffType"); if (!ty) return;
+    const sync = () => {
+      const v = ty.value, rf = /^rf_/.test(v);
+      $(".ff-mkt").hidden = rf; $(".ff-rf").hidden = !rf; $(".ff-ccy").hidden = v !== "outro";
+      $("#ffIdx").innerHTML = (v === "rf_us" ? ["UST"] : ["CDI", "SELIC", "IPCA", "PRE"]).map(x => `<option>${x}</option>`).join("");
+    };
+    ty.onchange = sync; sync();
+    $("#ffSave").onclick = async () => {
+      const msg = $("#ffMsg"), say = (k, ok) => { msg.textContent = t(k); msg.className = "add-msg " + (ok ? "ok" : "err"); };
+      if (!sb || !USER || USER.id === "preview") return say("sig.addErr");
+      const v = ty.value, rf = /^rf_/.test(v), date = $("#ffDate").value || new Date().toISOString().slice(0, 10);
+      let row;
+      if (rf) {
+        const name = ($("#ffName").value || "").trim(), inv = parseFloat($("#ffInv").value), rate = parseFloat($("#ffRate").value);
+        if (!name || !(inv > 0) || !isFinite(rate)) return say("pf.fBad");
+        row = { ticker: name.slice(0, 40), market: "RF", asset_class: v, currency: v === "rf_us" ? "USD" : "BRL", invested: inv,
+                rf_index: $("#ffIdx").value, rf_rate: rate, rf_maturity: $("#ffMat").value || null, entry: inv, current_price: inv };
+      } else {
+        const code = ($("#ffCode").value || "").trim().toUpperCase().replace(/\.SA$/, ""), qty = parseFloat($("#ffQty").value), px = parseFloat($("#ffPrice").value);
+        if (!/^[A-Z0-9.\-^=]{1,15}$/.test(code) || !(qty > 0) || !(px > 0)) return say("pf.fBad");
+        const M = { acao_br: ["BR", "BRL", code + ".SA", "BMFBOVESPA:" + code], fii: ["BR", "BRL", code + ".SA", "BMFBOVESPA:" + code],
+                    acao_us: ["US", "USD", code, code], cripto: ["CRYPTO", "USD", code + "-USD", code + "USD"],
+                    outro: ["OUTRO", $("#ffCcy").value, code, code] }[v];
+        row = { ticker: code, market: M[0], currency: M[1], price_symbol: M[2], tv_symbol: M[3], asset_class: v, quantity: qty, entry: px, current_price: px };
+      }
+      Object.assign(row, { strategy: "livre", status: "open", entry_type: "market", alloc_pct: 0, added_at: date, ret_pct: 0 });
+      const { error } = await sb.from("portfolio_positions").insert(row);
+      if (error) return say(/column|asset_class|strategy|check constraint/i.test(error.message || "") ? "pf.fMig" : "sig.addErr");
+      say("pf.fOk", true); renderPortfolio();
+    };
+  }
+  let PF_QUANT_PREVIEW = null;
+  async function renderPortfolioQuant(d) {
+    const host = $("#pfQuant"); if (!host) return;
+    if (!window.S7Quant) { window.__s7QuantPending = () => renderPortfolioQuant(d); return; }   // quant.js ainda chegando
+    let A = d && d.analytics;
+    if (PREVIEW && !A) {
+      if (PF_QUANT_PREVIEW === null) { try { PF_QUANT_PREVIEW = await (await fetch("data/pf_analytics_preview.json")).json(); } catch (e) { PF_QUANT_PREVIEW = false; } }
+      A = PF_QUANT_PREVIEW || null;
+    }
+    host.innerHTML = `<div class="section-head"><h2>${t("pf.quantH")}</h2><p class="sub">${t("pf.quantSub")}</p></div><div id="pfQuantBody"></div>`;
+    window.S7Quant.full($("#pfQuantBody"), A, { lang: LANG });
+  }
   async function addPosition(sig, allocPct, entryType = "stop", fillPx = null) {
     if (!sb || !USER) return "no-auth";
     const market = entryType === "market";
@@ -2097,7 +2198,8 @@
     });
     const hasPo3 = positions.some(p => p.strategy === "po3");
     const hasDiv = positions.some(p => p.strategy === "dividends");
-    if (PF_STRAT !== "all" && !((PF_STRAT === "po3" && hasPo3) || (PF_STRAT === "dividends" && hasDiv))) PF_STRAT = "all";
+    const hasFree = positions.some(p => p.strategy === "livre");
+    if (PF_STRAT !== "all" && !((PF_STRAT === "po3" && hasPo3) || (PF_STRAT === "dividends" && hasDiv) || (PF_STRAT === "livre" && hasFree))) PF_STRAT = "all";
     const viewPos = PF_STRAT === "all" ? positions : positions.filter(p => p.strategy === PF_STRAT);
     const eng = PF_STRAT === "all" ? d : (d && d.by_strategy && d.by_strategy[PF_STRAT]) || null;
     await new Promise(res => loadBetas(res));
@@ -2126,18 +2228,21 @@
       <div class="pf-deposit">
         <label for="pfDeposit">${ic("wallet")}${t("pf.deposit")}</label>
         <div class="pf-dep-in"><span>${sym}</span><input id="pfDeposit" type="number" value="${deposit}" min="0" step="100"></div>
+        <select id="pfCur" class="pf-cur" title="${t("pf.currency")}" aria-label="${t("pf.currency")}">${["BRL", "USD"].map(c => `<option ${c === cur ? "selected" : ""}>${c}</option>`).join("")}</select>
         <button class="btn btn-primary" id="pfSaveDep">${t("pf.save")}</button>
         ${isEliteNow && positions.length ? `<button class="btn btn-ghost" id="pfExport">${ic("down")}${t("pf.export")}</button>` : ""}
         <span class="add-msg" id="pfDepMsg"></span>
       </div>
       ${danger}
     </div>`;
+    html += freePositionForm();
 
-    if (hasPo3 && hasDiv) {
+    if ([hasPo3, hasDiv, hasFree].filter(Boolean).length > 1) {
       html += `<div class="seg pf-stratseg" id="pfStratSeg">
         <button data-s="all" class="${PF_STRAT === "all" ? "on" : ""}">${t("pf.stratAll")}</button>
-        <button data-s="po3" class="${PF_STRAT === "po3" ? "on" : ""}">${t("pf.stratPo3")}</button>
-        <button data-s="dividends" class="${PF_STRAT === "dividends" ? "on" : ""}">${t("pf.stratDiv")}</button>
+        ${hasPo3 ? `<button data-s="po3" class="${PF_STRAT === "po3" ? "on" : ""}">${t("pf.stratPo3")}</button>` : ""}
+        ${hasDiv ? `<button data-s="dividends" class="${PF_STRAT === "dividends" ? "on" : ""}">${t("pf.stratDiv")}</button>` : ""}
+        ${hasFree ? `<button data-s="livre" class="${PF_STRAT === "livre" ? "on" : ""}">${t("pf.stratFree")}</button>` : ""}
       </div>`;
     }
 
@@ -2179,12 +2284,18 @@
         html += `<p class="hedge-note" style="margin-top:16px">${t("pf.noOpenPos")}</p>`;
       } else {
         const smap = { won: ["pos", "active", t("pf.won")], lost: ["neg", "flat", t("pf.lost")], open: ["", "wait", t("pf.openst")], pending: ["", "flat", t("pf.pending")] };
-        const stag = p => PF_STRAT === "all" ? ` <span class="pf-stag ${p.strategy}">${p.strategy === "dividends" ? "DIV" : "M3"}</span>` : "";
+        const stag = p => PF_STRAT === "all" ? ` <span class="pf-stag ${p.strategy}">${p.strategy === "dividends" ? "DIV" : p.strategy === "livre" ? t("pf.free") : "M3"}</span>` : "";
+        const ccyM = (p, v) => v == null ? "—" : (p.currency === "BRL" ? "R$ " : "US$ ") + Number(v).toLocaleString(locale(), { maximumFractionDigits: 2 });
         const rows = viewPos.map(p => {
-          const [retc, stcls, stl] = smap[p.status] || smap.open;
-          return `<tr><td class="tk-cell">${p.ticker} <span class="mkt">${p.market}</span>${stag(p)}</td>
-            <td>${p.added_at}</td><td class="num">${nf(p.alloc_pct, 1)}%</td>
-            <td class="num">${fmtNum(p.entry)}</td><td class="num">${fmtNum(p.current_price ?? p.entry)}</td>
+          let [retc, stcls, stl] = smap[p.status] || smap.open;
+          const free = p.strategy === "livre", rf = free && /^rf_/.test(p.asset_class || "");
+          if (free) { stcls = "flat"; stl = t("pf.noSignal"); retc = p.ret_pct > 0 ? "pos" : p.ret_pct < 0 ? "neg" : ""; }
+          const size = !free ? `${nf(p.alloc_pct, 1)}%` : rf ? ccyM(p, p.invested) : `${Number(p.quantity || 0).toLocaleString(locale(), { maximumFractionDigits: 8 })} un`;
+          const entryC = rf ? `${nf(p.rf_rate, 2)}${p.rf_index === "CDI" || p.rf_index === "SELIC" ? "% " + p.rf_index : p.rf_index === "IPCA" ? "% + IPCA" : "% a.a."}` : free ? ccyM(p, p.entry) : fmtNum(p.entry);
+          const curC = rf ? ccyM(p, p.current_price) : free ? ccyM(p, p.current_price ?? p.entry) : fmtNum(p.current_price ?? p.entry);
+          return `<tr><td class="tk-cell">${esc(p.ticker)} <span class="mkt">${esc(p.market)}</span>${stag(p)}</td>
+            <td>${p.added_at}</td><td class="num">${size}</td>
+            <td class="num">${entryC}</td><td class="num">${curC}</td>
             <td><span class="st ${stcls}">${stl}</span></td>
             <td class="num ${retc}">${p.status === "pending" ? "—" : (p.ret_pct == null ? "—" : fmtPct(p.ret_pct))}</td>
             <td><button class="pf-del" data-id="${p.id}" data-tk="${esc(p.ticker)}" title="${t("pf.remove")}" aria-label="${t("pf.remove")} ${esc(p.ticker)}">${ic("x")}</button></td></tr>`;
@@ -2203,9 +2314,14 @@
     const save = $("#pfSaveDep");
     if (save) save.onclick = async () => {
       const val = Math.max(0, parseFloat($("#pfDeposit").value) || 0);
-      const { error } = await sb.from("profiles").update({ portfolio_deposit: val }).eq("id", USER.id);
+      const nc = ($("#pfCur") || {}).value || cur;
+      let { error } = await sb.from("profiles").update({ portfolio_deposit: val, portfolio_currency: nc }).eq("id", USER.id);
+      if (error && nc === cur) ({ error } = await sb.from("profiles").update({ portfolio_deposit: val }).eq("id", USER.id));  // banco sem a migração da moeda
       const m = $("#pfDepMsg"); m.textContent = error ? t("sig.addErr") : t("pf.saved"); m.className = "add-msg " + (error ? "err" : "ok");
+      if (!error && nc !== cur) renderPortfolio();
     };
+    wireFreePositionForm();
+    renderPortfolioQuant(d);
     host.querySelectorAll(".pf-del").forEach(b => b.onclick = async () => {
       if (!sb || !USER || USER.id === "preview") return;
       if (!confirm(interp(t("pf.removeConfirm"), { tk: b.dataset.tk || "" }))) return;

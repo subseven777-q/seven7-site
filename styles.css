@@ -1270,3 +1270,81 @@ tr.held td.tk-cell,tr.held:hover td,tr.held.sel td{opacity:1}
 .term-cta-txt{flex:1;display:flex;flex-direction:column;gap:2px}.term-cta-txt small{color:var(--ink-2)}
 @media (max-width:640px){.term-cta{flex-wrap:wrap}.term-cta .btn{width:100%;text-align:center}}
 .btn-term .ic{color:#ffb000}
+
+/* ===================== Análise quant do portfólio (quant.js) — Minha mesa e Terminal ===================== */
+.q-wrap{margin-top:34px}
+.q-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:16px;min-width:0}
+.q-h{font-weight:700;margin-bottom:12px}
+.q-2col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.q-empty{color:var(--ink-2);padding:14px 4px}
+.q-note{color:var(--ink-2);font-size:12px;margin-top:8px;line-height:1.45}
+.q-warn{margin:10px 0 0;padding-left:0;list-style:none;color:var(--warn);font-size:12.5px}
+.q-health{display:grid;grid-template-columns:150px 1fr;gap:18px;align-items:center}
+.q-score{position:relative;width:140px;height:140px}
+.q-score svg{width:100%;height:100%;transform:rotate(-90deg)}
+.q-ring-bg{fill:none;stroke:var(--border);stroke-width:12}
+.q-ring{fill:none;stroke-width:12;stroke-linecap:round;transition:stroke-dasharray .6s}
+.q-green .q-ring{stroke:var(--pos)}.q-amber .q-ring{stroke:var(--warn)}.q-red .q-ring{stroke:var(--neg)}
+.q-score-v{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:800}
+.q-score-v small{font-size:13px;color:var(--ink-2);margin-left:2px}
+.q-score-l{position:absolute;left:0;right:0;bottom:-18px;text-align:center;font-size:11px;color:var(--ink-2)}
+.q-lights{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.q-light{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border-radius:10px;border:1px solid var(--border)}
+.q-light small{display:block;color:var(--ink-2);margin-top:2px;font-size:12px}
+.q-dot{flex:0 0 12px;height:12px;border-radius:50%;margin-top:4px}
+.q-green .q-dot{background:var(--pos);box-shadow:0 0 8px var(--pos)}.q-amber .q-dot{background:var(--warn);box-shadow:0 0 8px var(--warn)}
+.q-red .q-dot{background:var(--neg);box-shadow:0 0 8px var(--neg)}
+.q-tag{font-size:11px;padding:1px 6px;border-radius:6px;margin-left:4px}
+.q-green .q-tag{color:var(--pos);background:color-mix(in srgb,var(--pos) 14%,transparent)}
+.q-amber .q-tag{color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,transparent)}
+.q-red .q-tag{color:var(--neg);background:color-mix(in srgb,var(--neg) 14%,transparent)}
+.q-dx{margin:16px 0 4px;padding-left:18px;line-height:1.6}.q-dx b{color:var(--ink)}
+.q-meta{color:var(--muted);font-size:12px;margin-top:8px}
+.q-metrics{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.q-m{border:1px solid var(--border);border-radius:10px;padding:8px 10px}
+.q-ml{font-size:11.5px;color:var(--ink-2)}.q-mv{font-size:20px;font-weight:700;margin:2px 0}.q-ms{font-size:11px;color:var(--muted)}
+.q-legend{display:flex;gap:10px;align-items:center;font-size:12px;color:var(--ink-2);margin-bottom:8px}
+.q-sw{display:inline-block;width:12px;height:8px;border-radius:2px}.q-sw.w,.q-bw{background:var(--accent)}.q-sw.r,.q-br{background:var(--warn)}
+.q-risk{display:flex;flex-direction:column;gap:6px}
+.q-rrow{display:grid;grid-template-columns:120px 1fr 92px;gap:8px;align-items:center;font-size:12.5px}
+.q-rrow .q-rx{grid-column:2/4;color:var(--muted);font-size:11px;margin-top:-4px}
+.q-rl small{display:block;color:var(--muted);font-size:10.5px}
+.q-rbars{display:flex;flex-direction:column;gap:2px}.q-bw,.q-br{height:7px;border-radius:3px;min-width:2px}
+.q-rv{text-align:right;font-variant-numeric:tabular-nums}
+.q-rrow.hot .q-rl b{color:var(--neg)}
+.q-dd,.q-front{width:100%;height:auto}
+.q-dd text,.q-front text{fill:var(--ink-2);font-size:11px}
+.q-eq{fill:none;stroke:var(--accent);stroke-width:2}.q-uw{fill:color-mix(in srgb,var(--neg) 35%,transparent);stroke:var(--neg);stroke-width:1}
+.q-ax,.q-grid{stroke:var(--border)}.q-min{fill:var(--neg)!important;font-weight:700}
+.q-fcurve{fill:none;stroke:var(--accent);stroke-width:2.5}
+.q-asset{fill:var(--muted);opacity:.7}
+.q-pt circle{stroke:var(--surface);stroke-width:2}.q-pt text{font-weight:700;font-size:12px!important}
+.q-pt.you circle{fill:#ff4d5e}.q-pt.you text{fill:#ff4d5e!important}
+.q-pt.hrp circle{fill:var(--pos)}.q-pt.hrp text{fill:var(--pos)!important}
+.q-pt.mv circle{fill:#9b8cff}.q-pt.ms circle{fill:var(--warn)}
+.q-tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:10px;font-variant-numeric:tabular-nums}
+.q-tbl th{color:var(--ink-2);font-weight:600;text-align:left;border-bottom:1px solid var(--border);padding:5px 6px}
+.q-tbl td{padding:5px 6px;border-bottom:1px solid var(--border)}.q-tbl .num{text-align:right}
+.q-tbl .pos{color:var(--pos)}.q-tbl .neg{color:var(--neg)}
+.q-sig{color:var(--accent);font-size:10px}
+.q-corr{display:grid;gap:1px;font-size:10px;overflow-x:auto}
+.q-ch{writing-mode:vertical-rl;transform:rotate(180deg);color:var(--ink-2);white-space:nowrap;max-height:80px;overflow:hidden}
+.q-cl{color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:4px}
+.q-cc{aspect-ratio:1;border-radius:2px;min-height:14px}
+.q-form{margin-top:4px;color:var(--ink-2);font-size:13px}.q-form summary{cursor:pointer;color:var(--accent)}
+.q-form ul{line-height:1.7}
+@media (max-width:900px){.q-2col{grid-template-columns:1fr}.q-health{grid-template-columns:1fr;justify-items:center}.q-rrow{grid-template-columns:90px 1fr 80px}}
+/* formulário de posição livre */
+.pf-free{margin:14px 0}.pf-free>summary{list-style:none;cursor:pointer;display:inline-block}.pf-free>summary::-webkit-details-marker{display:none}
+.pf-free-body{border:1px solid var(--border);border-radius:14px;padding:14px;margin-top:10px;background:var(--surface);display:flex;flex-direction:column;gap:10px}
+.pf-free-body label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--ink-2)}
+.pf-free-body label small{color:var(--muted)}
+.pf-free-body input,.pf-free-body select,.pf-cur{background:var(--bg,#0b111a);color:var(--ink);border:1px solid var(--border-2);border-radius:8px;padding:8px 10px;font:inherit}
+.ff-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.pf-stag.livre{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+/* dentro do Terminal: mais compacto e na paleta âmbar */
+.term .q-card{background:transparent;border:0;padding:0;margin:0}.term .q-h{display:none}
+.term .q-light,.term .q-m{border-color:var(--t-line);border-radius:0}
+.term .q-score{width:110px;height:110px}.term .q-health{grid-template-columns:120px 1fr}
+.q-alert{border:1px solid color-mix(in srgb,var(--warn) 50%,transparent);background:color-mix(in srgb,var(--warn) 10%,transparent);border-radius:10px;padding:10px 12px;font-size:12.5px;line-height:1.5;margin:6px 0}
+.q-fleg{flex-wrap:wrap;margin-top:6px}

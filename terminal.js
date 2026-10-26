@@ -191,6 +191,22 @@
         <td class="num">${nf(p.alloc_pct, 1)}%</td><td class="num">${nf(p.entry)}</td><td class="num">${nf(p.current_price)}</td><td class="num ${cls(p.ret_pct)}">${pct(p.ret_pct)}</td></tr>`).join("")}</tbody></table>
       <div class="term-foot"><a href="members.html#portfolio">${tx("Abrir o portfólio completo", "Open full portfolio")} →</a></div></div>`;
   }
+  // ---- análise quant do portfólio (portfolio_analytics.py → portfolio_stats.data.analytics), desenhada pelo quant.js ----
+  let PFA;
+  async function pfA() {
+    if (PFA !== undefined) return PFA;
+    if (API.preview) { try { PFA = await (await fetch("data/pf_analytics_preview.json")).json(); } catch (e) { PFA = null; } return PFA; }
+    if (!API.sb || !API.user) return null;
+    const { data } = await API.sb.from("portfolio_stats").select("data").eq("user_id", API.user.id).maybeSingle();
+    PFA = (data && data.data && data.data.analytics) || null; return PFA;
+  }
+  const qfn = part => async host => {
+    if (!window.S7Quant) { host.innerHTML = `<div class="term-empty">quant.js…</div>`; return; }
+    const A = await pfA(); host.innerHTML = `<div class="term-scroll"></div>`;
+    window.S7Quant[part](host.firstChild, A, { lang: API.lang });
+    if (part === "health" && A && !A.vazio) host.firstChild.insertAdjacentHTML("beforeend",
+      `<div class="term-foot">${["PRSK", "PDD", "FRONT", "OPT", "PCOR"].map(k => `<a class="term-tk" data-go="${k}">${k}</a>`).join(" · ")} · <a href="members.html#portfolio">${tx("portfólio completo", "full portfolio")} →</a></div>`);
+  };
   const FN = {
     HELP: { g: 0, n: ["Ajuda — lista de funções", "Help — function list"], run: h => help(h) },
     WEI: { g: 1, n: ["Bolsas do mundo", "World equity indices"], run: h => quotes(h, [
@@ -229,8 +245,17 @@
       : tv(h, "timeline", { width: "100%", height: "100%", feedMode: "symbol", symbol: tvSym(a), displayMode: "regular" })) },
     SIG: { g: 5, a: "BR|US", n: ["Sinais Seven7 do seu plano", "Your Seven7 signals"], run: sig },
     PORT: { g: 5, n: ["Seu portfólio", "Your portfolio"], run: port },
+    PHLT: { g: 6, n: ["Saúde do portfólio (nota, semáforos, diagnóstico)", "Portfolio health (score, lights, diagnosis)"], run: qfn("health") },
+    PRSK: { g: 6, n: ["Risco: quem carrega o risco + números", "Risk: who carries it + key numbers"], run: async h => {
+      h.innerHTML = '<div class="term-scroll"><div class="pa"></div><div class="pb" style="margin-top:12px"></div></div>';
+      const A = await pfA(); if (!window.S7Quant) return;
+      window.S7Quant.metrics(h.querySelector(".pa"), A, { lang: API.lang }); window.S7Quant.risk(h.querySelector(".pb"), A, { lang: API.lang }); } },
+    PDD: { g: 6, n: ["Drawdown do portfólio", "Portfolio drawdown"], run: qfn("dd") },
+    FRONT: { g: 6, n: ["Fronteira eficiente — onde você está", "Efficient frontier — where you stand"], run: qfn("frontier") },
+    OPT: { g: 6, n: ["Otimização HRP (López de Prado)", "HRP optimization (López de Prado)"], run: qfn("hrp") },
+    PCOR: { g: 6, n: ["Correlação entre seus ativos", "Correlation between your assets"], run: qfn("corr") },
   };
-  const GROUPS = [["Geral", "General"], ["Mercados", "Markets"], ["Notícias e agenda", "News & calendar"], ["Juros e macro", "Rates & macro"], ["Ativo (digite o código antes)", "Security (type the ticker first)"], ["Seven7", "Seven7"]];
+  const GROUPS = [["Geral", "General"], ["Mercados", "Markets"], ["Notícias e agenda", "News & calendar"], ["Juros e macro", "Rates & macro"], ["Ativo (digite o código antes)", "Security (type the ticker first)"], ["Seven7", "Seven7"], ["Seu portfólio — quant", "Your portfolio — quant"]];
   function help(host) {
     host.innerHTML = `<div class="term-scroll"><p class="term-hint">${tx("Digite na barra de comando: <b>PETR4 GP</b>, <b>AAPL FA</b>, <b>TOP</b>, <b>ECO BR</b>. Um ativo sozinho abre o gráfico. Atalhos: <b>/</b> foca a barra · <b>Alt+1…4</b> escolhe o painel · <b>Esc</b> sai.",
       "Type in the command bar: <b>PETR4 GP</b>, <b>AAPL FA</b>, <b>TOP</b>, <b>ECO BR</b>. A ticker alone opens the chart. Keys: <b>/</b> command bar · <b>Alt+1…4</b> pick panel · <b>Esc</b> leave.")}</p>
@@ -246,9 +271,10 @@
     ATIVO: [["GP", "PETR4"], ["DES", "PETR4"], ["FA", "PETR4"], ["CN", "PETR4"]],
     MACRO: [["BTMM"], ["ECO"], ["GC"], ["FX"]],
     SEVEN7: [["SIG"], ["MOST"], ["PORT"], ["BRN"]],
+    QUANT: [["PHLT"], ["FRONT"], ["PRSK"], ["OPT"]],
   };
   let PANELS = null, FOCUS = 0;
-  const OWN = ["TOP", "BRN", "WN", "CB", "BTMM", "GC", "MOST", "SIG", "PORT", "HELP"];   // painéis com dados Seven7
+  const OWN = ["TOP", "BRN", "WN", "CB", "BTMM", "GC", "MOST", "SIG", "PORT", "HELP", "PHLT", "PRSK", "PDD", "FRONT", "OPT", "PCOR"];   // painéis com dados Seven7
   const ownPanel = ([fn, a]) => OWN.includes(fn) || (fn === "CN" && isB3((a || "").toUpperCase()));
   function save() { LS.set("s7-term", JSON.stringify({ p: PANELS, f: FOCUS })); }
   function shell() {
@@ -259,7 +285,7 @@
           <button type="submit">GO</button><datalist id="termFns">${Object.keys(FN).map(k => `<option value="${k}">`).join("")}</datalist></form>
         <div class="term-clocks" id="termClocks"></div></div>
       <div class="term-tape" id="termTape"></div>
-      <div class="term-keys">${["HELP", "WEI", "TOP", "ECO", "BTMM", "MOST", "HMAP BR", "EQS", "FX", "CMDTY", "SIG", "PORT"].map(k => `<button data-go="${k}">${k}</button>`).join("")}
+      <div class="term-keys">${["HELP", "WEI", "TOP", "ECO", "BTMM", "MOST", "HMAP BR", "EQS", "FX", "CMDTY", "SIG", "PORT", "PHLT"].map(k => `<button data-go="${k}">${k}</button>`).join("")}
         <span class="term-sep"></span>${Object.keys(LAYOUTS).map(k => `<button class="term-lay" data-lay="${k}">${k}</button>`).join("")}</div>
       <div class="term-status" id="termStatus"></div>
       <div class="term-grid" id="termGrid">${[0, 1, 2, 3].map(i => `<section class="term-panel" data-i="${i}">
@@ -339,7 +365,7 @@
           PANELS.forEach((p, i) => { if (ownPanel(p) && p[0] !== "PORT") paint(i); });
         }, 5 * 60 * 1000);
       } else {                                            // login/sessão mudou: só os painéis com dados Seven7 (não recria widgets)
-        await loadFeeds(true); SIGS = null;
+        await loadFeeds(true); SIGS = null; PFA = undefined;
         PANELS.forEach((p, i) => { if (ownPanel(p)) paint(i); });
       }
     },
