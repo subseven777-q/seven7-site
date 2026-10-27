@@ -1,60 +1,53 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="pt-BR" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Seven7 — Quantified Investing</title>
-<meta name="description" content="Seven7 — quantified investing. Systematic stock signals for the US and Brazil, with 10 years of real, auditable results.">
-<link rel="stylesheet" href="styles.css?v=68">
+<title>Seven7 — Plataforma de quantificação de carteiras</title>
+<meta name="description" content="Seven7 — quantifique sua carteira em 1 minuto: volatilidade, drawdown, VaR, contribuição ao risco, HRP e fronteira eficiente. Ações BR/EUA, FIIs, ETFs, cripto e renda fixa. Grátis.">
+<link rel="stylesheet" href="styles.css?v=69">
 </head>
 <body data-page="home">
 <div id="nav-root"></div>
 
-<section class="hero" id="top">
-  <div class="hero-inner hero-split">
-    <div class="hero-copy">
-      <div class="eyebrow-chip"><span class="live-dot"></span><span data-i18n="hero.eyebrow"></span></div>
-      <h1 data-i18n-html="hero.h1"></h1>
-      <p class="lede" data-i18n-html="hero.lede"></p>
-      <div class="hero-actions">
-        <a class="btn btn-primary btn-lg" href="register.html" data-i18n="hero.cta1"></a>
-        <a class="btn btn-ghost btn-lg" href="performance.html" data-i18n="hero.cta2"></a>
-      </div>
-      <ul class="hero-perks" id="heroPerks"></ul>
-    </div>
-    <div class="hero-visual" id="heroGrowth"></div>
-  </div>
+<section class="hero hero-quant" id="top">
   <div class="hero-inner">
-    <div class="hero-stats" id="heroStats"></div>
-    <div class="updated" id="updated"></div>
+    <div class="eyebrow-chip"><span class="live-dot"></span><span data-pt="Plataforma quant · grátis" data-en="Quant platform · free"></span></div>
+    <h1 data-pt-html='Quantifique sua carteira<br>em <span class="accent">1 minuto.</span>' data-en-html='Quantify your portfolio<br>in <span class="accent">1 minute.</span>'></h1>
+    <p class="lede" data-pt="Risco, drawdown, VaR, quem carrega o risco, alocação HRP e fronteira eficiente — com os métodos dos fundos quantitativos. Ações BR e EUA, FIIs, ETFs, cripto e renda fixa, em reais ou dólares."
+       data-en="Risk, drawdown, VaR, who carries the risk, HRP allocation and efficient frontier — with the methods quant funds use. BR and US stocks, REITs, ETFs, crypto and fixed income, in BRL or USD."></p>
+    <ul class="hero-perks">
+      <li data-pt="✓ Grátis" data-en="✓ Free"></li><li data-pt="✓ Sem cadastro para testar" data-en="✓ No sign-up to try"></li><li data-pt="✓ 2 anos de dados diários" data-en="✓ 2 years of daily data"></li>
+    </ul>
   </div>
 </section>
 
-<section class="section" id="howItWorks">
-  <div class="section-head center">
-    <div class="kicker" data-i18n="how.kicker"></div>
-    <h2 data-i18n="how.h2"></h2>
-  </div>
-  <div class="steps" id="howSteps"></div>
+<section class="section qq-section" id="quantificar">
+  <div id="qqHost"></div>
 </section>
-
-<section class="section" style="padding-top:0;padding-bottom:0"><div id="cherryTeaser"></div></section>
 
 <section class="section">
-  <div class="section-head">
-    <div class="kicker" data-i18n="home.explore"></div>
-    <h2 data-i18n="home.exploreH"></h2>
+  <div class="section-head center">
+    <div class="kicker" data-pt="A PLATAFORMA" data-en="THE PLATFORM"></div>
+    <h2 data-pt="Tudo o que um gestor quant olha. De graça." data-en="Everything a quant manager looks at. For free."></h2>
   </div>
-  <div class="home-cards" id="homeCards"></div>
+  <div class="home-cards" id="platFeats"></div>
 </section>
 
-<section class="section section-alt" id="trust">
+<section class="section section-alt" id="estrategias">
   <div class="section-head">
-    <div class="kicker" data-i18n="trust.kicker"></div>
-    <h2 data-i18n="trust.h2"></h2>
-    <p class="sub" data-i18n="trust.sub"></p>
+    <div class="kicker" data-pt="ESTRATÉGIAS SEVEN7 · PLANOS PAGOS" data-en="SEVEN7 STRATEGIES · PAID PLANS"></div>
+    <h2 data-pt="Quer ir além de medir? Siga as estratégias." data-en="Want more than measuring? Follow the strategies."></h2>
+    <p class="sub" data-pt="Markov 3 (ações EUA + Brasil), carteira de Dividendos, sinal de Hedge e opções — regras fixas, 10 anos de histórico auditável."
+       data-en="Markov 3 (US + Brazil stocks), Dividend portfolio, Hedge signal and options — fixed rules, 10 years of auditable history."></p>
   </div>
-  <div class="rules" id="trustGrid"></div>
+  <div class="hero-split strat-split">
+    <div><div class="hero-stats" id="heroStats"></div><div class="updated" id="updated"></div></div>
+    <div class="hero-visual" id="heroGrowth"></div>
+  </div>
+  <div style="margin-top:28px"><div id="cherryTeaser"></div></div>
+  <div class="home-cards" id="homeCards" style="margin-top:28px"></div>
+  <div class="rules" id="trustGrid" style="margin-top:28px"></div>
 </section>
 
 <section class="section" id="homePlans">
@@ -74,6 +67,8 @@
 </section>
 
 <div id="footer-root"></div>
-<script src="app.js?v=70"></script>
+<script src="app.js?v=71"></script>
+<script src="quant.js?v=1"></script>
+<script src="platform.js?v=2"></script>
 </body>
 </html>

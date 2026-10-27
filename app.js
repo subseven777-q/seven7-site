@@ -112,6 +112,18 @@
     "hero.perk3": { en: "US + Brazil", pt: "EUA + Brasil" },
     "nav.desk": { en: "My desk", pt: "Minha mesa" },
     "nav.terminal": { en: "Terminal", pt: "Terminal" },
+    "nav.quant": { en: "Quantify", pt: "Quantificar" },
+    "nav.tools": { en: "Tools", pt: "Ferramentas" },
+    "nav.strats": { en: "Strategies", pt: "Estratégias" },
+    "nav.stratM3": { en: "Markov 3 — results", pt: "Markov 3 — resultados" },
+    "nav.free": { en: "Create free account", pt: "Criar conta grátis" },
+    "term.gateLogin": { en: "The Seven7 Terminal is free: news, macro, quotes and your portfolio quant. Create your account (or log in) to open it.", pt: "O Terminal Seven7 é grátis: notícias, macro, cotações e a quantificação da sua carteira. Crie sua conta (ou entre) para abrir." },
+    "mem.stratLock": { en: "This area belongs to the paid strategies (Markov 3, Dividends, Hedge, options and videos). Your portfolio quant, the Terminal and the Tools are free.", pt: "Esta área é das estratégias pagas (Markov 3, Dividendos, Hedge, opções e vídeos). A quantificação da sua carteira, o Terminal e as Ferramentas são grátis." },
+    "plan.freeTier": { en: "FREE", pt: "GRATUITO" },
+    "plan.freePrice": { en: "forever", pt: "para sempre" },
+    "plan.freeCta": { en: "Create free account", pt: "Criar conta grátis" },
+    "plan.freeIn": { en: "You're on it ✓", pt: "Você já tem ✓" },
+    "plan.allFree": { en: "Everything in Free, plus:", pt: "Tudo do Gratuito, mais:" },
     "desk.termT": { en: "Seven7 Terminal", pt: "Terminal Seven7" },
     "desk.termD": { en: "Markets, news, economic calendar, charts, fundamentals and your signals — in one keyboard-driven screen.", pt: "Mercados, notícias, calendário econômico, gráficos, fundamentos e seus sinais — numa tela só, operada pelo teclado." },
     "desk.termOpen": { en: "Open terminal", pt: "Abrir terminal" },
@@ -193,8 +205,8 @@
     "trust.b3": { en: "Every trade recorded and marked to market — numbers, not narrative.", pt: "Toda operação registrada e marcada a mercado — números, não narrativa." },
     "trust.b4": { en: "Validated against 10,000 random strategies before going live.", pt: "Validado contra 10 mil estratégias aleatórias antes de ir ao ar." },
     "pricing.kicker": { en: "PLANS", pt: "PLANOS" },
-    "pricing.h2": { en: "Three tiers. One model.", pt: "Três níveis. Um modelo." },
-    "pricing.sub": { en: "Launch pricing. Start with a 7-day free trial — no card.", pt: "Preço de lançamento. Comece com 7 dias grátis — sem cartão." },
+    "pricing.h2": { en: "The platform is free. Strategies, when you want them.", pt: "A plataforma é grátis. As estratégias, quando você quiser." },
+    "pricing.sub": { en: "Portfolio quant, Terminal and Tools: free forever. Strategies, hedge and options: paid plans with a 7-day free trial — no card.", pt: "Quantificação, Terminal e Ferramentas: grátis para sempre. Estratégias, hedge e opções: planos pagos com 7 dias grátis — sem cartão." },
     "billing.monthly": { en: "Monthly", pt: "Mensal" },
     "billing.annual": { en: "Annual", pt: "Anual" },
     "billing.save": { en: "save up to 20%", pt: "economize até 20%" },
@@ -811,7 +823,7 @@
         [true, { en: "Full strategy — US (S&P 100) + Brazil (Ibovespa)", pt: "Estratégia completa — EUA (S&P 100) + Brasil (Ibovespa)" }],
         [true, { en: "💰 Dividend income portfolio — US + Brazil", pt: "💰 Carteira de renda com dividendos — EUA + Brasil" }],
         [true, { en: "Live positions + watchlist", pt: "Posições ao vivo + watchlist" }],
-        [true, { en: "Complete quantitative metrics", pt: "Métricas quantitativas completas" }],
+        [true, { en: "Complete strategy metrics (per trade, per asset)", pt: "Métricas completas das estratégias (por operação e por ativo)" }],
         [true, { en: "YouTube members area — weekly videos & community", pt: "Área de membros no YouTube — vídeos semanais e comunidade" }],
         [true, { en: "Exclusive Hedge signal — an uncorrelated protection asset for market stress", pt: "Sinal de Hedge exclusivo — ativo de proteção descorrelacionado para o estresse de mercado" }, "hot"],
         [false, { en: "🍒 The cherry — an exclusive income layer", pt: "🍒 A cereja — camada de renda exclusiva" }],
@@ -891,9 +903,17 @@
       <button class="nav-burger" id="navBurger" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
       <div class="nav-collapse" id="navCollapse">
         <nav class="nav-links">
-          <a href="performance.html" data-page="performance" style="--tone:var(--c-cyan)">${ic("trend")}<span data-i18n="nav.perf"></span></a>
-          <a href="dividends.html" data-page="dividends" style="--tone:var(--c-amber)">${ic("coins")}<span data-i18n="nav.dividends"></span></a>
-          <a href="signals.html" data-page="signals" style="--tone:var(--c-green)">${ic("live")}<span data-i18n="nav.signals"></span></a>
+          <a href="index.html#quantificar" data-page="home" style="--tone:var(--c-cyan)">${ic("gauge")}<span data-i18n="nav.quant"></span></a>
+          <a href="terminal.html" data-page="terminal" style="--tone:var(--c-amber)">${ic("pulse")}<span data-i18n="nav.terminal"></span></a>
+          <a href="ferramentas.html" data-page="tools" style="--tone:var(--c-green)">${ic("target")}<span data-i18n="nav.tools"></span></a>
+          <div class="nav-drop" data-pages="performance dividends signals">
+            <a href="performance.html" class="nav-drop-btn" style="--tone:var(--c-violet)">${ic("trend")}<span data-i18n="nav.strats"></span><span class="nav-caret">▾</span></a>
+            <div class="nav-drop-menu">
+              <a href="performance.html" data-page="performance">${ic("trend")}<span data-i18n="nav.stratM3"></span></a>
+              <a href="dividends.html" data-page="dividends">${ic("coins")}<span data-i18n="nav.dividends"></span></a>
+              <a href="signals.html" data-page="signals">${ic("live")}<span data-i18n="nav.signals"></span></a>
+            </div>
+          </div>
           <a href="plans.html" data-page="plans" style="--tone:var(--c-rose)">${ic("tag")}<span data-i18n="nav.plans"></span></a>
         </nav>
         <div class="nav-cta">
@@ -904,7 +924,7 @@
           <button class="theme-toggle" id="themeToggle" title="Theme" aria-label="Theme">◐</button>
           <span class="nav-auth" id="navAuth">
             <a class="btn btn-ghost" href="login.html" data-i18n="nav.login"></a>
-            <a class="btn btn-primary" href="register.html" data-i18n="nav.trial"></a>
+            <a class="btn btn-primary" href="register.html" data-i18n="nav.free"></a>
           </span>
         </div>
       </div>
@@ -914,7 +934,7 @@
       <div class="footer-top">
         <div class="brand"><span class="brand-mark">${MARK_SVG}</span><span class="brand-name">Seven7</span></div>
         <div class="footer-links">
-          <a href="performance.html" data-i18n="nav.perf"></a><a href="performance.html#metrics" data-i18n="nav.metrics"></a><a href="performance.html#replay" data-i18n="card.replayT"></a><a href="dividends.html" data-i18n="nav.dividends"></a><a href="plans.html" data-i18n="nav.plans"></a>
+          <a href="index.html#quantificar" data-i18n="nav.quant"></a><a href="terminal.html" data-i18n="nav.terminal"></a><a href="ferramentas.html" data-i18n="nav.tools"></a><a href="performance.html" data-i18n="nav.perf"></a><a href="performance.html#metrics" data-i18n="nav.metrics"></a><a href="performance.html#replay" data-i18n="card.replayT"></a><a href="dividends.html" data-i18n="nav.dividends"></a><a href="plans.html" data-i18n="nav.plans"></a>
           <a href="terms.html" data-i18n="terms.title"></a><a href="privacy.html" data-i18n="privacy.title"></a><a href="disclosures.html" data-i18n="disc.title"></a>
         </div>
       </div>
@@ -1088,14 +1108,21 @@
     guard("#pricingGrid", () => { renderPricing(); initBilling(); });
     initAuth();
     const cp = $("#copy"); if (cp) cp.textContent = t("footer.copy");
+    if (window.S7Platform) window.S7Platform.lang();
   }
   function guard(sel, fn) { if ($(sel)) fn(); }
+  // platform.js (quantificação pública, ferramentas) lê o estado daqui — só leitura
+  window.S7App = {
+    get sb() { return sb; }, get user() { return USER; }, get lang() { return LANG; }, get preview() { return PREVIEW; },
+    get member() { return isMember(); }, url: SUPABASE_URL, anon: SUPABASE_ANON_KEY, ic: (n) => ic(n), t: (k) => t(k),
+  };
 
   function injectChrome() {
     const n = $("#nav-root"); if (n) n.innerHTML = NAV_HTML;
     const f = $("#footer-root"); if (f) f.innerHTML = FOOTER_HTML;
     const page = document.body.dataset.page;
     $$(".nav-links a[data-page]").forEach(a => a.classList.toggle("active", a.dataset.page === page));
+    $$(".nav-drop").forEach(d => d.querySelector(".nav-drop-btn").classList.toggle("active", d.dataset.pages.split(" ").includes(page)));
     const burger = $("#navBurger"), nav = n && n.querySelector(".nav");
     if (burger && nav) {
       const close = () => { nav.classList.remove("open"); burger.setAttribute("aria-expanded", "false"); };
@@ -1112,6 +1139,8 @@
     $$("[data-i18n]").forEach(el => { const v = t(el.getAttribute("data-i18n")); if (v != null) el.textContent = v; });
     $$("[data-i18n-html]").forEach(el => { const v = t(el.getAttribute("data-i18n-html")); if (v != null) el.innerHTML = v; });
     $$("[data-langsec]").forEach(el => { el.hidden = el.getAttribute("data-langsec") !== LANG; });   // blocos legais por idioma
+    $$("[data-pt]").forEach(el => { el.textContent = el.getAttribute(LANG === "en" ? "data-en" : "data-pt"); });   // textos bilíngues no próprio HTML
+    $$("[data-pt-html]").forEach(el => { el.innerHTML = el.getAttribute(LANG === "en" ? "data-en-html" : "data-pt-html"); });
     document.documentElement.lang = LANG;
   }
 
@@ -1527,7 +1556,22 @@
   function renderPricing() {
     const brl = brlOn();
     const cur = brl ? "R$" : "$";
-    $("#pricingGrid").innerHTML = PLANS.map(p => {
+    const FREE_FEATS = [
+      { en: "Full portfolio quant — volatility, drawdown, VaR/ES, beta, risk contribution", pt: "Quantificação completa da carteira — volatilidade, drawdown, VaR/ES, beta, contribuição ao risco" },
+      { en: "HRP (López de Prado) allocation + efficient frontier", pt: "Alocação HRP (López de Prado) + fronteira eficiente" },
+      { en: "Any asset: BR/US stocks, FIIs, ETFs, crypto, fixed income (CDI, IPCA+, fixed rate)", pt: "Qualquer ativo: ações BR/EUA, FIIs, ETFs, cripto, renda fixa (CDI, IPCA+, Pré)" },
+      { en: "Seven7 Terminal — news, macro, curves, quotes, heatmaps", pt: "Terminal Seven7 — notícias, macro, curvas, cotações, mapas de calor" },
+      { en: "Quant tools — position size, VaR, Kelly, drawdown, diversification", pt: "Ferramentas quant — tamanho de posição, VaR, Kelly, drawdown, diversificação" },
+      { en: "Portfolio in BRL or USD, updated daily", pt: "Carteira em BRL ou USD, atualizada todo dia" },
+    ];
+    const freeCard = `<div class="price-card price-free" style="--tone:var(--c-green)">
+        <div class="price-tier"><span class="pt-ic">${ic("gauge")}</span>${t("plan.freeTier")}</div>
+        <div class="price-amt">${cur}0 <span>${t("plan.freePrice")}</span></div>
+        <div class="price-sub">${t("price.cancel")}</div>
+        <ul class="price-feats">${FREE_FEATS.map(f => `<li>${f[LANG]}</li>`).join("")}</ul>
+        ${USER && USER.id !== "preview" ? `<a class="btn btn-ghost btn-block" href="members.html">${t("plan.freeIn")}</a>` : `<a class="btn btn-ghost btn-block" href="register.html">${t("plan.freeCta")}</a>`}
+      </div>`;
+    $("#pricingGrid").innerHTML = freeCard + PLANS.map(p => {
       const bp = brl ? BRL_PRICES[p.tier] : null;
       const mo = brl ? bp.monthly : p.monthly;
       const annualBilled = brl ? bp.annual : Math.round(p.monthly * (1 - p.disc)) * 12;
@@ -1545,7 +1589,7 @@
         <div class="price-tier"><span class="pt-ic">${ic(tierUi[0])}</span>${p.tier}</div>
         <div class="price-amt">${cur}${price} <span>${t("price.perMonth")}</span></div>
         <div class="price-sub">${sub}</div>
-        <ul class="price-feats">${feats}</ul>
+        <ul class="price-feats"><li class="all-free">${t("plan.allFree")}</li>${feats}</ul>
         <a class="btn ${p.featured ? "btn-primary" : "btn-ghost"} btn-block" data-tier="${p.tier}" href="#">${p.cta[LANG]}</a>
         ${brl && PIX_ENABLED ? ((CYCLE === "annual" ? annualBilled : mo) > PIX_MAX_BRL
           ? `<div class="pix-note">${PIX_SVG}${t("pix.limitNote")}</div>`
@@ -1618,12 +1662,11 @@
     if (USER) {
       const name = USER.user_metadata?.name || USER.email;
       const badge = isMember() ? `<span class="nav-plan">${(PROFILE.plan || "").toUpperCase()}${isTrial() ? " · " + t("trial.tag") : ""}</span>` : "";
-      const desk = `<a class="btn btn-desk" href="members.html">${ic("desk")}${t("nav.desk")}</a>`
-        + (isMember() ? `<a class="btn btn-desk btn-term" href="terminal.html">${ic("gauge")}${t("nav.terminal")}</a>` : "");
+      const desk = `<a class="btn btn-desk" href="members.html">${ic("desk")}${t("nav.desk")}</a>`;
       host.innerHTML = `${desk}<a class="nav-user" href="account.html" title="${esc(USER.email)}">${ic("user")}<span class="nav-name">${esc(name)}</span>${badge}</a><button class="btn btn-ghost" id="logoutBtn">${t("auth.logout")}</button>`;
       const lb = $("#logoutBtn"); if (lb) lb.onclick = async () => { if (sb) await sb.auth.signOut(); location.href = "index.html"; };
     } else {
-      host.innerHTML = `<a class="btn btn-ghost" href="login.html">${t("nav.login")}</a><a class="btn btn-primary" href="register.html">${t("nav.trial")}</a>`;
+      host.innerHTML = `<a class="btn btn-ghost" href="login.html">${t("nav.login")}</a><a class="btn btn-primary" href="register.html">${t("nav.free")}</a>`;
     }
   }
   function wireAuthForms() {
@@ -2850,13 +2893,21 @@
     const teaser = (msgKey, btnKey, href) =>
       `<section class="section"><div class="div-siglock" style="max-width:640px;margin:0 auto"><p>${t(msgKey)}</p><a class="btn btn-primary" href="${href}">${t(btnKey)}</a></div></section>`;
     if (!USER) { gate.innerHTML = teaser("mem.gateLogin", "mem.login", "login.html"); if (content) content.hidden = true; return; }
-    if (!isMember()) { gate.innerHTML = teaser(pixExpired() ? "pix.ended" : trialExpired() ? "trial.ended" : "mem.gateUpgrade", "mem.plans", "plans.html"); if (content) content.hidden = true; return; }
     gate.innerHTML = ""; if (content) content.hidden = false;
+    // plataforma GRÁTIS p/ qualquer conta: portfólio + quant + terminal. Estratégias (Markov 3, Dividendos, vídeos) = pagas
+    const member = isMember();
+    $$('.view[data-view="markov3"], .view[data-view="dividends"], .view[data-view="videos"]').forEach(v => {
+      [...v.children].forEach(c => { if (!c.classList.contains("strat-lock")) c.hidden = !member; });
+      let lk = v.querySelector(":scope > .strat-lock");
+      if (!member && !lk) { lk = elh("div", "strat-lock"); v.prepend(lk); }
+      if (lk) { lk.hidden = member; if (!member) lk.innerHTML = teaser(pixExpired() ? "pix.ended" : trialExpired() ? "trial.ended" : "mem.stratLock", "mem.plans", "plans.html"); }
+    });
     const tc = $("#termCta");
     if (tc) tc.innerHTML = `<a class="term-cta" href="terminal.html"><span class="term-cta-ic">${ic("gauge")}</span>
       <span class="term-cta-txt"><b>${t("desk.termT")}</b><small>${t("desk.termD")}</small></span>
       <span class="btn btn-primary">${t("desk.termOpen")} →</span></a>`;
     initDeskViews();
+    if (!member) { renderPortfolio(); return; }
     if (DATA) guard("#po3Tabs", () => initSection(["US", "BR"], "#po3Tabs", renderPO3Panel));
     renderDividends(); renderVideos(); renderPortfolio(); renderKmlmCard(); renderCoveredCallMembers();
   }
@@ -2869,11 +2920,10 @@
     }
     const teaser = (msgKey, btnKey, href) =>
       `<section class="section"><div class="div-siglock" style="max-width:640px;margin:0 auto"><p>${t(msgKey)}</p><a class="btn btn-primary" href="${href}">${t(btnKey)}</a></div></section>`;
-    if (!USER) { gate.innerHTML = teaser("mem.gateLogin", "mem.login", "login.html"); root.hidden = true; return; }
-    if (!isMember()) { gate.innerHTML = teaser(pixExpired() ? "pix.ended" : trialExpired() ? "trial.ended" : "mem.gateUpgrade", "mem.plans", "plans.html"); root.hidden = true; return; }
+    if (!USER) { gate.innerHTML = teaser("term.gateLogin", "nav.free", "register.html"); root.hidden = true; return; }
     gate.innerHTML = ""; root.hidden = false;
     // terminal.js pode ainda não ter carregado: deixa a API pendente e ele dá o boot quando chegar
-    const api = { sb, user: USER, plan: (PROFILE && PROFILE.plan) || "", lang: LANG, preview: PREVIEW, payload: fetchMemberPayload };
+    const api = { sb, user: USER, plan: (PROFILE && PROFILE.plan) || "", member: isMember(), lang: LANG, preview: PREVIEW, payload: fetchMemberPayload };
     if (window.S7Terminal) window.S7Terminal.boot(api); else window.__S7_TERM_API = api;
   }
   async function renderKmlmCard() {

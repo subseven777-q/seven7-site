@@ -161,6 +161,11 @@
     host.innerHTML = `<div class="term-scroll">${blocks}<div class="term-foot">${tx("Bolsa inteira:", "Whole exchange:")} <a class="term-tk" data-go="MOV BR">MOV BR</a> · <a class="term-tk" data-go="MOV US">MOV US</a></div></div>`;
   }
   async function sig(host, arg) {
+    if (!API.member && !API.preview) {
+      host.innerHTML = `<div class="term-empty">${tx("Sinais das estratégias Seven7 (Markov 3, Dividendos, Hedge) são dos planos pagos.", "Seven7 strategy signals (Markov 3, Dividends, Hedge) are in the paid plans.")}
+        <br><a class="term-tk" href="plans.html">${tx("Ver planos →", "See plans →")}</a></div>`;
+      return;
+    }
     if (!API.sb || API.preview) { host.innerHTML = `<div class="term-empty">${tx("Os sinais aparecem com login de membro (fora da prévia local).", "Signals show with a member login (not in local preview).")}</div>`; return; }
     if (!SIGS) { const { data } = await API.sb.from("signals").select("ticker,market,state,price,entry,stop,tp,updated_at"); SIGS = (data || []).filter(s => !s.ticker.startsWith("__")); }
     const mk = (arg || "").toUpperCase();
