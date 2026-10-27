@@ -1,6 +1,6 @@
 {
-  "generated": "2026-10-26 19:04",
-  "data_through": "2026-10-23",
+  "generated": "2026-10-27 19:05",
+  "data_through": "2026-10-27",
   "markets": {
     "BR": {
       "code": "BR",
@@ -8,41 +8,41 @@
       "currency": "R$",
       "years": 10,
       "headline": {
-        "yield_on_cost_pct": 10.08,
-        "total_return_drip_pct": 154.9,
-        "total_return_income_pct": 120.1,
-        "div_collected_pct": 47.1,
-        "annual_income_per_100k": 10077.0,
-        "invested_base": 762000.0
+        "yield_on_cost_pct": 10.29,
+        "total_return_drip_pct": 127.0,
+        "total_return_income_pct": 100.5,
+        "div_collected_pct": 46.5,
+        "annual_income_per_100k": 10293.0,
+        "invested_base": 768000.0
       },
       "benchmarks": [
         {
           "key": "index",
           "label": "BOVA11",
-          "ret": 102.0
+          "ret": 72.2
         },
         {
           "key": "divetf",
           "label": "DIVO11",
-          "ret": 132.3
+          "ret": 99.0
         },
         {
           "key": "riskfree",
           "label": "CDI",
-          "ret": 69.6
+          "ret": 43.5
         }
       ],
       "salary_by_year": {
-        "2016": 230.83,
-        "2017": 2684.08,
-        "2018": 11370.65,
-        "2019": 14953.3,
-        "2020": 17062.66,
-        "2021": 43646.18,
-        "2022": 51969.4,
-        "2023": 48205.46,
-        "2024": 50262.37,
-        "2025": 73971.3
+        "2016": 151.29,
+        "2017": 2553.97,
+        "2018": 11058.27,
+        "2019": 14724.87,
+        "2020": 16872.33,
+        "2021": 43397.02,
+        "2022": 51743.11,
+        "2023": 47948.27,
+        "2024": 49973.01,
+        "2025": 73645.08
       },
       "core_count": 20,
       "formula_baskets": {
@@ -50,27 +50,27 @@
         "years": 10,
         "fscore": {
           "n": 5,
-          "total_return_drip_pct": 205.2,
-          "total_return_income_pct": 154.9,
-          "yield_on_cost_pct": 10.9,
-          "current_yield_pct": 5.19,
-          "annual_income_per_100k": 10938.0
+          "total_return_drip_pct": 162.7,
+          "total_return_income_pct": 126.6,
+          "yield_on_cost_pct": 11.0,
+          "current_yield_pct": 6.0,
+          "annual_income_per_100k": 10975.0
         },
         "magic": {
           "n": 5,
-          "total_return_drip_pct": 253.8,
-          "total_return_income_pct": 200.9,
-          "yield_on_cost_pct": 12.6,
-          "current_yield_pct": 5.02,
-          "annual_income_per_100k": 12560.0
+          "total_return_drip_pct": 204.2,
+          "total_return_income_pct": 164.2,
+          "yield_on_cost_pct": 12.5,
+          "current_yield_pct": 5.82,
+          "annual_income_per_100k": 12473.0
         },
         "cons": {
           "n": 5,
-          "total_return_drip_pct": 156.7,
-          "total_return_income_pct": 117.6,
+          "total_return_drip_pct": 141.2,
+          "total_return_income_pct": 108.3,
           "yield_on_cost_pct": 12.4,
-          "current_yield_pct": 8.16,
-          "annual_income_per_100k": 12402.0
+          "current_yield_pct": 8.61,
+          "annual_income_per_100k": 12351.0
         }
       }
     },
@@ -80,23 +80,23 @@
       "currency": "$",
       "years": 10,
       "headline": {
-        "yield_on_cost_pct": 4.84,
-        "total_return_drip_pct": 110.8,
-        "total_return_income_pct": 98.9,
+        "yield_on_cost_pct": 4.86,
+        "total_return_drip_pct": 113.3,
+        "total_return_income_pct": 101.1,
         "div_collected_pct": 18.4,
-        "annual_income_per_100k": 4837.0,
-        "invested_base": 910000.0
+        "annual_income_per_100k": 4862.0,
+        "invested_base": 911000.0
       },
       "benchmarks": [
         {
           "key": "index",
           "label": "S&P 500",
-          "ret": 93.6
+          "ret": 95.8
         },
         {
           "key": "divetf",
           "label": "SCHD",
-          "ret": 73.7
+          "ret": 73.0
         },
         {
           "key": "riskfree",
@@ -119,26 +119,26 @@
         "years": 10,
         "fscore": {
           "n": 5,
-          "total_return_drip_pct": 102.8,
-          "total_return_income_pct": 96.6,
+          "total_return_drip_pct": 103.1,
+          "total_return_income_pct": 96.9,
           "yield_on_cost_pct": 4.7,
           "current_yield_pct": 2.53,
           "annual_income_per_100k": 4665.0
         },
         "magic": {
           "n": 5,
-          "total_return_drip_pct": 81.0,
-          "total_return_income_pct": 71.6,
+          "total_return_drip_pct": 81.7,
+          "total_return_income_pct": 72.2,
           "yield_on_cost_pct": 4.2,
-          "current_yield_pct": 2.71,
-          "annual_income_per_100k": 4243.0
+          "current_yield_pct": 2.69,
+          "annual_income_per_100k": 4240.0
         },
         "cons": {
           "n": 5,
-          "total_return_drip_pct": 91.8,
-          "total_return_income_pct": 75.6,
+          "total_return_drip_pct": 88.9,
+          "total_return_income_pct": 73.2,
           "yield_on_cost_pct": 6.2,
-          "current_yield_pct": 4.12,
+          "current_yield_pct": 4.19,
           "annual_income_per_100k": 6219.0
         }
       }
