@@ -1,31 +1,31 @@
 {
-  "last_run": "2026-11-03T22:05:01+00:00",
+  "last_run": "2026-11-04T22:07:12+00:00",
   "success": true,
-  "data_through": "2026-11-03",
+  "data_through": "2026-11-04",
   "steps": [
     {
       "step": "update_data",
       "ok": true,
       "returncode": 0,
-      "seconds": 52.0
+      "seconds": 40.0
     },
     {
       "step": "build_metrics",
       "ok": true,
       "returncode": 0,
-      "seconds": 25.0
+      "seconds": 20.0
     },
     {
       "step": "build_risk_levels",
       "ok": true,
       "returncode": 0,
-      "seconds": 24.0
+      "seconds": 22.0
     },
     {
       "step": "compute_fscores",
       "ok": true,
       "returncode": 0,
-      "seconds": 2.0
+      "seconds": 111.0
     },
     {
       "step": "compute_formulas",
@@ -37,13 +37,13 @@
       "step": "build_dividends",
       "ok": true,
       "returncode": 0,
-      "seconds": 79.0
+      "seconds": 42.0
     },
     {
       "step": "push_signals",
       "ok": true,
       "returncode": 0,
-      "seconds": 1.0
+      "seconds": 2.0
     },
     {
       "step": "push_dividend_signals",
@@ -55,25 +55,25 @@
       "step": "update_portfolios",
       "ok": true,
       "returncode": 0,
-      "seconds": 40.0
+      "seconds": 92.0
     },
     {
       "step": "portfolio_analytics",
       "ok": true,
       "returncode": 0,
-      "seconds": 7.0
+      "seconds": 10.0
     },
     {
       "step": "quant_matrix",
       "ok": true,
       "returncode": 0,
-      "seconds": 58.0
+      "seconds": 78.0
     },
     {
       "step": "compute_betas",
       "ok": true,
       "returncode": 0,
-      "seconds": 3.0
+      "seconds": 5.0
     },
     {
       "step": "measure_theta",
