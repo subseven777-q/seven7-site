@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-04 19:03",
+  "generated": "2026-11-05 19:04",
   "data_through": "2026-11-03",
   "markets": {
     "BR": {
@@ -29,7 +29,7 @@
         {
           "key": "riskfree",
           "label": "CDI",
-          "ret": 69.0
+          "ret": 69.1
         }
       ],
       "salary_by_year": {
@@ -58,19 +58,19 @@
         },
         "magic": {
           "n": 5,
-          "total_return_drip_pct": 131.1,
-          "total_return_income_pct": 105.1,
-          "yield_on_cost_pct": 10.2,
-          "current_yield_pct": 6.45,
-          "annual_income_per_100k": 10226.0
+          "total_return_drip_pct": 183.2,
+          "total_return_income_pct": 149.0,
+          "yield_on_cost_pct": 12.3,
+          "current_yield_pct": 6.19,
+          "annual_income_per_100k": 12340.0
         },
         "cons": {
           "n": 5,
-          "total_return_drip_pct": 129.1,
-          "total_return_income_pct": 101.2,
-          "yield_on_cost_pct": 12.3,
-          "current_yield_pct": 9.05,
-          "annual_income_per_100k": 12346.0
+          "total_return_drip_pct": 116.9,
+          "total_return_income_pct": 88.7,
+          "yield_on_cost_pct": 11.6,
+          "current_yield_pct": 8.73,
+          "annual_income_per_100k": 11649.0
         }
       }
     },
