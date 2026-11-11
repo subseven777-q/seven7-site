@@ -195,6 +195,85 @@
     dd(g("qDD"), A, o); hrpView(g("qHRP"), A, o); corr(g("qCorr"), A, o); formulas(g("qForm"));
   }
 
-  window.S7Quant = { full, health, metrics, risk, dd, frontier, hrp: hrpView, corr, formulas };
+
+  // ---------------- imagem da nota p/ redes sociais (Stories 1080×1920 · Feed 1080×1350) ----------------
+  // Só a nota e os 5 semáforos — SEM nome de ativo e SEM valores: dá para postar sem expor a carteira.
+  const IMG_T = {
+    risco: [["Risco", "Risk"], [["acima do mercado", "above the market"], ["parecido com o mercado", "similar to the market"], ["abaixo do mercado", "below the market"]]],
+    queda: [["Queda atual", "Drawdown"], [["queda forte", "deep"], ["em correção", "correcting"], ["perto do topo", "near the high"]]],
+    concentracao: [["Concentração", "Concentration"], [["um ativo domina", "one asset dominates"], ["atenção", "watch"], ["risco bem distribuído", "well spread"]]],
+    diversificacao: [["Diversificação", "Diversification"], [["pouca", "low"], ["razoável", "fair"], ["boa", "good"]]],
+    eficiencia: [["Eficiência", "Efficiency"], [["dá para reduzir o risco", "risk can drop"], ["dá para melhorar", "room to improve"], ["perto do eficiente", "near efficient"]]],
+  };
+  function scoreCanvas(A, o) {
+    L = (o && o.lang) || "pt";
+    const story = !o || o.format !== "feed", W = 1080, H = story ? 1920 : 1350, en = L === "en" ? 1 : 0;
+    const c = document.createElement("canvas"); c.width = W; c.height = H;
+    const g = c.getContext("2d"), F = (w, px) => `${w} ${px}px "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`;
+    const COL = ["#f87171", "#fbbf24", "#34d399"], cor = A.nota >= 75 ? COL[2] : A.nota >= 50 ? COL[1] : COL[0];
+    g.fillStyle = "#070b14"; g.fillRect(0, 0, W, H);
+    const glow = (x, y, r, col) => { const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, col); gr.addColorStop(1, "rgba(7,11,20,0)"); g.fillStyle = gr; g.fillRect(0, 0, W, H); };
+    glow(W * 0.85, H * 0.18, 720, "rgba(14,84,120,.55)"); glow(W * 0.08, H * 0.92, 760, "rgba(60,40,130,.5)");
+    g.textBaseline = "alphabetic"; g.textAlign = "left";
+    const y0 = story ? 270 : 110;
+    g.fillStyle = "#fff"; g.font = F(700, 54); g.fillText("Seven7", 80, y0);
+    g.fillStyle = "#7f8ea8"; g.font = F(400, 30); g.fillText(tx("plataforma quant", "quant platform"), 80 + g.measureText("Seven7").width * 1.8 + 26, y0 - 2);
+    g.textAlign = "center"; g.fillStyle = "#cbd5e1"; g.font = F(600, story ? 50 : 44);
+    g.fillText(tx("A nota de saúde da minha carteira", "My portfolio health score"), W / 2, y0 + (story ? 170 : 110));
+    // anel
+    const cy = y0 + (story ? 470 : 330), R = story ? 220 : 165;
+    g.lineWidth = story ? 38 : 30; g.lineCap = "round";
+    g.strokeStyle = "#1b2740"; g.beginPath(); g.arc(W / 2, cy, R, 0, Math.PI * 2); g.stroke();
+    g.strokeStyle = cor; g.beginPath(); g.arc(W / 2, cy, R, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.max(0.02, A.nota / 100)); g.stroke();
+    g.fillStyle = "#fff"; g.font = F(800, story ? 190 : 140); g.fillText(String(A.nota), W / 2, cy + (story ? 52 : 38));
+    g.fillStyle = "#7f8ea8"; g.font = F(400, story ? 40 : 34); g.fillText("/100", W / 2, cy + (story ? 112 : 88));
+    // semáforos
+    const luzes = (A.luzes || []).filter(x => IMG_T[x.k]), rowH = story ? 88 : 66, x0 = 150;
+    let y = cy + R + (story ? 130 : 95);
+    g.textAlign = "left";
+    luzes.forEach(x => {
+      const t = IMG_T[x.k];
+      g.fillStyle = COL[x.nivel] || COL[1]; g.beginPath(); g.arc(x0, y - (story ? 15 : 12), story ? 17 : 14, 0, Math.PI * 2); g.fill();
+      g.fillStyle = "#fff"; g.font = F(700, story ? 44 : 36); g.fillText(t[0][en], x0 + 48, y);
+      const w = g.measureText(t[0][en]).width;
+      g.fillStyle = "#94a3b8"; g.font = F(400, story ? 38 : 31); g.fillText("  " + t[1][x.nivel][en], x0 + 48 + w, y);
+      y += rowH;
+    });
+    // chamada
+    const yb = H - (story ? 360 : 190);
+    g.textAlign = "center"; g.fillStyle = "#fff"; g.font = F(800, story ? 68 : 56); g.fillText(tx("E a sua, tira quanto?", "What does yours score?"), W / 2, yb);
+    const bw = 640, bh = story ? 96 : 84, bx = (W - bw) / 2, by = yb + (story ? 44 : 34), rr = 26;
+    g.fillStyle = "#38d6f5"; g.beginPath(); g.moveTo(bx + rr, by); g.arcTo(bx + bw, by, bx + bw, by + bh, rr); g.arcTo(bx + bw, by + bh, bx, by + bh, rr); g.arcTo(bx, by + bh, bx, by, rr); g.arcTo(bx, by, bx + bw, by, rr); g.fill();
+    g.fillStyle = "#04121a"; g.font = F(700, story ? 44 : 40); g.fillText("seven7invest.com", W / 2, by + bh / 2 + 15);
+    g.fillStyle = "#7f8ea8"; g.font = F(400, story ? 30 : 26); g.fillText(tx("grátis · leva 1 minuto · sem cadastro", "free · takes 1 minute · no sign-up"), W / 2, by + bh + (story ? 54 : 44));
+    return c;
+  }
+  // gera e entrega: no celular abre o menu de compartilhar (Instagram, WhatsApp…); no computador baixa o PNG
+  async function shareImage(A, o) {
+    const c = scoreCanvas(A, o), nome = `seven7-nota-${A.nota}-${o && o.format === "feed" ? "feed" : "stories"}.png`;
+    const blob = await new Promise(r => c.toBlob(r, "image/png"));
+    const file = new File([blob], nome, { type: "image/png" });
+    if (/Android|iPhone|iPad/i.test(navigator.userAgent) && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], text: tx("Minha carteira tirou " + A.nota + "/100 na Seven7. E a sua? seven7invest.com", "My portfolio scored " + A.nota + "/100 on Seven7. Yours? seven7invest.com") }); return "share"; }
+      catch (e) { if (e && e.name === "AbortError") return "cancel"; }
+    }
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = nome; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+    return "download";
+  }
+  // botões prontos (home e Minha mesa): onUse(formato, modo) p/ o analytics
+  function shareButtons(host, A, o) {
+    L = (o && o.lang) || "pt";
+    if (!host || !A || A.nota == null) return;
+    host.innerHTML = `<span>${tx("Postar minha nota:", "Post my score:")}</span>
+      <button class="btn btn-primary" data-f="story">${tx("Imagem p/ Stories", "Image for Stories")}</button>
+      <button class="btn btn-ghost" data-f="feed">${tx("Imagem p/ Feed", "Image for Feed")}</button>`;
+    host.querySelectorAll("button").forEach(b => b.onclick = async () => {
+      b.disabled = true;
+      try { const m = await shareImage(A, { lang: (o && o.lang) || "pt", format: b.dataset.f }); if (o && o.onUse) o.onUse(b.dataset.f, m); } finally { b.disabled = false; }
+    });
+  }
+
+  window.S7Quant = { full, health, metrics, risk, dd, frontier, hrp: hrpView, corr, formulas, scoreCanvas, shareImage, shareButtons };
   if (window.__s7QuantPending) { const f = window.__s7QuantPending; delete window.__s7QuantPending; f(); }
 })();

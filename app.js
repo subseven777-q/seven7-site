@@ -2097,8 +2097,9 @@
       if (PF_QUANT_PREVIEW === null) { try { PF_QUANT_PREVIEW = await (await fetch("data/pf_analytics_preview.json")).json(); } catch (e) { PF_QUANT_PREVIEW = false; } }
       A = PF_QUANT_PREVIEW || null;
     }
-    host.innerHTML = `<div class="section-head"><h2>${t("pf.quantH")}</h2><p class="sub">${t("pf.quantSub")}</p></div><div id="pfQuantBody"></div>`;
+    host.innerHTML = `<div class="section-head"><h2>${t("pf.quantH")}</h2><p class="sub">${t("pf.quantSub")}</p></div><div class="qq-share qq-img" id="pfShare"></div><div id="pfQuantBody"></div>`;
     window.S7Quant.full($("#pfQuantBody"), A, { lang: LANG });
+    if (A && !A.vazio) window.S7Quant.shareButtons($("#pfShare"), A, { lang: LANG, onUse: (f, m) => track("share", { via: "imagem_" + f, modo: m, de: "mesa" }) });
   }
   async function addPosition(sig, allocPct, entryType = "stop", fillPx = null) {
     if (!sb || !USER) return "no-auth";

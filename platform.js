@@ -124,11 +124,14 @@
           ${d.nota != null ? `<div class="qq-share"><span>${tx("Desafie um amigo:", "Challenge a friend:")}</span>
             <a class="btn btn-ghost" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(shareTxt(d.nota))}">WhatsApp</a>
             <a class="btn btn-ghost" target="_blank" rel="noopener" href="https://twitter.com/intent/tweet?text=${encodeURIComponent(shareTxt(d.nota))}">X</a>
-            <button class="btn btn-ghost qq-copy">${tx("Copiar texto", "Copy text")}</button></div>` : ""}<div id="qqQuant"></div>`;
+            <button class="btn btn-ghost qq-copy">${tx("Copiar texto", "Copy text")}</button></div><div class="qq-share qq-img" id="qqImg"></div>` : ""}<div id="qqQuant"></div>`;
         $$(".qq-share a", out).forEach(a => a.addEventListener("click", () => track("share", { via: a.textContent.trim().toLowerCase() })));
         const cp = $(".qq-copy", out);
         if (cp) cp.onclick = async () => { try { await navigator.clipboard.writeText(shareTxt(d.nota)); cp.textContent = tx("Copiado ✓", "Copied ✓"); track("share", { via: "copiar" }); } catch (e) { /* sem permissão */ } };
-        const draw = () => window.S7Quant.full($("#qqQuant", out), d, { lang: A().lang });
+        const draw = () => {
+          window.S7Quant.full($("#qqQuant", out), d, { lang: A().lang });
+          window.S7Quant.shareButtons($("#qqImg", out), d, { lang: A().lang, onUse: (f, m) => track("share", { via: "imagem_" + f, modo: m }) });
+        };
         if (window.S7Quant) draw(); else window.__s7QuantPending = draw;
         out.scrollIntoView({ behavior: "smooth", block: "start" });
       } catch (e) {
