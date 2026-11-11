@@ -143,6 +143,12 @@
     "nav.desk": { en: "My desk", pt: "Minha mesa" },
     "nav.terminal": { en: "Terminal", pt: "Terminal" },
     "nav.quant": { en: "Quantify", pt: "Quantificar" },
+    "acct.mailH": { en: "Weekly e-mail", pt: "E-mail semanal" },
+    "acct.mailD": { en: "Once a week: your portfolio score, what changed and what carries the risk.", pt: "Uma vez por semana: a nota da sua carteira, o que mudou e quem carrega o risco." },
+    "acct.mailOn": { en: "Receive the weekly summary", pt: "Receber o resumo semanal" },
+    "acct.mailSaved": { en: "Saved ✓", pt: "Salvo ✓" },
+    "acct.unsubOk": { en: "Done — you will no longer receive the weekly e-mail. You can turn it back on in your account.", pt: "Pronto — você não vai mais receber o e-mail semanal. Dá para religar na sua conta." },
+    "acct.unsubErr": { en: "This unsubscribe link is not valid. Log in and turn the weekly e-mail off in your account.", pt: "Este link não é válido. Entre na sua conta e desligue o e-mail semanal por lá." },
     "nav.tools": { en: "Tools", pt: "Ferramentas" },
     "nav.strats": { en: "Strategies", pt: "Estratégias" },
     "nav.stratM3": { en: "Markov 3 — results", pt: "Markov 3 — resultados" },
@@ -2460,10 +2466,24 @@
   }
 
   /* ---- account page ---- */
+  let UNSUB_MSG = null;
+  async function handleUnsub() {
+    const tk = new URLSearchParams(location.search).get("unsub");
+    if (!tk || UNSUB_MSG !== null || !sb) return;
+    UNSUB_MSG = "";
+    let ok = false;
+    try { const r = await sb.rpc("email_unsubscribe", { p_token: tk }); ok = !r.error && r.data === true; } catch (e) { ok = false; }
+    UNSUB_MSG = t(ok ? "acct.unsubOk" : "acct.unsubErr");
+    if (ok && PROFILE) PROFILE.email_weekly = false;
+    history.replaceState(null, "", location.pathname);
+    renderAccount();
+  }
   function renderAccount() {
     const host = $("#accountHost"); if (!host) return;
+    handleUnsub();
+    const note = UNSUB_MSG ? `<div class="acct-card acct-note">${esc(UNSUB_MSG)}</div>` : "";
     if (!USER) {
-      host.innerHTML = `<div class="auth-card" style="margin:0 auto">
+      host.innerHTML = `${note}<div class="auth-card" style="margin:0 auto">
         <h1>${t("acct.needLogin")}</h1><p class="auth-sub">${t("acct.needLoginSub")}</p>
         <a class="btn btn-primary btn-block" href="login.html">${t("nav.login")}</a></div>`;
       return;
@@ -2478,7 +2498,7 @@
       : isTrial() ? interp(t("trial.statusOn"), { d: endTxt, n: trialDaysLeft() })
       : trialExpired() ? interp(t("trial.statusOff"), { d: endTxt })
       : member ? t("acct.active") : t("acct.inactive");
-    host.innerHTML = `
+    host.innerHTML = `${note}
       <div class="acct-card">
         <div class="acct-grid">
           <div class="acct-row"><span class="acct-k">${t("acct.name")}</span><span class="acct-v">${esc((USER.user_metadata && USER.user_metadata.name) || "—")}</span></div>
@@ -2495,6 +2515,11 @@
         : `<div class="acct-upsell"><p>${t("acct.upsell")}</p><a class="btn btn-primary btn-block" href="plans.html">${t("acct.subscribe")}</a></div>`}
         <button class="btn btn-ghost btn-block" id="acctLogout">${t("auth.logout")}</button>
       </div>
+      <div class="acct-card acct-mail">
+        <h3>${t("acct.mailH")}</h3>
+        <p class="acct-redeem-sub">${t("acct.mailD")}</p>
+        <label class="acct-check"><input type="checkbox" id="mailWeekly" ${p.email_weekly === false ? "" : "checked"}><span>${t("acct.mailOn")}</span><em id="mailMsg"></em></label>
+      </div>
       <div class="acct-card acct-redeem">
         <h3>${t("acct.redeemH")}</h3>
         <p class="acct-redeem-sub">${t("acct.redeemSub")}</p>
@@ -2505,6 +2530,14 @@
         <p class="acct-redeem-msg" id="redeemMsg"></p>
       </div>`;
     const lo = $("#acctLogout"); if (lo) lo.onclick = async () => { if (sb) await sb.auth.signOut(); location.href = "index.html"; };
+    const mw = $("#mailWeekly");
+    if (mw) mw.onchange = async () => {
+      if (!sb || PREVIEW) return;
+      const { error } = await sb.from("profiles").update({ email_weekly: mw.checked }).eq("id", USER.id);
+      if (error) { mw.checked = !mw.checked; return; }
+      if (PROFILE) PROFILE.email_weekly = mw.checked;
+      $("#mailMsg").textContent = t("acct.mailSaved"); track("mail_pref", { on: mw.checked });
+    };
     const pr = $("#pixRenewAcct"); if (pr) pr.onclick = () => payPix(p.plan, p.billing_cycle || "monthly", pr);
     // voltou do checkout Pix: o banco confirma em segundos -> recarrega o perfil até o acesso aparecer
     if ($("#pixWait") && !PREVIEW && !window.__pixPoll) {

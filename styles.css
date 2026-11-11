@@ -1450,3 +1450,9 @@ tr.held td.tk-cell,tr.held:hover td,tr.held.sel td{opacity:1}
 .mon-table td{padding:7px 8px;border-bottom:1px solid var(--border)}
 .mon-table .num{text-align:right;font-variant-numeric:tabular-nums}
 @media(max-width:800px){.aud-2col{grid-template-columns:1fr}.aud-bar{grid-template-columns:1fr 90px}.aud-bar span{grid-column:1/-1}}
+
+/* Conta: e-mail semanal */
+.acct-check{display:flex;align-items:center;gap:10px;font-size:14.5px;cursor:pointer}
+.acct-check input{width:18px;height:18px;accent-color:var(--accent)}
+.acct-check em{font-style:normal;color:var(--c-green);font-size:13px;margin-left:auto}
+.acct-note{border-color:color-mix(in srgb,var(--accent) 45%,transparent);background:color-mix(in srgb,var(--accent) 9%,var(--surface));font-size:14.5px;line-height:1.5}
