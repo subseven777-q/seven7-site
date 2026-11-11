@@ -1420,3 +1420,33 @@ tr.held td.tk-cell,tr.held:hover td,tr.held.sel td{opacity:1}
   .nav-drop-menu{display:flex;position:static;min-width:0;margin:0;padding:0 0 0 18px;background:none;border:0;box-shadow:none}
   .nav-drop-menu::before{content:none}
 }
+/* seção Estratégias da home: os 4 números ficam em 2×2 (meia coluna) — em 4 colunas o texto cortava */
+.strat-split .hero-stats{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:0}
+.strat-split .hstat>div:last-child{min-width:0}
+@media(max-width:560px){.strat-split .hero-stats{grid-template-columns:1fr}}
+
+/* home: perguntas frequentes + compartilhar a nota */
+.faq{max-width:820px;margin:0 auto;display:grid;gap:10px}
+.faq details{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:0 20px}
+.faq summary{cursor:pointer;list-style:none;padding:16px 28px 16px 0;font-weight:650;position:relative}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";position:absolute;right:0;top:50%;transform:translateY(-50%);font-size:20px;color:var(--ink-2);font-weight:400}
+.faq details[open] summary::after{content:"–"}
+.faq details p{margin:0 0 18px;color:var(--ink-2);line-height:1.6;font-size:14.5px}
+.qq-share{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;font-size:13.5px;color:var(--ink-2)}
+.qq-share .btn{padding:6px 12px;font-size:13px}
+#como-funciona .step-t{margin-top:10px}
+
+/* Monitor · Audiência (analytics próprio) */
+.aud-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.aud-head h2{margin:0}
+.aud-bar{display:grid;grid-template-columns:190px 1fr 130px;gap:12px;align-items:center;padding:6px 0;font-size:13.5px}
+.aud-bar i{display:block;height:14px;background:var(--surface-2);border-radius:7px;overflow:hidden}
+.aud-bar b{display:block;height:100%;background:linear-gradient(90deg,var(--c-cyan),var(--c-violet));border-radius:7px}
+.aud-bar em{font-style:normal;text-align:right;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.aud-2col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.mon-table{width:100%;border-collapse:collapse;font-size:13.5px}
+.mon-table th{text-align:left;color:var(--ink-2);font-weight:600;font-size:12px;padding:6px 8px;border-bottom:1px solid var(--border)}
+.mon-table td{padding:7px 8px;border-bottom:1px solid var(--border)}
+.mon-table .num{text-align:right;font-variant-numeric:tabular-nums}
+@media(max-width:800px){.aud-2col{grid-template-columns:1fr}.aud-bar{grid-template-columns:1fr 90px}.aud-bar span{grid-column:1/-1}}

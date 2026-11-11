@@ -10,6 +10,7 @@
   const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const A = () => window.S7App || { lang: "pt", preview: false };
   const tx = (pt, en) => (A().lang === "en" ? en : pt);
+  const track = (n, p) => { try { if (A().track) A().track(n, p); } catch (e) { /* analytics nunca quebra a página */ } };
   const loc = () => (A().lang === "en" ? "en-US" : "pt-BR");
   const nf = (v, d = 2) => (v == null || !isFinite(v) ? "—" : new Intl.NumberFormat(loc(), { minimumFractionDigits: d, maximumFractionDigits: d }).format(v));
   const DEV_URL = "http://127.0.0.1:8795/quantify";          // prévia localhost: servidor de teste do motor
@@ -67,6 +68,8 @@
     });
     return r.json();
   }
+  const shareTxt = n => tx(`Minha carteira tirou nota ${n}/100 de saúde na Seven7. Quanto tira a sua? Leva 1 minuto e é grátis: https://seven7invest.com/?utm_source=amigo`,
+    `My portfolio scored ${n}/100 for health on Seven7. What's yours? Takes 1 minute, free: https://seven7invest.com/?utm_source=amigo`);
   async function renderQuick() {
     const host = $("#qqHost"); if (!host) return;
     const cat = await catalogo();
@@ -109,13 +112,22 @@
       const go = $(".qq-go", host); go.disabled = true;
       out.innerHTML = `<div class="q-empty">${tx("Calculando 2 anos de risco…", "Crunching 2 years of risk…")}</div>`;
       try {
+        track("quantify_run", { n: pos.length, base });
         const d = await quantifyCall(base, pos);
         if (d.error) throw new Error(d.error);
+        track("quantify_ok", { n: d.n_pos, base, nota: d.nota, rf: pos.some(x => x.s.startsWith("RF:")) });
         const cta = A().user && A().user.id !== "preview"
           ? `<a class="btn btn-primary" href="members.html">${tx("Salvar na Minha mesa", "Save to My desk")} →</a>`
           : `<a class="btn btn-primary" href="register.html">${tx("Criar conta grátis", "Create free account")} →</a>`;
         out.innerHTML = `<div class="qq-cta"><div><b>${tx("Gostou? Salve a carteira e acompanhe todo dia.", "Like it? Save the portfolio and track it daily.")}</b>
-          <small>${tx("Conta grátis: carteira salva, quantificação diária, Terminal e Ferramentas.", "Free account: saved portfolio, daily quant, Terminal and Tools.")}</small></div>${cta}</div><div id="qqQuant"></div>`;
+          <small>${tx("Conta grátis: carteira salva, quantificação diária, Terminal e Ferramentas.", "Free account: saved portfolio, daily quant, Terminal and Tools.")}</small></div>${cta}</div>
+          ${d.nota != null ? `<div class="qq-share"><span>${tx("Desafie um amigo:", "Challenge a friend:")}</span>
+            <a class="btn btn-ghost" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(shareTxt(d.nota))}">WhatsApp</a>
+            <a class="btn btn-ghost" target="_blank" rel="noopener" href="https://twitter.com/intent/tweet?text=${encodeURIComponent(shareTxt(d.nota))}">X</a>
+            <button class="btn btn-ghost qq-copy">${tx("Copiar texto", "Copy text")}</button></div>` : ""}<div id="qqQuant"></div>`;
+        $$(".qq-share a", out).forEach(a => a.addEventListener("click", () => track("share", { via: a.textContent.trim().toLowerCase() })));
+        const cp = $(".qq-copy", out);
+        if (cp) cp.onclick = async () => { try { await navigator.clipboard.writeText(shareTxt(d.nota)); cp.textContent = tx("Copiado ✓", "Copied ✓"); track("share", { via: "copiar" }); } catch (e) { /* sem permissão */ } };
         const draw = () => window.S7Quant.full($("#qqQuant", out), d, { lang: A().lang });
         if (window.S7Quant) draw(); else window.__s7QuantPending = draw;
         out.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -237,7 +249,8 @@
         $(".tool-out", card).innerHTML = r ? r.map(([k, x]) => `<div class="tool-kv"><span>${k}</span><b>${x}</b></div>`).join("")
           : `<div class="tool-kv"><span>${tx("Confira os valores", "Check the inputs")}</span><b>—</b></div>`;
       };
-      $$("input", card).forEach(i => i.addEventListener("input", run)); run();
+      let usado = false;
+      $$("input", card).forEach(i => i.addEventListener("input", () => { run(); if (!usado) { usado = true; track("tool_use", { tool: T.id }); } })); run();
     });
   }
 

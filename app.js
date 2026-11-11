@@ -25,6 +25,36 @@
   const pixUntil = () => (PROFILE && PROFILE.billing === "pix" && PROFILE.paid_until) ? new Date(PROFILE.paid_until) : null;
   const pixDaysLeft = () => { const e = pixUntil(); return e ? Math.ceil((e - new Date()) / 86400000) : null; };   // < 0 = vencido
   const pixExpired = () => { const e = pixUntil(); return !!e && e.getTime() + PIX_GRACE_DAYS * 86400000 <= Date.now(); };
+  // ---- analytics próprio, sem cookies (tabela site_events no Supabase; ver supabase/analytics_migration.sql) ----
+  // sem IP, e-mail ou id de usuário; 'sid' vive só enquanto a aba está aberta. Respeita "Do Not Track". Não roda em localhost.
+  const SRC_MAP = [[/instagram/, "instagram"], [/tiktok/, "tiktok"], [/youtube|youtu\.be/, "youtube"], [/(^|\.)t\.co$|twitter|x\.com/, "x"],
+    [/facebook|fb\./, "facebook"], [/whatsapp|wa\.me/, "whatsapp"], [/google\./, "google"], [/bing\./, "bing"], [/linkedin|lnkd/, "linkedin"], [/t\.me|telegram/, "telegram"]];
+  function trackCtx() {
+    let sid = sessionStorage.getItem("s7-sid"), src = sessionStorage.getItem("s7-src");
+    if (!sid) {
+      sid = Math.random().toString(36).slice(2, 12) + Date.now().toString(36).slice(-4);
+      const q = new URLSearchParams(location.search);
+      let host = ""; try { host = document.referrer ? new URL(document.referrer).hostname : ""; } catch (e) { /* referrer inválido */ }
+      if (host === location.hostname) host = "";
+      const m = SRC_MAP.find(x => x[0].test(host));
+      src = (q.get("utm_source") || (m ? m[1] : host.replace(/^www\./, "")) || "direto").toLowerCase().replace(/[^a-z0-9._-]/g, "").slice(0, 40) || "direto";
+      sessionStorage.setItem("s7-sid", sid); sessionStorage.setItem("s7-src", src);
+    }
+    return { sid, src };
+  }
+  function track(name, props) {
+    try {
+      const test = localStorage.getItem("s7-track-test") === "1";       // só p/ testar em localhost
+      if ((/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && !test) || navigator.webdriver || navigator.doNotTrack === "1") return;
+      const c = trackCtx();
+      fetch(`${SUPABASE_URL}/rest/v1/site_events`, {
+        method: "POST", keepalive: true,
+        headers: { apikey: SUPABASE_ANON_KEY, authorization: "Bearer " + SUPABASE_ANON_KEY, "content-type": "application/json", prefer: "return=minimal" },
+        body: JSON.stringify({ name, path: location.pathname.replace(/\/index\.html$/, "/").slice(0, 120), src: c.src, sid: c.sid, dev: innerWidth < 768 ? "m" : "d", props: props || null }),
+      }).catch(() => {});
+    } catch (e) { /* analytics nunca quebra a página */ }
+  }
+  let PV_SENT = false;
   const isMember = () => !!PROFILE && ((PROFILE.status === "active" && !pixExpired()) || isTrial());
   const isElite = () => isMember() && PROFILE.plan === "elite";
   const hasHedge = () => isMember() && (PROFILE.plan === "elite" || PROFILE.plan === "pro");   // sinal de hedge: Pro e Elite
@@ -452,9 +482,9 @@
     "div.ctaSub": { en: "Brazil from Beginner, the US from Pro, both on Elite. Live dividend signals, updated daily.", pt: "Brasil no Beginner, EUA no Pro, os dois no Elite. Sinais de dividendos ao vivo, atualizados diariamente." },
     "div.ctaBtn": { en: "See plans", pt: "Ver planos" },
     "div.note": { en: "Illustrative, from real 10-year simulated data with point-in-time selection (no hindsight), a curated blue-chip universe and full dividend + interest-on-equity data. Past results don't guarantee the future.", pt: "Ilustrativo, de dados simulados reais de 10 anos com seleção point-in-time (sem retrovisor), universo curado de blue chips e dados completos de dividendos + JCP. Resultados passados não garantem o futuro." },
-    "mem.kicker": { en: "MEMBERS AREA", pt: "ÁREA DE MEMBROS" },
+    "mem.kicker": { en: "MY DESK", pt: "MINHA MESA" },
     "mem.h1": { en: "Your quant desk", pt: "Sua mesa quant" },
-    "mem.sub": { en: "Two live strategies, full quantitative panels, videos and your portfolio — updated every day.", pt: "Duas estratégias ao vivo, painéis quantitativos completos, vídeos e seu portfólio — atualizados todos os dias." },
+    "mem.sub": { en: "Your portfolio quantified every day, the Terminal and — on paid plans — the live strategies.", pt: "Sua carteira quantificada todo dia, o Terminal e — nos planos pagos — as estratégias ao vivo." },
     "mem.p1kicker": { en: "STRATEGY 1 · STOP & TARGET", pt: "ESTRATÉGIA 1 · STOP E ALVO" },
     "mem.p1h": { en: "Markov 3 — full quant panel", pt: "Markov 3 — painel quant completo" },
     "mem.p1sub": { en: "The active strategy: every trade has an entry, a stop and a target. Complete risk & return metrics, 10 years, updated daily.", pt: "A estratégia ativa: cada operação tem entrada, stop e alvo. Métricas completas de risco e retorno, 10 anos, atualizadas diariamente." },
@@ -550,7 +580,7 @@
     "desk.tabVid": { en: "Videos", pt: "Vídeos" },
     "desk.tabVidD": { en: "Weekly market read", pt: "Leitura semanal do mercado" },
     "desk.pfIntro": { en: "Log the trades you take and compare your result with the S&P 500 and the Ibovespa.", pt: "Registre as operações que você fizer e compare seu resultado com o S&P 500 e o Ibovespa." },
-    "mem.gateLogin": { en: "The members area is for subscribers. Log in to enter.", pt: "A área de membros é para assinantes. Entre para acessar." },
+    "mem.gateLogin": { en: "My desk is free: log in or create your account to save and quantify your portfolio.", pt: "A Minha mesa é grátis: entre ou crie sua conta para salvar e quantificar sua carteira." },
     "mem.gateUpgrade": { en: "Subscribe to unlock the members area — live panels, videos and your portfolio.", pt: "Assine para liberar a área de membros — painéis ao vivo, vídeos e seu portfólio." },
     "mem.login": { en: "Log in", pt: "Entrar" },
     "mem.plans": { en: "See plans", pt: "Ver planos" },
@@ -729,14 +759,14 @@
     "footer.copy": { en: "© 2026 Seven7 · Quantified Investing. All rights reserved.", pt: "© 2026 Seven7 · Investimentos Quantificados. Todos os direitos reservados." },
     // auth
     "auth.login.title": { en: "Log in", pt: "Entrar" },
-    "auth.login.sub": { en: "Access your signals and dashboard.", pt: "Acesse seus sinais e painel." },
+    "auth.login.sub": { en: "Access your portfolio, the Terminal and your desk.", pt: "Acesse sua carteira, o Terminal e a sua mesa." },
     "auth.email": { en: "Email", pt: "E-mail" },
     "auth.password": { en: "Password", pt: "Senha" },
     "auth.login.submit": { en: "Log in", pt: "Entrar" },
     "auth.login.no": { en: "Don't have an account?", pt: "Não tem conta?" },
     "auth.login.signup": { en: "Create one", pt: "Criar conta" },
     "auth.register.title": { en: "Create your account", pt: "Crie sua conta" },
-    "auth.register.sub": { en: "Start your 7-day free trial. No card required.", pt: "Comece seu teste de 7 dias. Sem cartão." },
+    "auth.register.sub": { en: "Free forever: saved portfolio, daily quant, Terminal and Tools. You also get a 7-day trial of the strategies — no card.", pt: "Grátis para sempre: carteira salva, quantificação diária, Terminal e Ferramentas. Você ainda ganha 7 dias de teste das estratégias — sem cartão." },
     "auth.name": { en: "Full name", pt: "Nome completo" },
     "auth.register.submit": { en: "Create account", pt: "Criar conta" },
     "auth.register.have": { en: "Already have an account?", pt: "Já tem conta?" },
@@ -762,13 +792,13 @@
     "pix.statusOff": { en: "Pix plan expired on {d}", pt: "Plano Pix vencido em {d}" },
     "pix.waiting": { en: "Payment received! Access is unlocked as soon as the bank confirms the Pix (usually seconds). This page updates by itself.", pt: "Pagamento recebido! O acesso é liberado assim que o banco confirmar o Pix (normalmente em segundos). Esta página se atualiza sozinha." },
     "pix.ended": { en: "Your Pix plan expired. Renew to unlock the members area again.", pt: "Seu plano Pix venceu. Renove para liberar a área de membros de novo." },
-    "trial.bar": { en: "Free Elite trial: <b>{n} day(s) left</b> — everything unlocked.", pt: "Teste Elite grátis: <b>faltam {n} dia(s)</b> — tudo liberado." },
+    "trial.bar": { en: "Free Elite trial of the strategies: <b>{n} day(s) left</b>. The quant platform stays free forever.", pt: "Teste Elite grátis das estratégias: <b>faltam {n} dia(s)</b>. A plataforma quant é grátis para sempre." },
     "trial.barLast": { en: "Your free Elite trial <b>ends today</b>.", pt: "Seu teste Elite grátis <b>termina hoje</b>." },
-    "trial.barEnded": { en: "Your free Elite trial has ended. Subscribe to keep access.", pt: "Seu teste Elite grátis terminou. Assine para continuar com acesso." },
+    "trial.barEnded": { en: "Your strategies trial has ended — the quant platform is still free. Subscribe to get the signals back.", pt: "Seu teste das estratégias terminou — a plataforma quant continua grátis. Assine para voltar a ver os sinais." },
     "trial.cta": { en: "Subscribe", pt: "Assinar" },
     "trial.statusOn": { en: "Free trial until {d} ({n} day(s) left)", pt: "Teste grátis até {d} (faltam {n} dia(s))" },
     "trial.statusOff": { en: "Free trial ended on {d}", pt: "Teste grátis encerrado em {d}" },
-    "trial.ended": { en: "Your 7-day Elite trial has ended. Subscribe to unlock the members area again.", pt: "Seu teste Elite de 7 dias terminou. Assine para liberar a área de membros de novo." },
+    "trial.ended": { en: "Your 7-day strategies trial has ended. Your portfolio quant, the Terminal and the Tools remain free — subscribe to unlock the strategies again.", pt: "Seu teste de 7 dias das estratégias terminou. A quantificação da carteira, o Terminal e as Ferramentas continuam grátis — assine para liberar as estratégias de novo." },
     "auth.pwShort": { en: "Use at least 8 characters for your password.", pt: "Use pelo menos 8 caracteres na senha." },
     "auth.loginOk": { en: "Logged in. Welcome back!", pt: "Login feito. Bem-vindo de volta!" },
     "auth.err": { en: "Couldn't complete: {msg}", pt: "Não deu certo: {msg}" },
@@ -798,7 +828,7 @@
     "acct.redeemErrUsedYou": { en: "You've already redeemed this code.", pt: "Você já resgatou esse código." },
     "acct.redeemErrGeneric": { en: "Couldn't redeem the code. Try again.", pt: "Não foi possível resgatar o código. Tente de novo." },
     "auth.orTrial": { en: "or start a free trial", pt: "ou comece um teste grátis" },
-    "page.plans.trial": { en: "Includes a 7-day free trial · cancel anytime", pt: "Inclui teste grátis de 7 dias · cancele quando quiser" },
+    "page.plans.trial": { en: "Paid plans include a 7-day free trial · cancel anytime", pt: "Planos pagos incluem teste grátis de 7 dias · cancele quando quiser" },
   };
 
   /* ---------------- plans (USD) ---------------- */
@@ -1071,6 +1101,7 @@
   boot.then(d => { DATA = d; render(); }).catch(e => { render(); console.error(e); });
 
   function render() {
+    if (!PV_SENT) { PV_SENT = true; track("pageview", { lang: LANG }); }
     // preview localhost GLOBAL (vale em todas as páginas, não só members/monitor)
     if (/[?&]preview=1/.test(location.search) && /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
       PREVIEW = true; USER = USER || { id: "preview" };
@@ -1111,10 +1142,14 @@
     if (window.S7Platform) window.S7Platform.lang();
   }
   function guard(sel, fn) { if ($(sel)) fn(); }
+  document.addEventListener("click", e => {
+    const a = e.target.closest && e.target.closest('a[href^="register.html"]');
+    if (a) track("cta_signup", { de: a.closest(".nav") ? "menu" : a.closest(".qq-cta") ? "resultado" : a.closest(".price-card") ? "planos" : "outro" });
+  });
   // platform.js (quantificação pública, ferramentas) lê o estado daqui — só leitura
   window.S7App = {
     get sb() { return sb; }, get user() { return USER; }, get lang() { return LANG; }, get preview() { return PREVIEW; },
-    get member() { return isMember(); }, url: SUPABASE_URL, anon: SUPABASE_ANON_KEY, ic: (n) => ic(n), t: (k) => t(k),
+    get member() { return isMember(); }, track, url: SUPABASE_URL, anon: SUPABASE_ANON_KEY, ic: (n) => ic(n), t: (k) => t(k),
   };
 
   function injectChrome() {
@@ -1525,6 +1560,7 @@
   /* ---- pricing (USD, Stripe-ready) ---- */
   let CYCLE = "monthly";
   function subscribe(tier) {
+    track("plan_click", { tier, cycle: CYCLE, via: "card" });
     const link = stripeLinks()[tier] && stripeLinks()[tier][CYCLE];
     if (!USER) { localStorage.setItem("seven7-intent", tier + ":" + CYCLE); location.href = "register.html"; return; }
     if (!link) { location.href = "account.html"; return; }          // checkout ainda não configurado
@@ -1535,6 +1571,7 @@
   }
   const PIX_SVG = `<svg class="ic pix-ic" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.6 9.2 5.4l2.1 2.1a1 1 0 0 0 1.4 0l2.1-2.1L12 2.6Zm6.6 6.6-2.1 2.1a1 1 0 0 0 0 1.4l2.1 2.1 2.8-2.8-2.8-2.8Zm-13.2 0L2.6 12l2.8 2.8 2.1-2.1a1 1 0 0 0 0-1.4L5.4 9.2Zm6.6 6.6a1 1 0 0 0-.7.3l-2.1 2.1 2.8 2.8 2.8-2.8-2.1-2.1a1 1 0 0 0-.7-.3Zm-2.3-6.9a2 2 0 0 1 1.4-.6h1.8a2 2 0 0 1 1.4.6l2.6 2.6a.8.8 0 0 1 0 1.1l-2.6 2.6a2 2 0 0 1-1.4.6h-1.8a2 2 0 0 1-1.4-.6l-2.6-2.6a.8.8 0 0 1 0-1.1l2.6-2.6Z"/></svg>`;
   async function payPix(tier, cycle, btn) {
+    track("plan_click", { tier, cycle, via: "pix" });
     if (!USER || PREVIEW) { lsSet("seven7-intent", String(tier).toUpperCase() + ":" + cycle); location.href = PREVIEW ? "plans.html" : "register.html"; return; }
     if (!sb) return;
     const { data } = await sb.auth.getSession();
@@ -1685,6 +1722,7 @@
           if (pass.length < 8) { show(t("auth.pwShort"), false); return; }   // mínimo 8 caracteres
           const { error } = await sb.auth.signUp({ email, password: pass, options: { data: { name }, emailRedirectTo: new URL(".", location.href).href } });
           if (error) throw error;
+          track("signup");
           show(t("auth.checkEmail"), true);
           f.querySelectorAll("input").forEach(i => i.value = "");
         } else {
@@ -1693,7 +1731,8 @@
           if (error) throw error;
           show(t("auth.loginOk"), true);
           const intent = localStorage.getItem("seven7-intent");
-          setTimeout(() => location.href = intent ? "plans.html" : "index.html", 900);
+          track("login");
+          setTimeout(() => location.href = intent ? "plans.html" : "members.html", 900);
         }
       } catch (e) {
         show(interp(t("auth.err"), { msg: (e && e.message) || e }), false);
@@ -2805,6 +2844,57 @@
     if (document.body.dataset.page === "members") renderPortfolio();
   }
   /* ---- monitor (admin-only) ---- */
+  // ---- Audiência (admin): números AGREGADOS do analytics próprio, via função site_stats() no banco ----
+  let AUD_DAYS = 30;
+  async function renderAudience() {
+    const host = $("#audHost"); if (!host) return;
+    let d = null, err = "";
+    if (PREVIEW) {
+      d = { totais: { pv: 1840, sess: 912, quant_try: 301, quant: 274, share: 31, cta: 88, signup: 42, plan_click: 9, tool: 120, mobile: 640 },
+        dias: Array.from({ length: 14 }, (_, k) => ({ d: new Date(Date.now() - (13 - k) * 864e5).toISOString().slice(0, 10), pv: 80 + k * 9, sess: 40 + k * 5, quant: 10 + k * 2, signup: k % 4 })),
+        origens: [{ src: "instagram", sess: 410, quant: 150, signup: 20 }, { src: "direto", sess: 260, quant: 60, signup: 12 }, { src: "amigo", sess: 120, quant: 48, signup: 8 }, { src: "google", sess: 122, quant: 16, signup: 2 }],
+        paginas: [{ path: "/", pv: 1100, sess: 800 }, { path: "/ferramentas.html", pv: 240, sess: 200 }, { path: "/plans.html", pv: 130, sess: 110 }],
+        contas: { total: 57, novas: 42, pagas: 2, teste: 9 }, carteiras: 23 };
+    } else if (sb) {
+      const r = await sb.rpc("site_stats", { p_days: AUD_DAYS });
+      if (r.error) err = r.error.message || "erro"; else d = r.data;
+    }
+    if (!d) { host.innerHTML = `<section class="section mon"><div class="mon-panel"><h2>Audiência</h2><div class="mon-pd">Sem dados (${esc(err || "rode supabase/analytics_migration.sql")}).</div></div></section>`; return; }
+    const T = d.totais || {}, C = d.contas || {}, n = v => fmtNum(v || 0);
+    const pc = (a, b) => b > 0 ? nf(a / b * 100, 1) + "%" : "—";
+    const funil = [["Sessões", T.sess, null], ["Quantificaram", T.quant, T.sess], ["Clicaram em criar conta", T.cta, T.quant], ["Criaram conta", T.signup, T.cta], ["Clicaram em um plano", T.plan_click, T.sess]];
+    const mx = Math.max(1, T.sess || 0);
+    const tb = (heads, rows) => `<table class="mon-table"><thead><tr>${heads.map((h, i) => `<th class="${i ? "num" : ""}">${h}</th>`).join("")}</tr></thead><tbody>${rows.map(r => `<tr>${r.map((c, i) => `<td class="${i ? "num" : ""}">${c}</td>`).join("")}</tr>`).join("") || `<tr><td colspan="${heads.length}">—</td></tr>`}</tbody></table>`;
+    host.innerHTML = `<section class="section mon">
+      <div class="aud-head"><h2>Audiência do site</h2><div class="seg" id="audDays">${[7, 30, 90].map(k => `<button data-d="${k}" class="${k === AUD_DAYS ? "on" : ""}">${k} dias</button>`).join("")}</div></div>
+      <div class="mon-tiles">
+        ${[["SESSÕES", n(T.sess), n(T.pv) + " páginas vistas · " + pc(T.mobile, T.sess) + " no celular"], ["QUANTIFICARAM", n(T.quant), pc(T.quant, T.sess) + " das sessões"],
+           ["CONTAS NOVAS", n(C.novas), n(C.total) + " contas no total · " + n(d.carteiras) + " com carteira salva"], ["ASSINANTES", n(C.pagas), n(C.teste) + " em teste das estratégias"],
+           ["COMPARTILHARAM", n(T.share), pc(T.share, T.quant) + " de quem quantificou"], ["USARAM FERRAMENTAS", n(T.tool), pc(T.tool, T.sess) + " das sessões"]]
+          .map(x => `<div class="mon-tile"><div class="k">${x[0]}</div><div class="v">${x[1]}</div><div class="dd">${x[2]}</div></div>`).join("")}
+      </div>
+      <div class="mon-panel"><h2>Funil</h2><div class="mon-pd">Sessões únicas em cada etapa; a % é a passagem da etapa anterior.</div>
+        ${funil.map(f => `<div class="aud-bar"><span>${f[0]}</span><i><b style="width:${Math.max(1, (f[1] || 0) / mx * 100)}%"></b></i><em>${n(f[1])}${f[2] != null ? " · " + pc(f[1], f[2]) : ""}</em></div>`).join("")}</div>
+      <div class="mon-panel"><h2>Por dia</h2><div id="audChart" style="height:260px;width:100%"></div></div>
+      <div class="aud-2col">
+        <div class="mon-panel"><h2>De onde vêm</h2>${tb(["Origem", "Sessões", "Quantificaram", "Contas"], (d.origens || []).map(o => [esc(o.src), n(o.sess), n(o.quant) + " (" + pc(o.quant, o.sess) + ")", n(o.signup)]))}</div>
+        <div class="mon-panel"><h2>Páginas mais vistas</h2>${tb(["Página", "Visitas", "Sessões"], (d.paginas || []).map(o => [esc(o.path), n(o.pv), n(o.sess)]))}</div>
+      </div>
+      <p class="mon-foot">Analytics próprio, sem cookies: sem IP nem identificação da pessoa. "Sessão" = uma aba aberta. Visitantes com "Do Not Track" não são contados. Para medir uma campanha, use links com <b>?utm_source=nome</b> (ex.: seven7invest.com/?utm_source=reels_nota).</p>
+    </section>`;
+    $$("#audDays button").forEach(b => b.onclick = () => { AUD_DAYS = +b.dataset.d; renderAudience(); });
+    if (window.Plotly && d.dias && d.dias.length) {
+      const cs = getComputedStyle(document.documentElement), ink = cs.getPropertyValue("--ink-2").trim() || "#9aa";
+      const x = d.dias.map(r => r.d);
+      window.Plotly.newPlot("audChart", [
+        { x, y: d.dias.map(r => r.sess), type: "bar", name: "Sessões", marker: { color: "#38bdf8" } },
+        { x, y: d.dias.map(r => r.quant), type: "bar", name: "Quantificaram", marker: { color: "#a78bfa" } },
+        { x, y: d.dias.map(r => r.signup), type: "scatter", mode: "lines+markers", name: "Contas", yaxis: "y2", line: { color: "#34d399" } },
+      ], { barmode: "group", margin: { l: 40, r: 40, t: 10, b: 36 }, paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)", font: { color: ink, size: 11 },
+        legend: { orientation: "h", y: 1.15 }, yaxis: { gridcolor: "rgba(128,128,128,.15)" }, yaxis2: { overlaying: "y", side: "right", showgrid: false, rangemode: "tozero" } },
+        { displayModeBar: false, responsive: true });
+    }
+  }
   async function renderMonitor() {
     const gate = $("#monitorGate"), host = $("#monitorHost"); if (!gate) return;
     if (/[?&]preview=1/.test(location.search) && /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
@@ -2817,6 +2907,7 @@
     if (!USER) { gate.innerHTML = lock(t("mon.login"), t("mem.login"), "login.html"); if (host) host.hidden = true; return; }
     if (!isAdmin) { gate.innerHTML = lock(t("mon.restricted"), "", ""); if (host) host.hidden = true; return; }
     gate.innerHTML = ""; if (host) host.hidden = false;
+    renderAudience();
     host.innerHTML = `<section class="section mon"><p class="muted-note">${t("sig.loading")}</p></section>`;
     let d;
     // dados do monitor: RLS só entrega ao admin (is_admin no banco, não no navegador)

@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://seven7invest.com/sitemap.xml

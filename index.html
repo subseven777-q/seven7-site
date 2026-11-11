@@ -3,9 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Seven7 — Plataforma de quantificação de carteiras</title>
-<meta name="description" content="Seven7 — quantifique sua carteira em 1 minuto: volatilidade, drawdown, VaR, contribuição ao risco, HRP e fronteira eficiente. Ações BR/EUA, FIIs, ETFs, cripto e renda fixa. Grátis.">
-<link rel="stylesheet" href="styles.css?v=69">
+<title>Seven7 — Quantifique sua carteira em 1 minuto (grátis)</title>
+<!-- seo -->
+<meta name="description" content="Descubra a nota de saúde da sua carteira: risco, queda máxima, concentração e diversificação explicados em português claro. Ações, FIIs, ETFs, cripto e renda fixa. Grátis, sem cadastro.">
+<link rel="canonical" href="https://seven7invest.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Seven7">
+<meta property="og:title" content="Seven7 — Quantifique sua carteira em 1 minuto (grátis)">
+<meta property="og:description" content="Descubra a nota de saúde da sua carteira: risco, queda máxima, concentração e diversificação explicados em português claro. Ações, FIIs, ETFs, cripto e renda fixa. Grátis, sem cadastro.">
+<meta property="og:url" content="https://seven7invest.com/">
+<meta property="og:image" content="https://seven7invest.com/og.png">
+<meta property="og:locale" content="pt_BR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#070b14">
+<!-- /seo -->
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Preciso entender de finanças para usar?", "acceptedAnswer": {"@type": "Answer", "text": "Não. Cada número vem com uma frase explicando o que significa para a sua carteira — por exemplo: “PETR4 é 20% do seu dinheiro, mas 45% do seu risco”."}}, {"@type": "Question", "name": "É realmente grátis? Qual é a pegadinha?", "acceptedAnswer": {"@type": "Answer", "text": "A quantificação, o Terminal e as Ferramentas são grátis para sempre. A Seven7 ganha dinheiro com os planos pagos das estratégias (sinais de compra e venda), que são opcionais."}}, {"@type": "Question", "name": "Vocês acessam minha conta na corretora?", "acceptedAnswer": {"@type": "Answer", "text": "Não. Você só digita o código do ativo e o valor. Não pedimos senha, CPF nem conexão com a corretora — dá para testar sem nem criar conta."}}, {"@type": "Question", "name": "Isso é recomendação de investimento?", "acceptedAnswer": {"@type": "Answer", "text": "Não. A Seven7 é uma ferramenta de medição: mostra os riscos da carteira que você montou, com base em dados passados. A decisão de comprar ou vender é sempre sua."}}, {"@type": "Question", "name": "De onde vêm os números?", "acceptedAnswer": {"@type": "Answer", "text": "De 2 anos de preços diários de cada ativo, CDI/Selic/IPCA do Banco Central e câmbio oficial (PTAX). Os métodos são públicos e usados por gestoras: volatilidade, VaR, contribuição ao risco e HRP — as fórmulas aparecem no fim do resultado."}}, {"@type": "Question", "name": "Quais ativos posso analisar?", "acceptedAnswer": {"@type": "Answer", "text": "Ações do Brasil e dos EUA, ETFs, FIIs, as principais criptomoedas e renda fixa (CDI, Selic, IPCA+ e prefixado). Com a conta grátis, você também cadastra ativos fora do catálogo."}}]}</script>
+<link rel="stylesheet" href="styles.css?v=71">
 </head>
 <body data-page="home">
 <div id="nav-root"></div>
@@ -14,16 +27,34 @@
   <div class="hero-inner">
     <div class="eyebrow-chip"><span class="live-dot"></span><span data-pt="Plataforma quant · grátis" data-en="Quant platform · free"></span></div>
     <h1 data-pt-html='Quantifique sua carteira<br>em <span class="accent">1 minuto.</span>' data-en-html='Quantify your portfolio<br>in <span class="accent">1 minute.</span>'></h1>
-    <p class="lede" data-pt="Risco, drawdown, VaR, quem carrega o risco, alocação HRP e fronteira eficiente — com os métodos dos fundos quantitativos. Ações BR e EUA, FIIs, ETFs, cripto e renda fixa, em reais ou dólares."
-       data-en="Risk, drawdown, VaR, who carries the risk, HRP allocation and efficient frontier — with the methods quant funds use. BR and US stocks, REITs, ETFs, crypto and fixed income, in BRL or USD."></p>
+    <p class="lede" data-pt="Descubra se sua carteira está arriscada demais, concentrada demais ou mal diversificada. Você recebe uma nota de 0 a 100 e a explicação em português claro — com os mesmos métodos dos fundos quantitativos, sem precisar entender de matemática."
+       data-en="Find out if your portfolio is too risky, too concentrated or poorly diversified. You get a 0–100 score and a plain-language explanation — using the same methods quant funds use, no math required."></p>
     <ul class="hero-perks">
-      <li data-pt="✓ Grátis" data-en="✓ Free"></li><li data-pt="✓ Sem cadastro para testar" data-en="✓ No sign-up to try"></li><li data-pt="✓ 2 anos de dados diários" data-en="✓ 2 years of daily data"></li>
+      <li data-pt="✓ Grátis" data-en="✓ Free"></li><li data-pt="✓ Sem cadastro para testar" data-en="✓ No sign-up to try"></li><li data-pt="✓ Ações, FIIs, ETFs, cripto e renda fixa" data-en="✓ Stocks, REITs, ETFs, crypto and fixed income"></li>
     </ul>
   </div>
 </section>
 
 <section class="section qq-section" id="quantificar">
   <div id="qqHost"></div>
+</section>
+
+<section class="section" id="como-funciona">
+  <div class="section-head center">
+    <div class="kicker" data-pt="COMO FUNCIONA" data-en="HOW IT WORKS"></div>
+    <h2 data-pt="Três passos. Nenhuma fórmula." data-en="Three steps. No formulas."></h2>
+  </div>
+  <div class="steps">
+    <div class="step" style="--tone:var(--c-cyan)"><div class="step-n">1</div>
+      <div class="step-t" data-pt="Diga o que você tem" data-en="Tell us what you hold"></div>
+      <div class="step-d" data-pt="Digite os ativos e quanto tem em cada um: ações, FIIs, ETFs, cripto, Tesouro, CDB. Não pedimos senha de corretora nem CPF." data-en="Type your assets and how much you hold in each: stocks, REITs, ETFs, crypto, bonds. No broker password, no ID."></div></div>
+    <div class="step" style="--tone:var(--c-violet)"><div class="step-n">2</div>
+      <div class="step-t" data-pt="Receba a nota da carteira" data-en="Get your portfolio score"></div>
+      <div class="step-d" data-pt="Analisamos 2 anos de preços e mostramos 5 semáforos: risco, queda, concentração, diversificação e eficiência — cada um com a explicação ao lado." data-en="We analyze 2 years of prices and show 5 traffic lights: risk, drawdown, concentration, diversification and efficiency — each one explained."></div></div>
+    <div class="step" style="--tone:var(--c-green)"><div class="step-n">3</div>
+      <div class="step-t" data-pt="Veja o que melhorar" data-en="See what to improve"></div>
+      <div class="step-d" data-pt="Mostramos qual ativo carrega o risco e uma sugestão de distribuição mais equilibrada. Com a conta grátis, a carteira fica salva e é reavaliada todo dia." data-en="We show which asset carries the risk and a more balanced allocation. With a free account your portfolio is saved and re-scored daily."></div></div>
+  </div>
 </section>
 
 <section class="section">
@@ -66,9 +97,25 @@
   <p class="stat-note" style="margin-top:22px;text-align:center" data-i18n="page.plans.trial"></p>
 </section>
 
+<section class="section" id="faq">
+  <div class="section-head center">
+    <div class="kicker" data-pt="PERGUNTAS FREQUENTES" data-en="FAQ"></div>
+    <h2 data-pt="Antes de você perguntar" data-en="Before you ask"></h2>
+  </div>
+  <div class="faq">
+    <details><summary data-pt="Preciso entender de finanças para usar?" data-en="Do I need to understand finance to use it?"></summary><p data-pt="Não. Cada número vem com uma frase explicando o que significa para a sua carteira — por exemplo: “PETR4 é 20% do seu dinheiro, mas 45% do seu risco”." data-en="No. Every number comes with a sentence explaining what it means for your portfolio — e.g. “PETR4 is 20% of your money but 45% of your risk”."></p></details>
+    <details><summary data-pt="É realmente grátis? Qual é a pegadinha?" data-en="Is it really free? What's the catch?"></summary><p data-pt="A quantificação, o Terminal e as Ferramentas são grátis para sempre. A Seven7 ganha dinheiro com os planos pagos das estratégias (sinais de compra e venda), que são opcionais." data-en="Portfolio quant, the Terminal and the Tools are free forever. Seven7 earns from the optional paid strategy plans (buy/sell signals)."></p></details>
+    <details><summary data-pt="Vocês acessam minha conta na corretora?" data-en="Do you access my brokerage account?"></summary><p data-pt="Não. Você só digita o código do ativo e o valor. Não pedimos senha, CPF nem conexão com a corretora — dá para testar sem nem criar conta." data-en="No. You only type the ticker and the amount. No password, no ID, no broker connection — you can try it without even signing up."></p></details>
+    <details><summary data-pt="Isso é recomendação de investimento?" data-en="Is this investment advice?"></summary><p data-pt="Não. A Seven7 é uma ferramenta de medição: mostra os riscos da carteira que você montou, com base em dados passados. A decisão de comprar ou vender é sempre sua." data-en="No. Seven7 is a measurement tool: it shows the risks of the portfolio you built, based on past data. Buying or selling is always your call."></p></details>
+    <details><summary data-pt="De onde vêm os números?" data-en="Where do the numbers come from?"></summary><p data-pt="De 2 anos de preços diários de cada ativo, CDI/Selic/IPCA do Banco Central e câmbio oficial (PTAX). Os métodos são públicos e usados por gestoras: volatilidade, VaR, contribuição ao risco e HRP — as fórmulas aparecem no fim do resultado." data-en="From 2 years of daily prices per asset, CDI/Selic/IPCA from Brazil's central bank and the official FX rate. The methods are public and used by asset managers: volatility, VaR, risk contribution and HRP — formulas are shown at the end of the result."></p></details>
+    <details><summary data-pt="Quais ativos posso analisar?" data-en="Which assets can I analyze?"></summary><p data-pt="Ações do Brasil e dos EUA, ETFs, FIIs, as principais criptomoedas e renda fixa (CDI, Selic, IPCA+ e prefixado). Com a conta grátis, você também cadastra ativos fora do catálogo." data-en="Brazilian and US stocks, ETFs, REITs, major crypto and fixed income. With a free account you can also add assets outside the catalog."></p></details>
+  </div>
+  <div class="center-row" style="margin-top:28px"><a class="btn btn-primary btn-lg" href="#quantificar" data-pt="Quantificar minha carteira →" data-en="Quantify my portfolio →"></a></div>
+</section>
+
 <div id="footer-root"></div>
-<script src="app.js?v=71"></script>
+<script src="app.js?v=73"></script>
 <script src="quant.js?v=1"></script>
-<script src="platform.js?v=2"></script>
+<script src="platform.js?v=4"></script>
 </body>
 </html>
