@@ -705,7 +705,12 @@
     "pf.needLoginSub": { en: "Log in to build and track your portfolio.", pt: "Entre para montar e acompanhar seu portfólio." },
     "pf.deposit": { en: "Initial deposit", pt: "Depósito inicial" },
     "pf.currency": { en: "Portfolio currency", pt: "Moeda do portfólio" },
-    "pf.freeAdd": { en: "Add any position", pt: "Adicionar qualquer posição" },
+    "pf.freeAdd": { en: "Add an asset", pt: "Adicionar ativo" },
+    "pf.freeHint": { en: "Any asset: stocks and ETFs from Brazil, the US and 18 other markets, REITs, crypto and fixed income. Free.", pt: "Qualquer ativo: ações e ETFs do Brasil, dos EUA e de mais 18 mercados, FIIs, cripto e renda fixa. Grátis." },
+    "pf.fEx": { en: "Country / exchange", pt: "País / bolsa" },
+    "pf.fExNote": { en: "Type the ticker as it trades on that exchange (e.g. SAP in Germany, 7203 in Japan). Price and currency are picked up automatically; quantity × price is converted to your portfolio currency. Can't find it? Choose “Other exchange” and type the Yahoo Finance code.", pt: "Digite o código como é negociado naquela bolsa (ex.: SAP na Alemanha, 7203 no Japão). Preço e moeda entram sozinhos; quantidade × preço é convertido para a moeda da sua carteira. Não achou? Escolha “Outra bolsa” e digite o código do Yahoo Finance." },
+    "pf.showAll": { en: "Show all {n} positions", pt: "Ver todas as {n} posições" },
+    "pf.showLess": { en: "Show fewer", pt: "Mostrar menos" },
     "pf.freeNote": { en: "Positions outside Seven7 strategies: no signal from us — they enter your risk analysis (volatility, drawdown, frontier, HRP). Prices update daily; fixed income accrues by its index/rate.", pt: "Posições fora das estratégias Seven7: não damos sinal — elas entram na sua análise de risco (volatilidade, drawdown, fronteira, HRP). Preços atualizam diariamente; renda fixa rende pelo indexador/taxa." },
     "pf.fType": { en: "Type", pt: "Tipo" },
     "pf.fCode": { en: "Ticker", pt: "Código" },
@@ -721,15 +726,15 @@
     "pf.fCcy": { en: "Currency", pt: "Moeda" },
     "pf.fAdd": { en: "Add to portfolio", pt: "Adicionar ao portfólio" },
     "pf.fBad": { en: "Fill in the fields correctly.", pt: "Preencha os campos corretamente." },
-    "pf.fMig": { en: "Free positions are not enabled yet (database update pending).", pt: "Posições livres ainda não habilitadas (atualização do banco pendente)." },
-    "pf.fOk": { en: "Added ✓ — the risk analysis includes it at the next daily run (19:00).", pt: "Adicionada ✓ — a análise de risco inclui na próxima rodada diária (19:00)." },
+    "pf.fMig": { en: "This type of asset is not enabled yet (database update pending).", pt: "Este tipo de ativo ainda não está habilitado (atualização do banco pendente)." },
+    "pf.fOk": { en: "Added ✓", pt: "Adicionado ✓" },
     "pf.tAcaoBr": { en: "Brazilian stock / ETF (B3)", pt: "Ação / ETF Brasil (B3)" },
     "pf.tFii": { en: "Real estate fund (FII)", pt: "Fundo imobiliário (FII)" },
     "pf.tAcaoUs": { en: "US stock / ETF", pt: "Ação / ETF EUA" },
     "pf.tCripto": { en: "Crypto", pt: "Cripto" },
     "pf.tRfBr": { en: "Brazilian fixed income (CDB, Tesouro, LCI…)", pt: "Renda fixa Brasil (CDB, Tesouro, LCI…)" },
     "pf.tRfUs": { en: "US fixed income (Treasury, T-bill)", pt: "Renda fixa EUA (Treasury, T-bill)" },
-    "pf.tOutro": { en: "Other (Yahoo Finance ticker)", pt: "Outro (código do Yahoo Finance)" },
+    "pf.tOutro": { en: "Stock / ETF from another country", pt: "Ação / ETF de outro país" },
     "pf.stratFree": { en: "Free", pt: "Livres" },
     "pf.free": { en: "FREE", pt: "LIVRE" },
     "pf.noSignal": { en: "NO SIGNAL", pt: "SEM SINAL" },
@@ -2132,19 +2137,35 @@
     return error;
   }
   // ---- posições LIVRES (fora das estratégias): quantidade × preço; renda fixa por valor + indexador ----
-  const FREE_TYPES = [["acao_br", "pf.tAcaoBr"], ["fii", "pf.tFii"], ["acao_us", "pf.tAcaoUs"], ["cripto", "pf.tCripto"],
-                      ["rf_br", "pf.tRfBr"], ["rf_us", "pf.tRfUs"], ["outro", "pf.tOutro"]];
+  const FREE_TYPES = [["acao_br", "pf.tAcaoBr"], ["fii", "pf.tFii"], ["acao_us", "pf.tAcaoUs"], ["outro", "pf.tOutro"], ["cripto", "pf.tCripto"],
+                      ["rf_br", "pf.tRfBr"], ["rf_us", "pf.tRfUs"]];
+  // bolsas de outros países: [rótulo PT, rótulo EN, sufixo do código (padrão Yahoo Finance), moeda de negociação]
+  // Londres cota em pence (GBX = centavos de libra). "" = digitar o código completo (ex.: índices, fundos, outras bolsas).
+  const BOLSAS = [
+    ["Alemanha (Xetra)", "Germany (Xetra)", ".DE", "EUR"], ["Argentina (Buenos Aires)", "Argentina (Buenos Aires)", ".BA", "ARS"],
+    ["Austrália (ASX)", "Australia (ASX)", ".AX", "AUD"], ["Canadá (Toronto)", "Canada (Toronto)", ".TO", "CAD"],
+    ["China (Xangai)", "China (Shanghai)", ".SS", "CNY"], ["China (Shenzhen)", "China (Shenzhen)", ".SZ", "CNY"],
+    ["Coreia do Sul (Seul)", "South Korea (Seoul)", ".KS", "KRW"], ["Espanha (Madri)", "Spain (Madrid)", ".MC", "EUR"],
+    ["França (Paris)", "France (Paris)", ".PA", "EUR"], ["Holanda (Amsterdã)", "Netherlands (Amsterdam)", ".AS", "EUR"],
+    ["Hong Kong", "Hong Kong", ".HK", "HKD"], ["Índia (NSE)", "India (NSE)", ".NS", "INR"], ["Itália (Milão)", "Italy (Milan)", ".MI", "EUR"],
+    ["Japão (Tóquio)", "Japan (Tokyo)", ".T", "JPY"], ["México", "Mexico", ".MX", "MXN"], ["Portugal (Lisboa)", "Portugal (Lisbon)", ".LS", "EUR"],
+    ["Reino Unido (Londres)", "United Kingdom (London)", ".L", "GBX"], ["Suíça (Zurique)", "Switzerland (Zurich)", ".SW", "CHF"],
+    ["Outra bolsa — digito o código completo", "Other exchange — I'll type the full code", "", ""],
+  ];
+  const MOEDAS = ["USD", "BRL", "EUR", "GBP", "GBX", "CHF", "JPY", "CAD", "AUD", "HKD", "CNY", "INR", "KRW", "MXN", "ARS", "SEK", "NOK", "DKK", "SGD", "ZAR", "CLP"];
   function freePositionForm() {
     const today = new Date().toISOString().slice(0, 10);
-    return `<details class="pf-free" id="pfFree"><summary><span class="btn btn-ghost">＋ ${t("pf.freeAdd")}</span></summary>
+    return `<details class="pf-free" id="pfFree" ${PF_FORM_OPEN ? "open" : ""}><summary><span class="btn btn-primary">＋ ${t("pf.freeAdd")}</span><small class="pf-free-hint">${t("pf.freeHint")}</small></summary>
       <div class="pf-free-body">
         <label>${t("pf.fType")}<select id="ffType">${FREE_TYPES.map(([v, k]) => `<option value="${v}">${t(k)}</option>`).join("")}</select></label>
         <div class="ff-grid ff-mkt">
           <label>${t("pf.fCode")}<input id="ffCode" placeholder="HGLG11 · BTC · AAPL" autocomplete="off"></label>
           <label>${t("pf.fQty")}<input id="ffQty" type="number" min="0" step="any"></label>
           <label>${t("pf.fPrice")}<input id="ffPrice" type="number" min="0" step="any"></label>
-          <label class="ff-ccy" hidden>${t("pf.fCcy")}<select id="ffCcy"><option>BRL</option><option>USD</option></select></label>
+          <label class="ff-ex" hidden>${t("pf.fEx")}<select id="ffEx">${BOLSAS.map((b, i) => `<option value="${i}">${b[LANG === "en" ? 1 : 0]}</option>`).join("")}</select></label>
+          <label class="ff-ccy" hidden>${t("pf.fCcy")}<select id="ffCcy">${MOEDAS.map(c => `<option>${c}</option>`).join("")}</select></label>
         </div>
+        <p class="hedge-note ff-exnote" hidden>${t("pf.fExNote")}</p>
         <div class="ff-grid ff-rf" hidden>
           <label>${t("pf.fName")}<input id="ffName" autocomplete="off"></label>
           <label>${t("pf.fInvested")}<input id="ffInv" type="number" min="0" step="any"></label>
@@ -2161,10 +2182,13 @@
     const ty = $("#ffType"); if (!ty) return;
     const sync = () => {
       const v = ty.value, rf = /^rf_/.test(v);
-      $(".ff-mkt").hidden = rf; $(".ff-rf").hidden = !rf; $(".ff-ccy").hidden = v !== "outro";
+      const ext = v === "outro", livre = ext && BOLSAS[+$("#ffEx").value][2] === "";
+      $(".ff-mkt").hidden = rf; $(".ff-rf").hidden = !rf; $(".ff-ex").hidden = !ext; $(".ff-ccy").hidden = !livre; $(".ff-exnote").hidden = !ext;
+      $("#ffCode").placeholder = { acao_br: "PETR4 · BOVA11", fii: "HGLG11 · MXRF11", acao_us: "AAPL · VOO", cripto: "BTC · ETH · SOL", outro: livre ? "NESN.SW · ^GSPC" : "SAP · 7203 · NESN" }[v] || "";
       $("#ffIdx").innerHTML = (v === "rf_us" ? ["UST"] : ["CDI", "SELIC", "IPCA", "PRE"]).map(x => `<option>${x}</option>`).join("");
     };
-    ty.onchange = sync; sync();
+    ty.onchange = sync; $("#ffEx").onchange = sync; sync();
+    const dt = $("#pfFree"); if (dt) dt.ontoggle = () => { PF_FORM_OPEN = dt.open; };
     $("#ffSave").onclick = async () => {
       const msg = $("#ffMsg"), say = (k, ok) => { msg.textContent = t(k); msg.className = "add-msg " + (ok ? "ok" : "err"); };
       if (!sb || !USER || USER.id === "preview") return say("sig.addErr");
@@ -2180,15 +2204,19 @@
         if (!/^[A-Z0-9.\-^=]{1,15}$/.test(code) || !(qty > 0) || !(px > 0)) return say("pf.fBad");
         const M = { acao_br: ["BR", "BRL", code + ".SA", "BMFBOVESPA:" + code], fii: ["BR", "BRL", code + ".SA", "BMFBOVESPA:" + code],
                     acao_us: ["US", "USD", code, code], cripto: ["CRYPTO", "USD", code + "-USD", code + "USD"],
-                    outro: ["OUTRO", $("#ffCcy").value, code, code] }[v];
+                    outro: (() => { const b = BOLSAS[+$("#ffEx").value]; return b[2] ? ["OUTRO", b[3], code.replace(/\.[A-Z]{1,2}$/, "") + b[2], code] : ["OUTRO", $("#ffCcy").value, code, code]; })() }[v];
         row = { ticker: code, market: M[0], currency: M[1], price_symbol: M[2], tv_symbol: M[3], asset_class: v, quantity: qty, entry: px, current_price: px };
       }
       Object.assign(row, { strategy: "livre", status: "open", entry_type: "market", alloc_pct: 0, added_at: date, ret_pct: 0 });
       const { error } = await sb.from("portfolio_positions").insert(row);
       if (error) return say(/column|asset_class|strategy|check constraint/i.test(error.message || "") ? "pf.fMig" : "sig.addErr");
+      track("pos_add", { tipo: v, ccy: row.currency });
       say("pf.fOk", true); renderPortfolio();
     };
   }
+  let PF_FORM_OPEN = false;
+  const PF_N = () => (innerWidth < 768 ? 4 : 8);   // no celular cada posição é um cartão alto
+  let PF_ALL = false;          // tabela de posições: mostra só as 8 primeiras até pedir "ver todas"
   let PF_QUANT_PREVIEW = null;
   async function renderPortfolioQuant(d) {
     const host = $("#pfQuant"); if (!host) return;
@@ -2425,6 +2453,7 @@
       </div>
       ${danger}
     </div>`;
+    if (!positions.length && !frozen) PF_FORM_OPEN = true;
     html += freePositionForm();
 
     if ([hasPo3, hasDiv, hasFree].filter(Boolean).length > 1) {
@@ -2475,27 +2504,29 @@
       } else {
         const smap = { won: ["pos", "active", t("pf.won")], lost: ["neg", "flat", t("pf.lost")], open: ["", "wait", t("pf.openst")], pending: ["", "flat", t("pf.pending")] };
         const stag = p => PF_STRAT === "all" ? ` <span class="pf-stag ${p.strategy}">${p.strategy === "dividends" ? "DIV" : p.strategy === "livre" ? t("pf.free") : "M3"}</span>` : "";
-        const ccyM = (p, v) => v == null ? "—" : (p.currency === "BRL" ? "R$ " : "US$ ") + Number(v).toLocaleString(locale(), { maximumFractionDigits: 2 });
-        const rows = viewPos.map(p => {
+        const ccyM = (p, v) => v == null ? "—" : ({ BRL: "R$ ", USD: "US$ ", EUR: "€ ", GBP: "£ ", GBX: "GBp ", JPY: "¥ " }[p.currency || "USD"] || (p.currency + " ")) + Number(v).toLocaleString(locale(), { maximumFractionDigits: 2 });
+        const rows = viewPos.map((p, pi) => {
           let [retc, stcls, stl] = smap[p.status] || smap.open;
           const free = p.strategy === "livre", rf = free && /^rf_/.test(p.asset_class || "");
           if (free) { stcls = "flat"; stl = t("pf.noSignal"); retc = p.ret_pct > 0 ? "pos" : p.ret_pct < 0 ? "neg" : ""; }
           const size = !free ? `${nf(p.alloc_pct, 1)}%` : rf ? ccyM(p, p.invested) : `${Number(p.quantity || 0).toLocaleString(locale(), { maximumFractionDigits: 8 })} un`;
           const entryC = rf ? `${nf(p.rf_rate, 2)}${p.rf_index === "CDI" || p.rf_index === "SELIC" ? "% " + p.rf_index : p.rf_index === "IPCA" ? "% + IPCA" : "% a.a."}` : free ? ccyM(p, p.entry) : fmtNum(p.entry);
           const curC = rf ? ccyM(p, p.current_price) : free ? ccyM(p, p.current_price ?? p.entry) : fmtNum(p.current_price ?? p.entry);
-          return `<tr><td class="tk-cell">${esc(p.ticker)} <span class="mkt">${esc(p.market)}</span>${stag(p)}</td>
+          return `<tr class="${pi >= PF_N() ? "pf-extra" : ""}"><td class="tk-cell">${esc(p.ticker)} <span class="mkt">${esc(p.market)}</span>${stag(p)}</td>
             <td>${p.added_at}</td><td class="num">${size}</td>
             <td class="num">${entryC}</td><td class="num">${curC}</td>
             <td><span class="st ${stcls}">${stl}</span></td>
             <td class="num ${retc}">${p.status === "pending" ? "—" : (p.ret_pct == null ? "—" : fmtPct(p.ret_pct))}</td>
             <td><button class="pf-del" data-id="${p.id}" data-tk="${esc(p.ticker)}" title="${t("pf.remove")}" aria-label="${t("pf.remove")} ${esc(p.ticker)}">${ic("x")}</button></td></tr>`;
         }).join("");
-        html += `<div class="table-wrap blotter-scroll" style="margin-top:18px"><table class="sig-table"><thead><tr>
+        html += `<div class="table-wrap blotter-scroll pf-pos ${PF_ALL ? "" : "collapsed"}" style="margin-top:18px"><table class="sig-table"><thead><tr>
           <th>${t("sig.ticker")}</th><th>${t("pf.added")}</th><th class="num">${t("pf.alloc")}</th><th class="num">${t("sig.entry")}</th><th class="num">${t("pf.current")}</th><th>${t("sig.state")}</th><th class="num">${t("pf.pl")}</th><th></th>
           </tr></thead><tbody>${rows}</tbody></table></div>`;
+        if (viewPos.length > PF_N()) html += `<button class="btn btn-ghost pf-toggle" id="pfToggle">${PF_ALL ? t("pf.showLess") : interp(t("pf.showAll"), { n: viewPos.length })}</button>`;
       }
     }
     host.innerHTML = html;
+    const tg = $("#pfToggle"); if (tg) tg.onclick = () => { PF_ALL = !PF_ALL; renderPortfolio(); };
     cardify(host.querySelector(".blotter-scroll table"));
     if (!frozen && positions.length && hasHedge()) renderBetaControl(positions, deposit);
 

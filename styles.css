@@ -1496,3 +1496,11 @@ tr.held td.tk-cell,tr.held:hover td,tr.held.sel td{opacity:1}
 .push-t b{display:block;font-size:15px}.push-t small{display:block;color:var(--ink-2);font-size:13px;margin-top:2px}
 .push-t em{font-style:normal;color:var(--neg,#ef4444);font-size:12.5px}
 .push-card.on .push-ic{background:color-mix(in srgb,var(--c-green) 18%,transparent);color:var(--c-green)}
+
+/* Minha mesa: lista de posições sem rolagem presa (8 primeiras + "ver todas") e formulário de ativo em destaque */
+.blotter-scroll.pf-pos{max-height:none;overflow-y:visible}
+.pf-pos.collapsed tr.pf-extra{display:none}
+.pf-toggle{display:block;margin:10px auto 0}
+.pf-free>summary{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.pf-free-hint{color:var(--ink-2);font-size:13px;line-height:1.4;flex:1;min-width:220px}
+@media (max-width:900px){.blotter-scroll.pf-pos{max-height:none;overflow:visible}}
