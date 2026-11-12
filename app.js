@@ -93,6 +93,48 @@
       if (r && r.outcome === "accepted") { INSTALL_EVT = null; host.innerHTML = ""; }
     };
   }
+  // ---- notificações do app (Web Push). Chave PÚBLICA abaixo; a privada fica só no pipeline (.env) ----
+  const VAPID_PUB = "BKv-fs61zarJK_73Ltcs7aLMJi6cwVCpXCC5k_zHZcjKJXmlkcyIPmn1MR8SoFeoR5c75SuGmOpGJBeeb-uaAoI";
+  const b64u = x => Uint8Array.from(atob(x.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - x.length % 4) % 4)), c => c.charCodeAt(0));
+  async function renderPushCard() {
+    const host = $("#pushHost"); if (!host) return;
+    if (!USER || PREVIEW && !localStorage.getItem("s7-sw-test")) { host.innerHTML = PREVIEW ? pushHtml("off") : ""; return; }
+    const ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
+    if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
+      host.innerHTML = ios && !STANDALONE ? pushHtml("ios") : ""; return;                 // navegador sem suporte: não mostra nada
+    }
+    if (Notification.permission === "denied") { host.innerHTML = pushHtml("denied"); return; }
+    let sub = null;
+    try { const reg = await navigator.serviceWorker.getRegistration(); sub = reg ? await reg.pushManager.getSubscription() : null; } catch (e) { sub = null; }
+    host.innerHTML = pushHtml(sub ? "on" : "off");
+    const bt = $("#pushBtn"); if (!bt) return;
+    bt.onclick = async () => {
+      bt.disabled = true;
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        if (sub) {
+          await sb.from("push_subs").delete().eq("endpoint", sub.endpoint);
+          await sub.unsubscribe(); track("push_off");
+        } else {
+          if ((await Notification.requestPermission()) !== "granted") { renderPushCard(); return; }
+          const ns = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64u(VAPID_PUB) });
+          const j = ns.toJSON();
+          const { error } = await sb.from("push_subs").upsert({ endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, ua: navigator.userAgent.slice(0, 200) }, { onConflict: "endpoint" });
+          if (error) { await ns.unsubscribe(); throw error; }
+          track("push_on", { app: STANDALONE ? 1 : 0 });
+          reg.showNotification(t("push.hello"), { body: t("push.helloB"), icon: "icons/icon-192.png", badge: "icons/favicon-32.png", tag: "seven7" });
+        }
+        renderPushCard();
+      } catch (e) { console.error("push", e); const m = $("#pushMsg"); if (m) m.textContent = t("push.err"); bt.disabled = false; }
+    };
+  }
+  function pushHtml(estado) {
+    const txt = { on: t("push.active"), off: t("push.d"), denied: t("push.denied"), ios: t("push.ios") }[estado];
+    const btn = estado === "off" ? `<button class="btn btn-primary" id="pushBtn">${t("push.on")}</button>`
+      : estado === "on" ? `<button class="btn btn-ghost" id="pushBtn">${t("push.off")}</button>` : "";
+    return `<div class="push-card ${estado}"><span class="push-ic">${ic("live")}</span>
+      <div class="push-t"><b>${t("push.t")}</b><small>${txt}</small><em id="pushMsg"></em></div>${btn}</div>`;
+  }
   let PV_SENT = false;
   const isMember = () => !!PROFILE && ((PROFILE.status === "active" && !pixExpired()) || isTrial());
   const isElite = () => isMember() && PROFILE.plan === "elite";
@@ -195,6 +237,16 @@
     "app.installBtn": { en: "Install", pt: "Instalar" },
     "app.iosD": { en: "On iPhone: tap Share and then “Add to Home Screen”.", pt: "No iPhone: toque em Compartilhar e depois em “Adicionar à Tela de Início”." },
     "app.new": { en: "NEW · FREE", pt: "NOVO · GRÁTIS" },
+    "push.t": { en: "Tell me when my score changes", pt: "Avise-me quando minha nota mudar" },
+    "push.d": { en: "A notification on this device when your portfolio score goes up or down. At most one a day.", pt: "Uma notificação neste aparelho quando a nota da sua carteira subir ou cair. No máximo uma por dia." },
+    "push.on": { en: "Turn on notifications", pt: "Ativar notificações" },
+    "push.off": { en: "Turn off", pt: "Desativar" },
+    "push.active": { en: "Notifications are on for this device.", pt: "Notificações ativadas neste aparelho." },
+    "push.denied": { en: "Notifications are blocked for this site in your browser settings. Allow them there to turn this on.", pt: "As notificações deste site estão bloqueadas nas configurações do navegador. Libere por lá para ativar." },
+    "push.ios": { en: "On iPhone, install the app first (Share → Add to Home Screen) and open it from the icon to turn on notifications.", pt: "No iPhone, instale o app primeiro (Compartilhar → Adicionar à Tela de Início) e abra pelo ícone para ativar as notificações." },
+    "push.err": { en: "Couldn't turn on. Try again.", pt: "Não foi possível ativar. Tente de novo." },
+    "push.hello": { en: "Notifications on", pt: "Notificações ativadas" },
+    "push.helloB": { en: "We'll let you know when your portfolio score changes.", pt: "Avisamos quando a nota da sua carteira mudar." },
     "app.openAndroid": { en: "Open seven7invest.com in Chrome on your phone and tap “Install”.", pt: "Abra seven7invest.com no Chrome do seu celular e toque em “Instalar”." },
     "app.openIos": { en: "Open seven7invest.com in Safari, tap Share and then “Add to Home Screen”.", pt: "Abra seven7invest.com no Safari, toque em Compartilhar e depois em “Adicionar à Tela de Início”." },
     "nav.strats": { en: "Strategies", pt: "Estratégias" },
@@ -3081,6 +3133,7 @@
       <span class="term-cta-txt"><b>${t("desk.termT")}</b><small>${t("desk.termD")}</small></span>
       <span class="btn btn-primary">${t("desk.termOpen")} →</span></a>`;
     initDeskViews();
+    renderPushCard();
     if (!member) { renderPortfolio(); return; }
     if (DATA) guard("#po3Tabs", () => initSection(["US", "BR"], "#po3Tabs", renderPO3Panel));
     renderDividends(); renderVideos(); renderPortfolio(); renderKmlmCard(); renderCoveredCallMembers();

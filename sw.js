@@ -4,7 +4,7 @@
      · arquivos estáticos (js/css/png, versionados com ?v=) -> cache na hora + atualização em segundo plano
      · outros domínios (Supabase, TradingView, CDNs) -> não toca: vão direto à rede
    Subiu versão do site? Troque CACHE abaixo: os caches antigos são apagados na ativação. */
-const CACHE = "seven7-v1";
+const CACHE = "seven7-v2";
 const OFFLINE = "offline.html";
 const BASICO = [OFFLINE, "styles.css", "icons/icon-192.png"];
 
@@ -43,4 +43,21 @@ self.addEventListener("fetch", (e) => {
   if (req.mode === "navigate" || u.pathname.endsWith(".html") || u.pathname === "/") { e.respondWith(redePrimeiro(req, true)); return; }
   if (u.pathname.startsWith("/data/") || u.pathname.endsWith(".json") || u.pathname.endsWith(".webmanifest")) { e.respondWith(redePrimeiro(req, false)); return; }
   e.respondWith(cachePrimeiro(req));
+});
+
+// ---- notificações (Web Push): o pipeline diário manda {title, body, url, tag} quando a nota da carteira muda ----
+self.addEventListener("push", (e) => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (err) { d = { body: e.data ? e.data.text() : "" }; }
+  e.waitUntil(self.registration.showNotification(d.title || "Seven7", {
+    body: d.body || "", icon: "icons/icon-192.png", badge: "icons/favicon-32.png", tag: d.tag || "seven7", data: { url: d.url || "/members.html" },
+  }));
+});
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  const url = new URL((e.notification.data && e.notification.data.url) || "/members.html", self.location.origin).href;
+  e.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((cs) => {
+    for (const c of cs) if (c.url.startsWith(self.location.origin) && "focus" in c) { c.navigate(url); return c.focus(); }
+    return self.clients.openWindow(url);
+  }));
 });

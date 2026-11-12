@@ -1486,3 +1486,13 @@ tr.held td.tk-cell,tr.held:hover td,tr.held.sel td{opacity:1}
   .nav{padding-top:calc(10px + env(safe-area-inset-top))}
   .footer{padding-bottom:calc(28px + env(safe-area-inset-bottom))}
 }
+
+/* Minha mesa: ativar notificações */
+.push-card{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px 16px;margin-bottom:16px;border-radius:14px;background:var(--surface);border:1px solid var(--border)}
+.push-card.off{border-color:color-mix(in srgb,var(--accent) 45%,transparent);background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
+.push-ic{display:grid;place-items:center;width:38px;height:38px;border-radius:11px;background:color-mix(in srgb,var(--accent) 18%,transparent);color:var(--accent);flex:none}
+.push-ic .ic{width:19px;height:19px}
+.push-t{flex:1;min-width:200px;line-height:1.35}
+.push-t b{display:block;font-size:15px}.push-t small{display:block;color:var(--ink-2);font-size:13px;margin-top:2px}
+.push-t em{font-style:normal;color:var(--neg,#ef4444);font-size:12.5px}
+.push-card.on .push-ic{background:color-mix(in srgb,var(--c-green) 18%,transparent);color:var(--c-green)}
