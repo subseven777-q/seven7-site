@@ -54,6 +54,45 @@
       }).catch(() => {});
     } catch (e) { /* analytics nunca quebra a página */ }
   }
+  // ---- app instalável (PWA): service worker + convite para instalar ----
+  const STANDALONE = (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+  let INSTALL_EVT = null;
+  function initApp() {
+    const local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+    if ("serviceWorker" in navigator && (!local || localStorage.getItem("s7-sw-test") === "1")) {
+      navigator.serviceWorker.register("sw.js").catch(() => {});
+    }
+    window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); INSTALL_EVT = e; renderAppCard(); });
+    window.addEventListener("appinstalled", () => { track("app_installed"); INSTALL_EVT = null; const h = $("#appHost"); if (h) h.innerHTML = ""; });
+    renderAppCard();
+  }
+  // destaque "Instale o app" na página inicial (#appHost). Três situações:
+  //   · o navegador oferece instalação (Chrome/Edge, Android e computador) -> botão Instalar
+  //   · iPhone/iPad no Safari -> passo a passo manual (a Apple não permite botão)
+  //   · navegador que não instala (ex.: o navegador interno do Instagram) -> manda abrir no Chrome/Safari
+  let APP_SEEN = false;
+  function renderAppCard() {
+    const host = $("#appHost"); if (!host) return;
+    if (STANDALONE) { host.innerHTML = ""; return; }           // já está dentro do app
+    const ua = navigator.userAgent, ios = /iPhone|iPad|iPod/.test(ua);
+    const inapp = /Instagram|FBAN|FBAV|TikTok|musical_ly|Line\//.test(ua);
+    const modo = INSTALL_EVT ? "botao" : ios && !inapp && !/CriOS|FxiOS|EdgiOS/.test(ua) ? "ios" : "abrir";
+    const passo = { botao: t("app.installD"), ios: t("app.iosD"), abrir: t(ios ? "app.openIos" : "app.openAndroid") }[modo];
+    host.innerHTML = `<div class="app-card">
+      <img src="icons/icon-192.png" alt="" width="56" height="56">
+      <div class="app-card-t"><span class="app-card-k">${t("app.new")}</span><b>${t("app.installT")}</b><small>${passo}</small></div>
+      ${modo === "botao" ? `<button class="btn btn-primary btn-lg" id="appInstall">${t("app.installBtn")}</button>` : ""}
+    </div>`;
+    if (!APP_SEEN) { APP_SEEN = true; track("app_prompt", { modo }); }
+    const ib = $("#appInstall");
+    if (ib) ib.onclick = async () => {
+      if (!INSTALL_EVT) return;
+      INSTALL_EVT.prompt();
+      const r = await INSTALL_EVT.userChoice.catch(() => null);
+      track("app_install_click", { ok: !!(r && r.outcome === "accepted") });
+      if (r && r.outcome === "accepted") { INSTALL_EVT = null; host.innerHTML = ""; }
+    };
+  }
   let PV_SENT = false;
   const isMember = () => !!PROFILE && ((PROFILE.status === "active" && !pixExpired()) || isTrial());
   const isElite = () => isMember() && PROFILE.plan === "elite";
@@ -151,6 +190,13 @@
     "acct.unsubErr": { en: "This unsubscribe link is not valid. Log in and turn the weekly e-mail off in your account.", pt: "Este link não é válido. Entre na sua conta e desligue o e-mail semanal por lá." },
     "nav.tools": { en: "Tools", pt: "Ferramentas" },
     "nav.learn": { en: "Learn", pt: "Aprenda" },
+    "app.installT": { en: "Install the Seven7 app", pt: "Instale o app Seven7" },
+    "app.installD": { en: "Icon on your home screen, opens full screen, no app store needed.", pt: "Ícone na tela inicial, abre em tela cheia, sem precisar de loja." },
+    "app.installBtn": { en: "Install", pt: "Instalar" },
+    "app.iosD": { en: "On iPhone: tap Share and then “Add to Home Screen”.", pt: "No iPhone: toque em Compartilhar e depois em “Adicionar à Tela de Início”." },
+    "app.new": { en: "NEW · FREE", pt: "NOVO · GRÁTIS" },
+    "app.openAndroid": { en: "Open seven7invest.com in Chrome on your phone and tap “Install”.", pt: "Abra seven7invest.com no Chrome do seu celular e toque em “Instalar”." },
+    "app.openIos": { en: "Open seven7invest.com in Safari, tap Share and then “Add to Home Screen”.", pt: "Abra seven7invest.com no Safari, toque em Compartilhar e depois em “Adicionar à Tela de Início”." },
     "nav.strats": { en: "Strategies", pt: "Estratégias" },
     "nav.stratM3": { en: "Markov 3 — results", pt: "Markov 3 — resultados" },
     "nav.free": { en: "Create free account", pt: "Criar conta grátis" },
@@ -1108,7 +1154,7 @@
   boot.then(d => { DATA = d; render(); }).catch(e => { render(); console.error(e); });
 
   function render() {
-    if (!PV_SENT) { PV_SENT = true; track("pageview", { lang: LANG }); }
+    if (!PV_SENT) { PV_SENT = true; track("pageview", STANDALONE ? { lang: LANG, app: 1 } : { lang: LANG }); initApp(); }
     // preview localhost GLOBAL (vale em todas as páginas, não só members/monitor)
     if (/[?&]preview=1/.test(location.search) && /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
       PREVIEW = true; USER = USER || { id: "preview" };
@@ -1147,6 +1193,7 @@
     initAuth();
     const cp = $("#copy"); if (cp) cp.textContent = t("footer.copy");
     if (window.S7Platform) window.S7Platform.lang();
+    if (PV_SENT) renderAppCard();
   }
   function guard(sel, fn) { if ($(sel)) fn(); }
   document.addEventListener("click", e => {
@@ -1660,6 +1707,7 @@
       // preserva o USER semeado pelo preview localhost (sem sessao real) — nao afeta producao
       USER = data?.session?.user || (PREVIEW ? USER : null);
       await loadProfile();
+      if (STANDALONE && USER && document.body.dataset.page === "home" && !location.hash && /utm_source=app/.test(location.search)) { location.replace("members.html"); return; }
       updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio(); renderDivSignals(); renderMembers(); renderKmlmCard(); renderMonitor(); renderTerminal();
       sb.auth.onAuthStateChange(async (_ev, session) => {
         USER = session?.user || (PREVIEW ? USER : null); await loadProfile(); updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio(); renderDivSignals(); renderMembers(); renderKmlmCard(); renderMonitor(); renderTerminal();

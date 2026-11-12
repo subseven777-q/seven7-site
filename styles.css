@@ -1471,3 +1471,18 @@ tr.held td.tk-cell,tr.held:hover td,tr.held.sel td{opacity:1}
 .guide-aviso{font-size:13px;margin-top:22px;padding-top:14px;border-top:1px solid var(--border)}
 .guide .faq{margin:0}
 .guide-index{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+
+/* app instalável: destaque na home + ajustes em tela cheia */
+.app-card{display:flex;align-items:center;gap:16px;max-width:640px;margin:26px auto 0;padding:16px 18px;text-align:left;border-radius:18px;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 16%,var(--surface)),var(--surface));
+  border:1px solid color-mix(in srgb,var(--accent) 50%,transparent);box-shadow:0 20px 50px -28px var(--accent)}
+.app-card img{border-radius:14px;flex:none}
+.app-card-t{flex:1;min-width:0;line-height:1.35}
+.app-card-t b{display:block;font-size:17px;color:var(--ink)}
+.app-card-t small{display:block;color:var(--ink-2);font-size:13.5px;margin-top:2px}
+.app-card-k{display:block;font-size:11px;letter-spacing:.12em;font-weight:700;color:var(--accent);margin-bottom:2px}
+@media(max-width:560px){.app-card{flex-wrap:wrap}.app-card .btn{width:100%}}
+@media (display-mode: standalone){
+  .nav{padding-top:calc(10px + env(safe-area-inset-top))}
+  .footer{padding-bottom:calc(28px + env(safe-area-inset-bottom))}
+}

@@ -1,0 +1,26 @@
+{
+  "name": "Seven7 — Quantifique sua carteira",
+  "short_name": "Seven7",
+  "description": "A nota de saúde da sua carteira: risco, queda, concentração e diversificação em português claro.",
+  "id": "/",
+  "start_url": "/?utm_source=app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "background_color": "#070b14",
+  "theme_color": "#070b14",
+  "categories": ["finance", "productivity"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Quantificar carteira", "short_name": "Quantificar", "url": "/?utm_source=app#quantificar", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Minha mesa", "url": "/members.html?utm_source=app", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Terminal", "url": "/terminal.html?utm_source=app", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Ferramentas", "url": "/ferramentas.html?utm_source=app", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
