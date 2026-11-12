@@ -150,6 +150,7 @@
     "acct.unsubOk": { en: "Done — you will no longer receive the weekly e-mail. You can turn it back on in your account.", pt: "Pronto — você não vai mais receber o e-mail semanal. Dá para religar na sua conta." },
     "acct.unsubErr": { en: "This unsubscribe link is not valid. Log in and turn the weekly e-mail off in your account.", pt: "Este link não é válido. Entre na sua conta e desligue o e-mail semanal por lá." },
     "nav.tools": { en: "Tools", pt: "Ferramentas" },
+    "nav.learn": { en: "Learn", pt: "Aprenda" },
     "nav.strats": { en: "Strategies", pt: "Estratégias" },
     "nav.stratM3": { en: "Markov 3 — results", pt: "Markov 3 — resultados" },
     "nav.free": { en: "Create free account", pt: "Criar conta grátis" },
@@ -970,7 +971,7 @@
       <div class="footer-top">
         <div class="brand"><span class="brand-mark">${MARK_SVG}</span><span class="brand-name">Seven7</span></div>
         <div class="footer-links">
-          <a href="index.html#quantificar" data-i18n="nav.quant"></a><a href="terminal.html" data-i18n="nav.terminal"></a><a href="ferramentas.html" data-i18n="nav.tools"></a><a href="performance.html" data-i18n="nav.perf"></a><a href="performance.html#metrics" data-i18n="nav.metrics"></a><a href="performance.html#replay" data-i18n="card.replayT"></a><a href="dividends.html" data-i18n="nav.dividends"></a><a href="plans.html" data-i18n="nav.plans"></a>
+          <a href="index.html#quantificar" data-i18n="nav.quant"></a><a href="terminal.html" data-i18n="nav.terminal"></a><a href="ferramentas.html" data-i18n="nav.tools"></a><a href="aprenda.html" data-i18n="nav.learn"></a><a href="performance.html" data-i18n="nav.perf"></a><a href="performance.html#metrics" data-i18n="nav.metrics"></a><a href="performance.html#replay" data-i18n="card.replayT"></a><a href="dividends.html" data-i18n="nav.dividends"></a><a href="plans.html" data-i18n="nav.plans"></a>
           <a href="terms.html" data-i18n="terms.title"></a><a href="privacy.html" data-i18n="privacy.title"></a><a href="disclosures.html" data-i18n="disc.title"></a>
         </div>
       </div>

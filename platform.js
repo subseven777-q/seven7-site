@@ -73,13 +73,15 @@
   async function renderQuick() {
     const host = $("#qqHost"); if (!host) return;
     const cat = await catalogo();
+    let exemplo = EXEMPLO;                                   // guias: carteira de exemplo do tema (data-exemplo no #qqHost)
+    try { if (host.dataset.exemplo) exemplo = JSON.parse(host.dataset.exemplo); } catch (e) { exemplo = EXEMPLO; }
     let base = A().lang === "en" ? "USD" : "BRL";
     host.innerHTML = `<div class="qq-card">
       <div class="qq-head">
         <div><div class="qq-t">${tx("Sua carteira", "Your portfolio")}</div><div class="qq-s">${tx("Digite os ativos e quanto você tem em cada um. Sem cadastro.", "Type your assets and how much you hold in each. No sign-up.")}</div></div>
         <div class="seg qq-base">${["BRL", "USD"].map(c => `<button data-c="${c}" class="${c === base ? "on" : ""}">${c}</button>`).join("")}</div>
       </div>
-      <div id="qqRows">${EXEMPLO.map(linha).join("")}</div>
+      <div id="qqRows">${exemplo.map(linha).join("")}</div>
       <datalist id="qqCat">${cat.map(c => `<option value="${esc(c.s)}">${esc((CLS[c.c] || ["", ""])[A().lang === "en" ? 1 : 0])}</option>`).join("")}</datalist>
       <div class="qq-tools">
         <button class="btn btn-ghost qq-add">+ ${tx("Ativo", "Asset")}</button>

@@ -1459,3 +1459,15 @@ tr.held td.tk-cell,tr.held:hover td,tr.held.sel td{opacity:1}
 
 .qq-img:empty{display:none}
 .qq-img .btn{padding:8px 14px}
+
+/* Guias (páginas de entrada do Google) */
+.guide{max-width:760px;margin:0 auto;padding:clamp(28px,5vw,56px) clamp(16px,4vw,32px) 8px;font-size:16.5px;line-height:1.7;color:var(--ink-2)}
+.guide h1{font-size:clamp(30px,4.6vw,46px);line-height:1.15;color:var(--ink);margin:10px 0 18px;font-weight:750;letter-spacing:-.02em}
+.guide h2{font-size:clamp(20px,2.6vw,25px);color:var(--ink);margin:34px 0 10px;font-weight:700}
+.guide p{margin:0 0 14px}.guide b{color:var(--ink)}
+.guide ul{margin:0 0 14px;padding-left:22px}.guide li{margin:5px 0}
+.guide-lede{font-size:clamp(17px,2.2vw,20px);line-height:1.6;color:var(--ink)}
+.guide-crumb{font-size:13px;color:var(--ink-2)}.guide-crumb a{color:var(--accent)}
+.guide-aviso{font-size:13px;margin-top:22px;padding-top:14px;border-top:1px solid var(--border)}
+.guide .faq{margin:0}
+.guide-index{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}

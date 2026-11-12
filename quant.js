@@ -67,7 +67,7 @@
     const it = [[tx("Volatilidade anual", "Annual volatility"), pc(m.vol), `${esc(m.bench)} ${pc(m.vol_bench)}`], [tx("Retorno anual (2a)", "Annual return (2y)"), sp(m.ret_ann), tx("com os pesos de hoje", "at today's weights")],
       [tx("Pior queda (2a)", "Max drawdown (2y)"), pc(m.max_dd), tx(`atual ${pc(m.dd_atual)}`, `now ${pc(m.dd_atual)}`)], ["VaR 95% (1 dia)", pc(m.var95, 2), tx("perda em 1 de cada 20 dias", "loss on 1 in 20 days")],
       ["ES 97,5% (1 dia)", pc(m.es975, 2), tx("média dos piores 2,5% dos dias", "avg of worst 2.5% days")], ["Beta", nf(m.beta, 2), tx(`vs ${m.bench}`, `vs ${m.bench}`)],
-      [tx("Apostas efetivas", "Effective bets"), nf(m.enb), "1 / Σ RC²"], [tx("Correlação média", "Avg correlation"), nf(m.corr_media, 2), tx("entre os ativos", "between assets")]];
+      [tx("Apostas independentes", "Independent bets"), nf(m.enb), "(Σ wᵢσᵢ / σₚ)²"], [tx("Correlação média", "Avg correlation"), nf(m.corr_media, 2), tx("entre os ativos", "between assets")]];
     host.innerHTML = `<div class="q-metrics">${it.map(([l, v, s]) => `<div class="q-m"><div class="q-ml">${l}</div><div class="q-mv">${v}</div><div class="q-ms">${s}</div></div>`).join("")}</div>`;
   }
 
@@ -144,7 +144,7 @@
     const cmp = (l, x, y, inv) => `<tr><td>${l}</td><td class="num">${x}</td><td class="num"><b>${y}</b></td></tr>`;
     host.innerHTML = `<table class="q-tbl q-cmp"><thead><tr><th></th><th class="num">${tx("Hoje", "Today")}</th><th class="num">HRP</th></tr></thead><tbody>
       ${cmp(tx("Volatilidade", "Volatility"), pc(a.vol), pc(h.vol))}${cmp(tx("Pior queda (2a)", "Max drawdown"), pc(a.max_dd), pc(h.max_dd))}
-      ${cmp("ES 97,5%", pc(a.es975, 2), pc(h.es975, 2))}${cmp(tx("Apostas efetivas", "Effective bets"), nf(a.enb), nf(h.enb))}</tbody></table>
+      ${cmp("ES 97,5%", pc(a.es975, 2), pc(h.es975, 2))}${cmp(tx("Apostas independentes", "Independent bets"), nf(a.enb), nf(h.enb))}</tbody></table>
       <table class="q-tbl"><thead><tr><th>${tx("Ativo", "Asset")}</th><th class="num">${tx("Hoje", "Today")}</th><th class="num">HRP</th><th class="num">${tx("Ajuste", "Change")}</th></tr></thead><tbody>
       ${rows.map(r => `<tr><td><b>${esc(r.label)}</b>${r.sinal ? ` <small class="q-sig">${tx("sinal Seven7", "Seven7 signal")}</small>` : ""}</td><td class="num">${pc(r.w)}</td><td class="num">${pc(r.w_hrp)}</td>
         <td class="num ${r.delta_hrp > 0 ? "pos" : "neg"}">${r.delta_hrp > 0 ? tx("+ comprar ", "+ buy ") : tx("− vender ", "− sell ")}${money(Math.abs(r.delta_hrp))}</td></tr>`).join("")}</tbody></table>
@@ -173,7 +173,7 @@
       <li><b>Drawdown</b>: DD<sub>t</sub> = V<sub>t</sub> / max<sub>s≤t</sub> V<sub>s</sub> − 1</li>
       <li><b>VaR 95% / ES 97,5%</b>: ${tx("históricos de 1 dia — quantil de 5% e média abaixo do quantil de 2,5%", "1-day historical — 5% quantile and mean below the 2.5% quantile")}</li>
       <li><b>${tx("Covariância", "Covariance")}</b>: Σ = δ·m·I + (1−δ)·S ${tx("(Ledoit-Wolf, δ ótimo)", "(Ledoit-Wolf, optimal δ)")}</li>
-      <li><b>${tx("Contribuição ao risco", "Risk contribution")}</b>: RC<sub>i</sub> = w<sub>i</sub>(Σw)<sub>i</sub> / (wᵀΣw) · ${tx("apostas efetivas", "effective bets")} = 1/ΣRC<sub>i</sub>²</li>
+      <li><b>${tx("Contribuição ao risco", "Risk contribution")}</b>: RC<sub>i</sub> = w<sub>i</sub>(Σw)<sub>i</sub> / (wᵀΣw) · ${tx("apostas independentes", "independent bets")} = (Σ w<sub>i</sub>σ<sub>i</sub> / σ<sub>p</sub>)² ${tx("— a razão de diversificação ao quadrado: desconta os ativos que andam juntos", "— the squared diversification ratio: discounts assets that move together")}</li>
       <li><b>Beta</b>: β = cov(r<sub>p</sub>, r<sub>b</sub>) / var(r<sub>b</sub>)</li>
       <li><b>${tx("Fronteira", "Frontier")}</b>: min wᵀΣw ${tx("sujeito a", "s.t.")} wᵀμ = alvo, Σw = 1, w ≥ 0 · μ ${tx("encolhido 50% para a média", "shrunk 50% to the mean")}</li>
       <li><b>HRP</b>: ${tx("distância", "distance")} d = √(½(1−ρ)) → ${tx("árvore (single linkage) → ordem quase-diagonal → bissecção recursiva com variância inversa", "tree (single linkage) → quasi-diagonal order → recursive bisection by inverse variance")}</li>

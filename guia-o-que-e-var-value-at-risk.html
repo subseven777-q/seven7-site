@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>O que é VaR (Value at Risk)? Explicado sem fórmula — Seven7</title>
+<meta name="description" content="VaR é a perda que sua carteira só ultrapassa em poucos dias. Entenda o VaR de 95%, o que ele não mostra e calcule o da sua carteira de graça.">
+<link rel="canonical" href="https://seven7invest.com/guia-o-que-e-var-value-at-risk.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Seven7">
+<meta property="og:title" content="O que é VaR (Value at Risk)? Explicado sem fórmula">
+<meta property="og:description" content="VaR é a perda que sua carteira só ultrapassa em poucos dias. Entenda o VaR de 95%, o que ele não mostra e calcule o da sua carteira de graça.">
+<meta property="og:url" content="https://seven7invest.com/guia-o-que-e-var-value-at-risk.html">
+<meta property="og:image" content="https://seven7invest.com/og.png">
+<meta property="og:locale" content="pt_BR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#070b14">
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "Article", "headline": "O que é VaR (Value at Risk)?", "description": "VaR é a perda que sua carteira só ultrapassa em poucos dias. Entenda o VaR de 95%, o que ele não mostra e calcule o da sua carteira de graça.", "inLanguage": "pt-BR", "mainEntityOfPage": "https://seven7invest.com/guia-o-que-e-var-value-at-risk.html", "author": {"@type": "Organization", "name": "Seven7"}, "publisher": {"@type": "Organization", "name": "Seven7"}}, {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "VaR é a perda máxima?", "acceptedAnswer": {"@type": "Answer", "text": "Não. É o limite que só é ultrapassado em uma pequena parte dos dias. A perda máxima pode ser bem maior, e é por isso que se olha também a perda esperada nos piores dias."}}, {"@type": "Question", "name": "Por que 95% e não 99%?", "acceptedAnswer": {"@type": "Answer", "text": "São convenções. 95% descreve um dia ruim que acontece cerca de uma vez por mês; 99% descreve algo mais raro, algumas vezes por ano. Na página Ferramentas você escolhe o nível."}}, {"@type": "Question", "name": "VaR serve para o longo prazo?", "acceptedAnswer": {"@type": "Answer", "text": "Ele é uma medida de curto prazo, de um dia ou poucos dias. Para horizontes longos, a queda máxima costuma dizer mais."}}]}]</script>
+<link rel="stylesheet" href="styles.css?v=74">
+</head>
+<body data-page="guide">
+<div id="nav-root"></div>
+
+<article class="guide">
+  <div class="guide-crumb"><a href="aprenda.html">Aprenda</a> › Guia</div>
+  <h1>O que é VaR (Value at Risk)?</h1>
+  <p class="guide-lede">O VaR responde a uma pergunta direta: <b>“em um dia ruim, mas não excepcional, quanto eu posso perder?”</b></p>
+  <h2>Como ler um VaR de 95%</h2>
+  <p>Um VaR de 95% em 1 dia igual a 1,9% significa: em 95 de cada 100 dias, a perda fica <b>abaixo</b> de 1,9%. Nos outros 5 — mais ou menos um dia por mês — ela passa disso.</p><p>Em uma carteira de R$ 100 mil com cerca de 18% de volatilidade ao ano, isso dá perto de R$ 1.900. Não é o pior caso: é a fronteira do “dia ruim normal”.</p>
+  <h2>O que o VaR não diz</h2>
+  <p>Ele não diz <b>quanto</b> você perde quando a perda passa do limite. Para isso existe outra medida, a <b>perda esperada nos piores dias</b> (Expected Shortfall): a média do que acontece naqueles dias fora da curva.</p><p>Olhar os dois juntos é o padrão em gestão de risco: o VaR marca a porta; o Expected Shortfall mostra o que há atrás dela.</p>
+  <h2>Duas formas de calcular</h2>
+  <ul><li><b>Pelo histórico</b>: pega os retornos reais da carteira e vê qual foi a perda que separa os 5% piores dias. É o que a Seven7 usa na sua carteira.</li><li><b>Pela fórmula</b>: assume que os retornos seguem uma curva normal. É mais simples, mas subestima dias extremos.</li></ul>
+  <h2>Para que serve na prática</h2>
+  <p>Para dar tamanho ao risco em reais. “Minha carteira tem 18% de volatilidade” é abstrato; “uma vez por mês eu posso perder R$ 1.900 em um dia” é uma frase que ajuda a decidir.</p>
+</article>
+
+<section class="section qq-section" id="quantificar">
+  <div class="section-head center">
+    <div class="kicker">TESTE AGORA · GRÁTIS</div>
+    <h2>Meça na sua carteira</h2>
+    <p class="sub">Veja o VaR de 95% e a perda nos piores dias desta carteira — depois calcule os da sua. Sem cadastro.</p>
+  </div>
+  <div id="qqHost" data-exemplo='[{&quot;s&quot;:&quot;BOVA11&quot;,&quot;v&quot;:30000},{&quot;s&quot;:&quot;IVVB11&quot;,&quot;v&quot;:20000},{&quot;s&quot;:&quot;PETR4&quot;,&quot;v&quot;:15000},{&quot;s&quot;:&quot;BTC&quot;,&quot;v&quot;:10000},{&quot;s&quot;:&quot;RF:CDI&quot;,&quot;v&quot;:25000,&quot;taxa&quot;:100}]'></div>
+</section>
+
+<article class="guide">
+  <h2>Perguntas frequentes</h2>
+  <div class="faq">
+    <details><summary>VaR é a perda máxima?</summary><p>Não. É o limite que só é ultrapassado em uma pequena parte dos dias. A perda máxima pode ser bem maior, e é por isso que se olha também a perda esperada nos piores dias.</p></details>
+    <details><summary>Por que 95% e não 99%?</summary><p>São convenções. 95% descreve um dia ruim que acontece cerca de uma vez por mês; 99% descreve algo mais raro, algumas vezes por ano. Na página Ferramentas você escolhe o nível.</p></details>
+    <details><summary>VaR serve para o longo prazo?</summary><p>Ele é uma medida de curto prazo, de um dia ou poucos dias. Para horizontes longos, a queda máxima costuma dizer mais.</p></details>
+  </div>
+  <p class="guide-aviso">Conteúdo educativo. A Seven7 é uma ferramenta de medição: os números vêm de dados passados e não são recomendação de investimento.</p>
+</article>
+
+<section class="section">
+  <div class="section-head"><div class="kicker">CONTINUE APRENDENDO</div><h2>Outros guias</h2></div>
+  <div class="home-cards"><a class="home-card" href="guia-quanto-risco-tem-minha-carteira.html" style="--tone:var(--c-cyan)"><div class="hc-title">Quanto risco tem a minha carteira?</div><div class="hc-desc">Aprenda a medir o risco da sua carteira de investimentos: volatilidade, queda máxima e concentração, explicados sem fórmula — e calcule a sua de graça.</div></a><a class="home-card" href="guia-como-diversificar-fiis.html" style="--tone:var(--c-cyan)"><div class="hc-title">Como diversificar uma carteira de FIIs</div><div class="hc-desc">Ter 10 fundos imobiliários não é o mesmo que estar diversificado.</div></a><a class="home-card" href="guia-o-que-e-drawdown.html" style="--tone:var(--c-cyan)"><div class="hc-title">O que é drawdown?</div><div class="hc-desc">Drawdown é quanto sua carteira caiu desde o último topo.</div></a><a class="home-card" href="guia-o-que-e-volatilidade.html" style="--tone:var(--c-cyan)"><div class="hc-title">O que é volatilidade?</div><div class="hc-desc">Volatilidade é o quanto o valor da carteira oscila.</div></a><a class="home-card" href="guia-carteira-concentrada-quantas-acoes-ter.html" style="--tone:var(--c-cyan)"><div class="hc-title">Minha carteira está concentrada?</div><div class="hc-desc">Descubra se sua carteira de ações está concentrada: por que 10 ações podem valer por 3 apostas e como medir quem carrega o risco.</div></a></div>
+</section>
+
+<div id="footer-root"></div>
+<script src="app.js?v=76"></script>
+<script src="quant.js?v=3"></script>
+<script src="platform.js?v=6"></script>
+</body>
+</html>
