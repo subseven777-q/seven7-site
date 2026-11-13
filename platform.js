@@ -41,10 +41,10 @@
   function linha(p) {
     const rf = (p.s || "").startsWith("RF:");
     return `<div class="qq-row">
-      <input class="qq-sym" list="qqCat" placeholder="${tx("Ativo (ex.: PETR4, AAPL, BTC)", "Asset (e.g. PETR4, AAPL, BTC)")}" value="${esc(rf ? "" : p.s || "")}" ${rf ? "hidden" : ""} maxlength="20" autocomplete="off" spellcheck="false">
+      <input class="qq-sym" list="qqCat" aria-label="${tx("Código do ativo", "Asset ticker")}" placeholder="${tx("Ativo (ex.: PETR4, AAPL, BTC)", "Asset (e.g. PETR4, AAPL, BTC)")}" value="${esc(rf ? "" : p.s || "")}" ${rf ? "hidden" : ""} maxlength="20" autocomplete="off" spellcheck="false">
       ${rf ? `<span class="qq-rf" data-s="${esc(p.s)}">${esc((RF_OPTS.find(o => o.s === p.s) || {}).l?.() || p.s)}</span>` : ""}
-      ${rf ? `<label class="qq-taxa"><input type="number" step="0.1" min="0" value="${p.taxa ?? ""}"><span>${p.s === "RF:CDI" || p.s === "RF:SELIC" ? "%" : tx("% a.a.", "% p.a.")}</span></label>` : ""}
-      <label class="qq-val"><span class="qq-cur"></span><input type="number" min="0" step="100" value="${p.v ?? ""}" placeholder="${tx("valor", "amount")}"></label>
+      ${rf ? `<label class="qq-taxa"><input type="number" inputmode="decimal" aria-label="${tx("Taxa", "Rate")}" step="0.1" min="0" value="${p.taxa ?? ""}"><span>${p.s === "RF:CDI" || p.s === "RF:SELIC" ? "%" : tx("% a.a.", "% p.a.")}</span></label>` : ""}
+      <label class="qq-val"><span class="qq-cur"></span><input type="number" inputmode="decimal" aria-label="${tx("Valor investido", "Amount held")}" min="0" step="100" value="${p.v ?? ""}" placeholder="${tx("valor", "amount")}"></label>
       <button class="qq-del" title="${tx("Remover", "Remove")}" aria-label="${tx("Remover", "Remove")}">✕</button>
     </div>`;
   }

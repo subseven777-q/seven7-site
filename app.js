@@ -224,6 +224,8 @@
     "nav.desk": { en: "My desk", pt: "Minha mesa" },
     "nav.terminal": { en: "Terminal", pt: "Terminal" },
     "nav.quant": { en: "Quantify", pt: "Quantificar" },
+    "ui.skip": { en: "Skip to content", pt: "Pular para o conteúdo" },
+    "ui.close": { en: "Close", pt: "Fechar" },
     "acct.mailH": { en: "Weekly e-mail", pt: "E-mail semanal" },
     "acct.mailD": { en: "Once a week: your portfolio score, what changed and what carries the risk.", pt: "Uma vez por semana: a nota da sua carteira, o que mudou e quem carrega o risco." },
     "acct.mailOn": { en: "Receive the weekly summary", pt: "Receber o resumo semanal" },
@@ -1202,7 +1204,7 @@
         </div><div class="foot">${t("fm.consFoot")}</div></div>`;
     }
     host.innerHTML = `<div class="drill-card fs-drill">
-      <div class="drill-head"><div><b>${tk}</b> <span class="mkt">${mkt}</span> <span class="muted-note">${t("fm.title")}</span></div><button class="drill-close" id="fsDrillClose">✕</button></div>
+      <div class="drill-head"><div><b>${tk}</b> <span class="mkt">${mkt}</span> <span class="muted-note">${t("fm.title")}</span></div><button class="drill-close" id="fsDrillClose" aria-label="${t("ui.close")}">✕</button></div>
       <div class="fund-secs">${fsBlock}${mgBlock}${csBlock}</div></div>`;
     const cl = $("#fsDrillClose"); if (cl) cl.onclick = () => { FS_SEL = null; host.innerHTML = ""; };
     host.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -1264,7 +1266,10 @@
   };
 
   function injectChrome() {
-    const n = $("#nav-root"); if (n) n.innerHTML = NAV_HTML;
+    const n = $("#nav-root"); if (n) n.innerHTML = `<a class="skip-link" href="#conteudo">${t("ui.skip")}</a>` + NAV_HTML;
+    const alvo = n && n.nextElementSibling;
+    if (alvo && !$("#conteudo")) { alvo.id = alvo.id || "conteudo"; if (alvo.id !== "conteudo") alvo.setAttribute("data-skip", "1"); alvo.setAttribute("tabindex", "-1"); }
+    const sk = n && n.querySelector(".skip-link"); if (sk && alvo) sk.href = "#" + alvo.id;
     const f = $("#footer-root"); if (f) f.innerHTML = FOOTER_HTML;
     const page = document.body.dataset.page;
     $$(".nav-links a[data-page]").forEach(a => a.classList.toggle("active", a.dataset.page === page));
@@ -2067,7 +2072,7 @@
       add.innerHTML = `${flow}<span class="alloc-lbl">${t("sig.riskLbl")}</span>
         <select id="riskSel" class="alloc-in alloc-sel">${opts}</select>
         <button class="btn ${late ? "btn-ghost" : "btn-primary"}" id="addPortfolioBtn">${late ? t("sig.addLate") : t("sig.addOrder")}</button>
-        <span class="add-msg" id="addMsg"></span>
+        <span role="status" aria-live="polite" class="add-msg" id="addMsg"></span>
         <div class="buy-calc" id="buyCalc"></div>
         <div class="risk-note" id="riskNote"></div>
         <div class="kelly-hint">${t("sig.riskHint")}</div>`;
@@ -2174,7 +2179,7 @@
           <label>${t("pf.fMat")}<input id="ffMat" type="date"></label>
         </div>
         <div class="ff-grid"><label>${t("pf.fDate")}<input id="ffDate" type="date" value="${today}" max="${today}"></label></div>
-        <button class="btn btn-primary" id="ffSave">${t("pf.fAdd")}</button><span class="add-msg" id="ffMsg"></span>
+        <button class="btn btn-primary" id="ffSave">${t("pf.fAdd")}</button><span role="status" aria-live="polite" class="add-msg" id="ffMsg"></span>
         <p class="hedge-note">${t("pf.freeNote")}</p>
       </div></details>`;
   }
@@ -2363,7 +2368,7 @@
           : `<div class="br-add">${interp(t("beta.trimLine"), { d: nf(-delta, 0) })}</div>`}
       ${kmlmPct > 55 ? `<div class="br-warn">⚠ ${t("beta.aggressive")}</div>` : ""}
       <button class="btn btn-primary" id="betaApply">${interp(t("beta.apply"), { pct: nf(kmlmPct, 0) })}</button>
-      <span class="add-msg" id="betaMsg"></span>
+      <span role="status" aria-live="polite" class="add-msg" id="betaMsg"></span>
     </div>`;
     const apply = $("#betaApply");
     if (apply) apply.onclick = () => applyBetaKmlm(kmlmPct);
@@ -2449,7 +2454,7 @@
         <select id="pfCur" class="pf-cur" title="${t("pf.currency")}" aria-label="${t("pf.currency")}">${["BRL", "USD"].map(c => `<option ${c === cur ? "selected" : ""}>${c}</option>`).join("")}</select>
         <button class="btn btn-primary" id="pfSaveDep">${t("pf.save")}</button>
         ${isEliteNow && positions.length ? `<button class="btn btn-ghost" id="pfExport">${ic("down")}${t("pf.export")}</button>` : ""}
-        <span class="add-msg" id="pfDepMsg"></span>
+        <span role="status" aria-live="polite" class="add-msg" id="pfDepMsg"></span>
       </div>
       ${danger}
     </div>`;
@@ -3211,7 +3216,7 @@
       </div>
       <div class="${under ? "kmlm-alert" : "kmlm-ok"}">${under ? interp(t("kmlm.under"), { rec: nf(rec, 0) }) : t("kmlm.onTarget")}</div>
       <div class="kmlm-desc">${t("kmlm.desc")}</div>
-      ${hedge.price ? `<button class="btn btn-primary" id="kmlmAdd">${interp(t("kmlm.addBtn"), { rec: nf(rec, 0) })}</button><span class="add-msg" id="kmlmMsg"></span>` : ""}
+      ${hedge.price ? `<button class="btn btn-primary" id="kmlmAdd">${interp(t("kmlm.addBtn"), { rec: nf(rec, 0) })}</button><span role="status" aria-live="polite" class="add-msg" id="kmlmMsg"></span>` : ""}
     </div>`;
     const add = $("#kmlmAdd");
     if (add) add.onclick = async () => {
@@ -3488,7 +3493,7 @@
         <td><span class="tr-badge ${z.r > 0 ? "win" : "loss"}">${z.res}</span></td></tr>`).join("");
     host.innerHTML = `<div class="drill-card">
       <div class="drill-head"><div><b>${PO3_TK}</b> <span class="mkt">${rows[0].mkt}</span> — ${interp(t("mem.monthSummary"), { n, w: wins, p: Math.round(wins / n * 100) })} · <span class="${rColor(totR)}">${totR > 0 ? "+" : ""}${nf(totR, 1)}R</span> · <span class="${rColor(avgR)}">${avgR > 0 ? "+" : ""}${nf(avgR, 2)}R ${t("mem.avgShort")}</span></div>
-        <button class="drill-close" id="tkDrillClose">✕</button></div>
+        <button class="drill-close" id="tkDrillClose" aria-label="${t("ui.close")}">✕</button></div>
       <div class="table-wrap blotter-scroll"><table class="sig-table"><thead><tr><th class="num">${t("mem.window")}</th><th class="num">${t("mem.hold")}</th><th class="num">R</th><th class="num">${t("m.totalRet")}</th><th>${t("mem.outcome")}</th></tr></thead><tbody>${body}</tbody></table></div></div>`;
     cardify(host.querySelector("table"));
     const cl = $("#tkDrillClose"); if (cl) cl.onclick = () => { PO3_TK = null; renderTickerDrill(k); drawTickerHeat(k, po3TickerAgg(k)); paintScreener(k, po3TickerAgg(k)); };
@@ -3532,7 +3537,7 @@
       : `<tr><td colspan="6" class="muted-note" style="padding:16px;text-align:center">${t("mem.noTradesMonth")}</td></tr>`;
     host.innerHTML = `<div class="drill-card">
       <div class="drill-head"><div><b>${label}</b> — ${interp(t("mem.monthSummary"), { n: rows.length, w: wins, p: rows.length ? Math.round(wins / rows.length * 100) : 0 })} · <span class="${rColor(avgR)}">${avgR > 0 ? "+" : ""}${nf(avgR, 2)}R ${t("mem.avgShort")}</span></div>
-        <button class="drill-close" id="drillClose">✕</button></div>
+        <button class="drill-close" id="drillClose" aria-label="${t("ui.close")}">✕</button></div>
       <div class="table-wrap blotter-scroll"><table class="sig-table"><thead><tr><th>${t("sig.ticker")}</th><th class="num">${t("mem.window")}</th><th class="num">${t("mem.hold")}</th><th class="num">R</th><th class="num">${t("m.totalRet")}</th><th>${t("mem.outcome")}</th></tr></thead><tbody>${body}</tbody></table></div></div>`;
     cardify(host.querySelector("table"));
     const cl = $("#drillClose"); if (cl) cl.onclick = () => { PO3_MONTH = null; renderPO3Panel(k); };
