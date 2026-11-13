@@ -727,7 +727,7 @@
     "pf.fAdd": { en: "Add to portfolio", pt: "Adicionar ao portfólio" },
     "pf.fBad": { en: "Fill in the fields correctly.", pt: "Preencha os campos corretamente." },
     "pf.fMig": { en: "This type of asset is not enabled yet (database update pending).", pt: "Este tipo de ativo ainda não está habilitado (atualização do banco pendente)." },
-    "pf.fOk": { en: "Added ✓", pt: "Adicionado ✓" },
+    "pf.fOk": { en: "Added ✓ — your score is recalculated within 15 minutes on weekdays (weekends: at 7 pm).", pt: "Adicionado ✓ — a nota é recalculada em até 15 minutos nos dias úteis (fim de semana: às 19:00)." },
     "pf.tAcaoBr": { en: "Brazilian stock / ETF (B3)", pt: "Ação / ETF Brasil (B3)" },
     "pf.tFii": { en: "Real estate fund (FII)", pt: "Fundo imobiliário (FII)" },
     "pf.tAcaoUs": { en: "US stock / ETF", pt: "Ação / ETF EUA" },
