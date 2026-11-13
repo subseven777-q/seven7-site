@@ -61,6 +61,31 @@
   }
 
   // ---------------- métricas ----------------
+  // ---------------- dividendos/rendimentos (últimos 12 meses, pela quantidade de hoje) ----------------
+  const money2 = v => (v == null || !isFinite(v) ? "—" : (CUR === "BRL" ? "R$ " : "US$ ") + new Intl.NumberFormat(loc(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v));
+  function dividends(host, A, o) {
+    set(A, o);
+    const D = A.dividendos;
+    if (!D || !D.n) {
+      host.innerHTML = `<p class="q-empty">${tx("Nenhum ativo da sua carteira pagou dividendos ou rendimentos nos últimos 12 meses. Ações de empresas maduras e FIIs costumam pagar; cripto, renda fixa e muitos ETFs não.", "None of your assets paid dividends in the last 12 months. Mature companies and REITs usually pay; crypto, fixed income and many ETFs don't.")}</p>`;
+      return;
+    }
+    const mx = Math.max(...D.meses.map(m => m.v), 1e-9);
+    const nomeMes = m => new Date(m + "-15").toLocaleDateString(loc(), { month: "short" }).replace(".", "");
+    const barras = D.meses.map(m => `<div class="q-divbar" title="${esc(nomeMes(m.m))}: ${money2(m.v)}"><i style="height:${Math.max(2, m.v / mx * 100)}%"></i><span>${esc(nomeMes(m.m))}</span></div>`).join("");
+    const linhas = D.ativos.map(a => `<tr><td>${esc(a.label)}</td><td class="num">${pc(a.dy, 1)}</td><td class="num">${money2(a.anual)}</td>
+      <td class="num">${a.n}×</td><td class="num">${new Date(a.ultimo_d + "T12:00:00").toLocaleDateString(loc(), { day: "2-digit", month: "2-digit", year: "2-digit" })}</td></tr>`).join("");
+    host.innerHTML = `<div class="q-divtop">
+        <div><div class="q-divv">${money2(D.anual)}</div><div class="q-divl">${tx("por ano", "per year")}</div></div>
+        <div><div class="q-divv">${money2(D.mensal)}</div><div class="q-divl">${tx("por mês, em média", "per month, on average")}</div></div>
+        <div><div class="q-divv">${pc(D.yield, 1)}</div><div class="q-divl">${tx("do valor da carteira (dividend yield)", "of portfolio value (dividend yield)")}</div></div>
+      </div>
+      <p class="q-divtxt">${tx(`Com a quantidade que você tem hoje, sua carteira teria recebido cerca de <b>${money2(D.anual)}</b> em dividendos e rendimentos nos últimos 12 meses — <b>${D.n}</b> ativo(s) pagaram.`, `With what you hold today, your portfolio would have received about <b>${money2(D.anual)}</b> in dividends over the last 12 months — <b>${D.n}</b> asset(s) paid.`)}</p>
+      <div class="q-divbars" role="img" aria-label="${tx("Proventos por mês nos últimos 12 meses", "Income per month over the last 12 months")}">${barras}</div>
+      <div class="q-tablewrap"><table class="q-table"><thead><tr><th>${tx("Ativo", "Asset")}</th><th class="num">${tx("Rende ao ano", "Yield")}</th><th class="num">${tx("Você recebe/ano", "You get/yr")}</th><th class="num">${tx("Pagamentos", "Payments")}</th><th class="num">${tx("Último", "Last")}</th></tr></thead><tbody>${linhas}</tbody></table></div>
+      <p class="q-note">${tx("Estimativa: proventos pagos por cota nos últimos 12 meses × a quantidade que você tem hoje. Valores passados não garantem pagamentos futuros; impostos não descontados.", "Estimate: per-share payouts over the last 12 months × what you hold today. Past payouts don't guarantee future ones; before taxes.")}</p>`;
+  }
+
   function metrics(host, A, o) {
     set(A, o); if (empty(host, A)) return;
     const m = A.metricas;
@@ -184,6 +209,7 @@
     set(A, o);
     if (empty(host, A)) return;
     host.innerHTML = `<div class="q-card"><div class="q-h">${tx("Saúde do portfólio", "Portfolio health")}</div><div id="qHealth"></div></div>
+      ${A.dividendos ? `<div class="q-card"><div class="q-h">${tx("Dividendos e rendimentos", "Dividends and income")}</div><div id="qDiv"></div></div>` : ""}
       <div class="q-card"><div class="q-h">${tx("Números de risco", "Risk numbers")}</div><div id="qMetrics"></div></div>
       <div class="q-2col"><div class="q-card"><div class="q-h">${tx("Quem carrega o risco", "Who carries the risk")}</div><div id="qRisk"></div></div>
         <div class="q-card"><div class="q-h">${tx("Fronteira eficiente — onde você está", "Efficient frontier — where you stand")}</div><div id="qFront"></div></div></div>
@@ -191,7 +217,7 @@
         <div class="q-card"><div class="q-h">${tx("Otimização sugerida (HRP)", "Suggested optimization (HRP)")}</div><div id="qHRP"></div></div></div>
       <div class="q-card"><div class="q-h">${tx("Correlação entre os ativos", "Correlation between assets")}</div><div id="qCorr"></div></div><div id="qForm"></div>`;
     const g = id => host.querySelector("#" + id);
-    health(g("qHealth"), A, o); metrics(g("qMetrics"), A, o); risk(g("qRisk"), A, o); frontier(g("qFront"), A, o);
+    health(g("qHealth"), A, o); if (A.dividendos) dividends(g("qDiv"), A, o); metrics(g("qMetrics"), A, o); risk(g("qRisk"), A, o); frontier(g("qFront"), A, o);
     dd(g("qDD"), A, o); hrpView(g("qHRP"), A, o); corr(g("qCorr"), A, o); formulas(g("qForm"));
   }
 
@@ -274,6 +300,6 @@
     });
   }
 
-  window.S7Quant = { full, health, metrics, risk, dd, frontier, hrp: hrpView, corr, formulas, scoreCanvas, shareImage, shareButtons };
+  window.S7Quant = { full, health, dividends, metrics, risk, dd, frontier, hrp: hrpView, corr, formulas, scoreCanvas, shareImage, shareButtons };
   if (window.__s7QuantPending) { const f = window.__s7QuantPending; delete window.__s7QuantPending; f(); }
 })();

@@ -60,7 +60,7 @@
   function initApp() {
     const local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
     if ("serviceWorker" in navigator && (!local || localStorage.getItem("s7-sw-test") === "1")) {
-      navigator.serviceWorker.register("sw.js").catch(() => {});
+      navigator.serviceWorker.register("sw.js").then(reg => reg.update()).catch(() => {});   // sempre busca a versão nova (iPhone demora a atualizar sozinho)
     }
     window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); INSTALL_EVT = e; renderAppCard(); });
     window.addEventListener("appinstalled", () => { track("app_installed"); INSTALL_EVT = null; const h = $("#appHost"); if (h) h.innerHTML = ""; });
@@ -107,6 +107,10 @@
     let sub = null;
     try { const reg = await navigator.serviceWorker.getRegistration(); sub = reg ? await reg.pushManager.getSubscription() : null; } catch (e) { sub = null; }
     host.innerHTML = pushHtml(sub ? "on" : "off");
+    if (sub && sb && USER && USER.id !== "preview" && !window.__pushSync) {   // reconfirma o aparelho no banco (o endereço pode ter mudado)
+      window.__pushSync = true; const j = sub.toJSON();
+      sb.from("push_subs").upsert({ endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, ua: navigator.userAgent.slice(0, 200) }, { onConflict: "endpoint" }).then(() => {}, () => {});
+    }
     const bt = $("#pushBtn"); if (!bt) return;
     bt.onclick = async () => {
       bt.disabled = true;
@@ -708,7 +712,18 @@
     "pf.deposit": { en: "Initial deposit", pt: "Depósito inicial" },
     "pf.currency": { en: "Portfolio currency", pt: "Moeda do portfólio" },
     "pf.freeAdd": { en: "Add an asset", pt: "Adicionar ativo" },
-    "pf.freeHint": { en: "Any asset: stocks and ETFs from Brazil, the US and 18 other markets, REITs, crypto and fixed income. Free.", pt: "Qualquer ativo: ações e ETFs do Brasil, dos EUA e de mais 18 mercados, FIIs, cripto e renda fixa. Grátis." },
+    "pf.kAtivo": { en: "Stock, REIT, ETF or crypto", pt: "Ação, FII, ETF ou cripto" },
+    "pf.kRf": { en: "Fixed income", pt: "Renda fixa" },
+    "pf.fOwn": { en: "I want to enter my own average price and purchase date", pt: "Quero informar meu preço médio e a data da compra" },
+    "pf.fLast": { en: "last price", pt: "último preço" },
+    "pf.fTotal": { en: "total", pt: "total" },
+    "pf.fPxLater": { en: "we'll fetch the price within 15 minutes", pt: "o preço entra em até 15 minutos" },
+    "pf.fNotCode": { en: "We didn't recognize this ticker. Examples: PETR4, HGLG11, AAPL, BTC, SAP.DE", pt: "Não reconhecemos esse código. Exemplos: PETR4, HGLG11, AAPL, BTC, SAP.DE" },
+    "pf.fBadQty": { en: "Enter how many units you have.", pt: "Informe quantas unidades você tem." },
+    "pf.fBadPx": { en: "Enter your average price, or uncheck the option to use today's price.", pt: "Informe seu preço médio, ou desmarque a opção para usar o preço de hoje." },
+    "pf.fBadRf": { en: "Fill in name, amount and rate.", pt: "Preencha nome, valor aplicado e taxa." },
+    "pf.fDateRf": { en: "Investment date", pt: "Data da aplicação" },
+    "pf.freeHint": { en: "Just the ticker and quantity — we find the rest. Brazil, US, other markets, crypto and fixed income.", pt: "Só o código e a quantidade — o resto a gente descobre. Brasil, EUA, outros países, cripto e renda fixa." },
     "pf.fEx": { en: "Country / exchange", pt: "País / bolsa" },
     "pf.fExNote": { en: "Type the ticker as it trades on that exchange (e.g. SAP in Germany, 7203 in Japan). Price and currency are picked up automatically; quantity × price is converted to your portfolio currency. Can't find it? Choose “Other exchange” and type the Yahoo Finance code.", pt: "Digite o código como é negociado naquela bolsa (ex.: SAP na Alemanha, 7203 no Japão). Preço e moeda entram sozinhos; quantidade × preço é convertido para a moeda da sua carteira. Não achou? Escolha “Outra bolsa” e digite o código do Yahoo Finance." },
     "pf.showAll": { en: "Show all {n} positions", pt: "Ver todas as {n} posições" },
@@ -2141,81 +2156,151 @@
     }
     return error;
   }
-  // ---- posições LIVRES (fora das estratégias): quantidade × preço; renda fixa por valor + indexador ----
-  const FREE_TYPES = [["acao_br", "pf.tAcaoBr"], ["fii", "pf.tFii"], ["acao_us", "pf.tAcaoUs"], ["outro", "pf.tOutro"], ["cripto", "pf.tCripto"],
-                      ["rf_br", "pf.tRfBr"], ["rf_us", "pf.tRfUs"]];
-  // bolsas de outros países: [rótulo PT, rótulo EN, sufixo do código (padrão Yahoo Finance), moeda de negociação]
-  // Londres cota em pence (GBX = centavos de libra). "" = digitar o código completo (ex.: índices, fundos, outras bolsas).
-  const BOLSAS = [
-    ["Alemanha (Xetra)", "Germany (Xetra)", ".DE", "EUR"], ["Argentina (Buenos Aires)", "Argentina (Buenos Aires)", ".BA", "ARS"],
-    ["Austrália (ASX)", "Australia (ASX)", ".AX", "AUD"], ["Canadá (Toronto)", "Canada (Toronto)", ".TO", "CAD"],
-    ["China (Xangai)", "China (Shanghai)", ".SS", "CNY"], ["China (Shenzhen)", "China (Shenzhen)", ".SZ", "CNY"],
-    ["Coreia do Sul (Seul)", "South Korea (Seoul)", ".KS", "KRW"], ["Espanha (Madri)", "Spain (Madrid)", ".MC", "EUR"],
-    ["França (Paris)", "France (Paris)", ".PA", "EUR"], ["Holanda (Amsterdã)", "Netherlands (Amsterdam)", ".AS", "EUR"],
-    ["Hong Kong", "Hong Kong", ".HK", "HKD"], ["Índia (NSE)", "India (NSE)", ".NS", "INR"], ["Itália (Milão)", "Italy (Milan)", ".MI", "EUR"],
-    ["Japão (Tóquio)", "Japan (Tokyo)", ".T", "JPY"], ["México", "Mexico", ".MX", "MXN"], ["Portugal (Lisboa)", "Portugal (Lisbon)", ".LS", "EUR"],
-    ["Reino Unido (Londres)", "United Kingdom (London)", ".L", "GBX"], ["Suíça (Zurique)", "Switzerland (Zurich)", ".SW", "CHF"],
-    ["Outra bolsa — digito o código completo", "Other exchange — I'll type the full code", "", ""],
-  ];
-  const MOEDAS = ["USD", "BRL", "EUR", "GBP", "GBX", "CHF", "JPY", "CAD", "AUD", "HKD", "CNY", "INR", "KRW", "MXN", "ARS", "SEK", "NOK", "DKK", "SGD", "ZAR", "CLP"];
+  // ---- posições LIVRES (fora das estratégias) ----
+  // Ação, FII, ETF ou cripto: só CÓDIGO + QUANTIDADE. O tipo, a bolsa e a moeda saem do próprio código; o preço vem das
+  // cotações que o site já tem (intraday) — senão o pipeline preenche em até 15 min. Preço médio e data são opcionais.
+  // Renda fixa: formulário completo (nome, valor, indexador, taxa, vencimento) — essencial p/ o cálculo.
+  // sufixos de bolsa (padrão Yahoo Finance) -> [país PT, país EN, moeda]. Londres cota em pence (GBX).
+  const SUFIXOS = {
+    DE: ["Alemanha", "Germany", "EUR"], BA: ["Argentina", "Argentina", "ARS"], AX: ["Austrália", "Australia", "AUD"], TO: ["Canadá", "Canada", "CAD"],
+    SS: ["China", "China", "CNY"], SZ: ["China", "China", "CNY"], KS: ["Coreia do Sul", "South Korea", "KRW"], MC: ["Espanha", "Spain", "EUR"],
+    PA: ["França", "France", "EUR"], AS: ["Holanda", "Netherlands", "EUR"], HK: ["Hong Kong", "Hong Kong", "HKD"], NS: ["Índia", "India", "INR"],
+    MI: ["Itália", "Italy", "EUR"], T: ["Japão", "Japan", "JPY"], MX: ["México", "Mexico", "MXN"], LS: ["Portugal", "Portugal", "EUR"],
+    L: ["Reino Unido", "United Kingdom", "GBX"], SW: ["Suíça", "Switzerland", "CHF"], ST: ["Suécia", "Sweden", "SEK"], OL: ["Noruega", "Norway", "NOK"],
+    CO: ["Dinamarca", "Denmark", "DKK"], SI: ["Singapura", "Singapore", "SGD"], JO: ["África do Sul", "South Africa", "ZAR"], SN: ["Chile", "Chile", "CLP"],
+  };
+  const CLS_NOME = { acao_br: ["Ação Brasil", "Brazilian stock"], fii: ["Fundo imobiliário (FII)", "Real estate fund (FII)"], etf_br: ["ETF Brasil", "Brazilian ETF"],
+    acao_us: ["Ação EUA", "US stock"], etf_us: ["ETF EUA", "US ETF"], cripto: ["Cripto", "Crypto"], outro: ["Ação no exterior", "Foreign stock"] };
+  let PF_CAT = null;
+  const pfCatalogo = () => PF_CAT ? Promise.resolve(PF_CAT)
+    : fetch("data/quant_catalog.json").then(r => r.json()).then(c => (PF_CAT = c)).catch(() => (PF_CAT = []));
+  // código digitado -> o que é. Ex.: PETR4, HGLG11, AAPL, BTC, SAP.DE, 7203.T
+  function resolveTicker(raw) {
+    let u = String(raw || "").trim().toUpperCase().replace(/\s+/g, "");
+    if (!u || !/^[A-Z0-9.\-^=]{1,20}$/.test(u)) return null;
+    u = u.replace(/\.SA$/, "");
+    const cat = PF_CAT || [], hit = cat.find(c => c.s === u) || cat.find(c => c.s === u + "-USD");
+    const br = (cls, nome) => ({ ticker: u, market: "BR", currency: "BRL", price_symbol: u + ".SA", tv_symbol: "BMFBOVESPA:" + u, asset_class: cls, cls: nome || cls, quote: ["BR", u] });
+    if (hit) {
+      const c = hit.c;
+      if (c === "cripto") { const b = hit.s.replace(/-USD$/, ""); return { ticker: b, market: "CRYPTO", currency: "USD", price_symbol: hit.y, tv_symbol: b + "USD", asset_class: "cripto", quote: null, chave: hit.s }; }
+      if (/_br$|^fii$/.test(c)) return br(c === "etf_br" ? "acao_br" : c, c);
+      return { ticker: u, market: "US", currency: "USD", price_symbol: hit.y, tv_symbol: u, asset_class: "acao_us", quote: ["US", u], cls: c };
+    }
+    const m = u.match(/^([A-Z0-9\-]+)\.([A-Z]{1,2})$/);
+    if (m && SUFIXOS[m[2]]) return { ticker: m[1], market: "OUTRO", currency: SUFIXOS[m[2]][2], price_symbol: u, tv_symbol: m[1], asset_class: "outro", quote: null, pais: SUFIXOS[m[2]] };
+    if (/^[A-Z]{4}\d{1,2}[A-Z]?$/.test(u)) return br(/11$/.test(u) ? "fii" : "acao_br");          // padrão B3 (11 fora do catálogo: quase sempre FII)
+    if (/^[A-Z][A-Z0-9.\-]{0,9}$/.test(u) && !u.includes(".")) return { ticker: u, market: "US", currency: "USD", price_symbol: u, tv_symbol: u, asset_class: "acao_us", quote: ["US", u] };
+    return null;
+  }
+  const PX_CACHE = {};
+  async function precoAgora(r) {
+    if (!r) return null;
+    if (r.quote && INTRA) { const q = INTRA[r.quote[0]] && INTRA[r.quote[0]].quotes && INTRA[r.quote[0]].quotes[r.quote[1]]; if (q && q.last > 0) return q.last; }
+    const k = r.chave || r.price_symbol;
+    if (k in PX_CACHE) return PX_CACHE[k];
+    if (!sb || !USER || USER.id === "preview") return null;
+    try {
+      const { data } = await sb.auth.getSession(), tk = data && data.session && data.session.access_token;
+      if (!tk) return null;
+      const res = await (await fetch(`${SUPABASE_URL}/functions/v1/hyper-function`, { method: "POST",
+        headers: { "content-type": "application/json", authorization: "Bearer " + tk, apikey: SUPABASE_ANON_KEY }, body: JSON.stringify({ precos: [k] }) })).json();
+      const q = res && res.precos && res.precos[k];
+      PX_CACHE[k] = q && q.p > 0 && q.m === r.currency ? q.p : null;
+    } catch (e) { PX_CACHE[k] = null; }
+    return PX_CACHE[k];
+  }
+  const SIMB = { BRL: "R$", USD: "US$", EUR: "€", GBP: "£", GBX: "GBp", JPY: "¥" };
   function freePositionForm() {
     const today = new Date().toISOString().slice(0, 10);
     return `<details class="pf-free" id="pfFree" ${PF_FORM_OPEN ? "open" : ""}><summary><span class="btn btn-primary">＋ ${t("pf.freeAdd")}</span><small class="pf-free-hint">${t("pf.freeHint")}</small></summary>
       <div class="pf-free-body">
-        <label>${t("pf.fType")}<select id="ffType">${FREE_TYPES.map(([v, k]) => `<option value="${v}">${t(k)}</option>`).join("")}</select></label>
-        <div class="ff-grid ff-mkt">
-          <label>${t("pf.fCode")}<input id="ffCode" placeholder="HGLG11 · BTC · AAPL" autocomplete="off"></label>
-          <label>${t("pf.fQty")}<input id="ffQty" type="number" min="0" step="any"></label>
-          <label>${t("pf.fPrice")}<input id="ffPrice" type="number" min="0" step="any"></label>
-          <label class="ff-ex" hidden>${t("pf.fEx")}<select id="ffEx">${BOLSAS.map((b, i) => `<option value="${i}">${b[LANG === "en" ? 1 : 0]}</option>`).join("")}</select></label>
-          <label class="ff-ccy" hidden>${t("pf.fCcy")}<select id="ffCcy">${MOEDAS.map(c => `<option>${c}</option>`).join("")}</select></label>
+        <div class="seg ff-kind" role="tablist">
+          <button type="button" class="on" data-k="ativo" role="tab" aria-selected="true">${t("pf.kAtivo")}</button>
+          <button type="button" data-k="rf" role="tab" aria-selected="false">${t("pf.kRf")}</button>
         </div>
-        <p class="hedge-note ff-exnote" hidden>${t("pf.fExNote")}</p>
-        <div class="ff-grid ff-rf" hidden>
-          <label>${t("pf.fName")}<input id="ffName" autocomplete="off"></label>
-          <label>${t("pf.fInvested")}<input id="ffInv" type="number" min="0" step="any"></label>
-          <label>${t("pf.fIndex")}<select id="ffIdx"></select></label>
-          <label title="${t("pf.fRateH")}">${t("pf.fRate")} <small>(${t("pf.fRateH")})</small><input id="ffRate" type="number" step="any"></label>
-          <label>${t("pf.fMat")}<input id="ffMat" type="date"></label>
+        <div class="ff-mkt">
+          <div class="ff-grid ff-main">
+            <label>${t("pf.fCode")}<input id="ffCode" placeholder="PETR4, HGLG11, AAPL, BTC…" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="20"></label>
+            <label>${t("pf.fQty")}<input id="ffQty" type="number" inputmode="decimal" min="0" step="any" placeholder="100"></label>
+          </div>
+          <p class="ff-preview" id="ffPrev" aria-live="polite"></p>
+          <label class="ff-check"><input type="checkbox" id="ffOwn"> <span>${t("pf.fOwn")}</span></label>
+          <div class="ff-grid" id="ffOwnBox" hidden>
+            <label>${t("pf.fPrice")}<input id="ffPrice" type="number" inputmode="decimal" min="0" step="any"></label>
+            <label>${t("pf.fDate")}<input id="ffDate" type="date" value="${today}" max="${today}"></label>
+          </div>
         </div>
-        <div class="ff-grid"><label>${t("pf.fDate")}<input id="ffDate" type="date" value="${today}" max="${today}"></label></div>
-        <button class="btn btn-primary" id="ffSave">${t("pf.fAdd")}</button><span role="status" aria-live="polite" class="add-msg" id="ffMsg"></span>
-        <p class="hedge-note">${t("pf.freeNote")}</p>
+        <div class="ff-rf" hidden>
+          <div class="ff-grid">
+            <label>${t("pf.fType")}<select id="ffType"><option value="rf_br">${t("pf.tRfBr")}</option><option value="rf_us">${t("pf.tRfUs")}</option></select></label>
+            <label>${t("pf.fName")}<input id="ffName" autocomplete="off"></label>
+            <label>${t("pf.fInvested")}<input id="ffInv" type="number" inputmode="decimal" min="0" step="any"></label>
+            <label>${t("pf.fIndex")}<select id="ffIdx"></select></label>
+            <label title="${t("pf.fRateH")}">${t("pf.fRate")} <small>(${t("pf.fRateH")})</small><input id="ffRate" type="number" inputmode="decimal" step="any"></label>
+            <label>${t("pf.fMat")}<input id="ffMat" type="date"></label>
+            <label>${t("pf.fDateRf")}<input id="ffDateRf" type="date" value="${today}" max="${today}"></label>
+          </div>
+        </div>
+        <div><button class="btn btn-primary" id="ffSave">${t("pf.fAdd")}</button> <span role="status" aria-live="polite" class="add-msg" id="ffMsg"></span></div>
       </div></details>`;
   }
   function wireFreePositionForm() {
-    const ty = $("#ffType"); if (!ty) return;
-    const sync = () => {
-      const v = ty.value, rf = /^rf_/.test(v);
-      const ext = v === "outro", livre = ext && BOLSAS[+$("#ffEx").value][2] === "";
-      $(".ff-mkt").hidden = rf; $(".ff-rf").hidden = !rf; $(".ff-ex").hidden = !ext; $(".ff-ccy").hidden = !livre; $(".ff-exnote").hidden = !ext;
-      $("#ffCode").placeholder = { acao_br: "PETR4 · BOVA11", fii: "HGLG11 · MXRF11", acao_us: "AAPL · VOO", cripto: "BTC · ETH · SOL", outro: livre ? "NESN.SW · ^GSPC" : "SAP · 7203 · NESN" }[v] || "";
-      $("#ffIdx").innerHTML = (v === "rf_us" ? ["UST"] : ["CDI", "SELIC", "IPCA", "PRE"]).map(x => `<option>${x}</option>`).join("");
-    };
-    ty.onchange = sync; $("#ffEx").onchange = sync; sync();
+    const code = $("#ffCode"); if (!code) return;
+    let kind = "ativo";
+    pfCatalogo(); loadIntraday();
+    $$(".ff-kind button").forEach(b => b.onclick = () => {
+      kind = b.dataset.k;
+      $$(".ff-kind button").forEach(x => { x.classList.toggle("on", x === b); x.setAttribute("aria-selected", x === b ? "true" : "false"); });
+      $(".ff-mkt").hidden = kind !== "ativo"; $(".ff-rf").hidden = kind !== "rf";
+    });
+    const ty = $("#ffType"), syncRf = () => { $("#ffIdx").innerHTML = (ty.value === "rf_us" ? ["UST"] : ["CDI", "SELIC", "IPCA", "PRE"]).map(x => `<option>${x}</option>`).join(""); };
+    ty.onchange = syncRf; syncRf();
+    $("#ffOwn").onchange = e => { $("#ffOwnBox").hidden = !e.target.checked; };
     const dt = $("#pfFree"); if (dt) dt.ontoggle = () => { PF_FORM_OPEN = dt.open; };
+    // pré-visualização: o que entendemos do código + preço atual
+    const prev = async () => {
+      await Promise.all([pfCatalogo(), loadIntraday()]);
+      const raw = code.value.trim(), r = resolveTicker(raw), el = $("#ffPrev");
+      if (!raw) { el.textContent = ""; el.className = "ff-preview"; return; }
+      if (!r) { el.textContent = t("pf.fNotCode"); el.className = "ff-preview err"; return; }
+      const en = LANG === "en" ? 1 : 0, nome = (CLS_NOME[r.cls || r.asset_class] || CLS_NOME.outro)[en] + (r.pais ? " · " + r.pais[en] : "");
+      const px = await precoAgora(r), q = parseFloat($("#ffQty").value);
+      if (code.value.trim() !== raw) return;                     // o usuário continuou digitando
+      const fmt = v => (SIMB[r.currency] || r.currency + " ") + " " + Number(v).toLocaleString(locale(), v < 1 ? { maximumFractionDigits: 6 } : { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      el.className = "ff-preview ok";
+      el.innerHTML = `<b>${esc(r.ticker)}</b> · ${esc(nome)} · ` + (px ? `${t("pf.fLast")} <b>${fmt(px)}</b>${q > 0 ? ` · ${t("pf.fTotal")} <b>${fmt(px * q)}</b>` : ""}` : esc(t("pf.fPxLater")));
+      if (px && !$("#ffOwn").checked) $("#ffPrice").value = px;
+    };
+    let tm; code.oninput = $("#ffQty").oninput = () => { clearTimeout(tm); tm = setTimeout(prev, 250); };
     $("#ffSave").onclick = async () => {
       const msg = $("#ffMsg"), say = (k, ok) => { msg.textContent = t(k); msg.className = "add-msg " + (ok ? "ok" : "err"); };
       if (!sb || !USER || USER.id === "preview") return say("sig.addErr");
-      const v = ty.value, rf = /^rf_/.test(v), date = $("#ffDate").value || new Date().toISOString().slice(0, 10);
-      let row;
-      if (rf) {
-        const name = ($("#ffName").value || "").trim(), inv = parseFloat($("#ffInv").value), rate = parseFloat($("#ffRate").value);
-        if (!name || !(inv > 0) || !isFinite(rate)) return say("pf.fBad");
+      let row, today = new Date().toISOString().slice(0, 10), date = today;
+      if (kind === "rf") {
+        const v = ty.value, name = ($("#ffName").value || "").trim(), inv = parseFloat($("#ffInv").value), rate = parseFloat($("#ffRate").value);
+        if (!name || !(inv > 0) || !isFinite(rate)) return say("pf.fBadRf");
+        date = $("#ffDateRf").value || today;
         row = { ticker: name.slice(0, 40), market: "RF", asset_class: v, currency: v === "rf_us" ? "USD" : "BRL", invested: inv,
                 rf_index: $("#ffIdx").value, rf_rate: rate, rf_maturity: $("#ffMat").value || null, entry: inv, current_price: inv };
       } else {
-        const code = ($("#ffCode").value || "").trim().toUpperCase().replace(/\.SA$/, ""), qty = parseFloat($("#ffQty").value), px = parseFloat($("#ffPrice").value);
-        if (!/^[A-Z0-9.\-^=]{1,15}$/.test(code) || !(qty > 0) || !(px > 0)) return say("pf.fBad");
-        const M = { acao_br: ["BR", "BRL", code + ".SA", "BMFBOVESPA:" + code], fii: ["BR", "BRL", code + ".SA", "BMFBOVESPA:" + code],
-                    acao_us: ["US", "USD", code, code], cripto: ["CRYPTO", "USD", code + "-USD", code + "USD"],
-                    outro: (() => { const b = BOLSAS[+$("#ffEx").value]; return b[2] ? ["OUTRO", b[3], code.replace(/\.[A-Z]{1,2}$/, "") + b[2], code] : ["OUTRO", $("#ffCcy").value, code, code]; })() }[v];
-        row = { ticker: code, market: M[0], currency: M[1], price_symbol: M[2], tv_symbol: M[3], asset_class: v, quantity: qty, entry: px, current_price: px };
+        await Promise.all([pfCatalogo(), loadIntraday()]);
+        const r = resolveTicker(code.value), qty = parseFloat($("#ffQty").value);
+        if (!r) return say("pf.fNotCode");
+        if (!(qty > 0)) return say("pf.fBadQty");
+        const own = $("#ffOwn").checked, mine = parseFloat($("#ffPrice").value), px = await precoAgora(r);
+        if (own && !(mine > 0)) return say("pf.fBadPx");
+        const entrada = own ? mine : px;                         // sem preço agora: o pipeline grava o de mercado em até 15 min
+        if (own) date = $("#ffDate").value || today;
+        row = { ticker: r.ticker, market: r.market, currency: r.currency, price_symbol: r.price_symbol, tv_symbol: r.tv_symbol, asset_class: r.asset_class,
+                quantity: qty, entry: entrada || null, current_price: px || entrada || null };
       }
       Object.assign(row, { strategy: "livre", status: "open", entry_type: "market", alloc_pct: 0, added_at: date, ret_pct: 0 });
+      const btn = $("#ffSave"); btn.disabled = true;
       const { error } = await sb.from("portfolio_positions").insert(row);
+      btn.disabled = false;
       if (error) return say(/column|asset_class|strategy|check constraint/i.test(error.message || "") ? "pf.fMig" : "sig.addErr");
-      track("pos_add", { tipo: v, ccy: row.currency });
+      track("pos_add", { tipo: row.asset_class, ccy: row.currency, preco: row.entry ? (kind === "rf" ? "rf" : $("#ffOwn").checked ? "meu" : "mercado") : "depois" });
       say("pf.fOk", true); renderPortfolio();
     };
   }

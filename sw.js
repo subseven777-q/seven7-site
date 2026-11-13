@@ -4,7 +4,7 @@
      · arquivos estáticos (js/css/png, versionados com ?v=) -> cache na hora + atualização em segundo plano
      · outros domínios (Supabase, TradingView, CDNs) -> não toca: vão direto à rede
    Subiu versão do site? Troque CACHE abaixo: os caches antigos são apagados na ativação. */
-const CACHE = "seven7-v2";
+const CACHE = "seven7-v3";
 const OFFLINE = "offline.html";
 const BASICO = [OFFLINE, "styles.css", "icons/icon-192.png"];
 
