@@ -139,6 +139,28 @@
     return `<div class="push-card ${estado}"><span class="push-ic">${ic("live")}</span>
       <div class="push-t"><b>${t("push.t")}</b><small>${txt}</small><em id="pushMsg"></em></div>${btn}</div>`;
   }
+  // ---- confirmação de e-mail PRÓPRIA (o Supabase Auth não trava mais o login): 7 dias de prazo a partir do cadastro ----
+  const VERIF_DIAS = 7;
+  const verifPendente = () => !!(USER && PROFILE && USER.id !== "preview" && !PROFILE.email_verified_at && PROFILE.created_at);
+  const verifDiasRest = () => verifPendente() ? Math.ceil((new Date(PROFILE.created_at).getTime() + VERIF_DIAS * 864e5 - Date.now()) / 864e5) : null;
+  const verifVencida = () => verifPendente() && verifDiasRest() <= 0;
+  async function reenviaVerif(btn, msgEl) {
+    if (!sb) return;
+    if (btn) btn.disabled = true;
+    try {
+      const { data } = await sb.auth.getSession(), tk = data && data.session && data.session.access_token;
+      const r = await fetch(`${SUPABASE_URL}/functions/v1/send-verify`, { method: "POST", headers: { authorization: "Bearer " + tk, apikey: SUPABASE_ANON_KEY, "content-type": "application/json" }, body: "{}" });
+      const j = await r.json().catch(() => ({}));
+      if (msgEl) msgEl.textContent = t(r.ok ? "ver.sent" : j.error === "wait" ? "ver.wait" : "ver.err");
+      if (r.ok) track("verify_send");
+    } catch (e) { if (msgEl) msgEl.textContent = t("ver.err"); }
+    if (btn) setTimeout(() => { btn.disabled = false; }, 60000);
+  }
+  function verifGateHtml() {
+    return `<section class="section"><div class="div-siglock" style="max-width:640px;margin:0 auto"><p>${interp(t("ver.gate"), { e: esc(USER.email) })}</p>
+      <button class="btn btn-primary" id="verGateBtn">${t("ver.resend")}</button> <span class="add-msg" role="status" aria-live="polite" id="verGateMsg"></span></div></section>`;
+  }
+  const wireVerifGate = () => { const b = $("#verGateBtn"); if (b) b.onclick = () => reenviaVerif(b, $("#verGateMsg")); };
   let PV_SENT = false;
   const isMember = () => !!PROFILE && ((PROFILE.status === "active" && !pixExpired()) || isTrial());
   const isElite = () => isMember() && PROFILE.plan === "elite";
@@ -228,6 +250,15 @@
     "nav.desk": { en: "My desk", pt: "Minha mesa" },
     "nav.terminal": { en: "Terminal", pt: "Terminal" },
     "nav.quant": { en: "Quantify", pt: "Quantificar" },
+    "auth.created": { en: "Account created! Opening your desk… We sent a confirmation link to your email (you have 7 days).", pt: "Conta criada! Abrindo sua mesa… Enviamos um link de confirmação para o seu e-mail (você tem 7 dias)." },
+    "ver.bar": { en: "Confirm your email: <b>{n} day(s) left</b>. Check your inbox (and spam).", pt: "Confirme seu e-mail: <b>faltam {n} dia(s)</b>. Veja sua caixa de entrada (e o spam)." },
+    "ver.resend": { en: "Resend link", pt: "Reenviar link" },
+    "ver.sent": { en: "Sent ✓ — check your inbox", pt: "Enviado ✓ — veja sua caixa de entrada" },
+    "ver.wait": { en: "Wait a minute before resending", pt: "Aguarde um minuto para reenviar" },
+    "ver.err": { en: "Couldn't send now — try again later", pt: "Não foi possível enviar agora — tente mais tarde" },
+    "ver.gate": { en: "The 7 days to confirm your email are over. Click the link we sent to {e} to keep using your account — or resend it below.", pt: "Os 7 dias para confirmar seu e-mail terminaram. Clique no link que enviamos para {e} para continuar usando sua conta — ou reenvie abaixo." },
+    "ver.ok": { en: "Email confirmed ✓ Thank you!", pt: "E-mail confirmado ✓ Obrigado!" },
+    "ver.bad": { en: "This confirmation link is not valid. Log in and resend it from the notice at the top of the page.", pt: "Este link de confirmação não é válido. Entre na sua conta e reenvie pelo aviso no topo da página." },
     "ui.skip": { en: "Skip to content", pt: "Pular para o conteúdo" },
     "ui.close": { en: "Close", pt: "Fechar" },
     "acct.mailH": { en: "Weekly e-mail", pt: "E-mail semanal" },
@@ -1235,6 +1266,8 @@
       // &pvtrial=N simula conta em teste com N dias restantes (N<=0 = teste encerrado) — só localhost
       const pv = location.search.match(/[?&]pvtrial=(-?\d+)/);
       const pp = location.search.match(/[?&]pvpix=(-?\d+)/);
+      const pvv = location.search.match(/[?&]pvverif=(-?\d+)/);   // &pvverif=N: conta criada há N dias, e-mail não confirmado (só localhost)
+      if (pvv) { USER = { id: "preview-verif", email: "teste@exemplo.com" }; PROFILE = { status: "active", plan: "elite", email_verified_at: null, created_at: new Date(Date.now() - (+pvv[1]) * 864e5).toISOString() }; }
       if (pp) PROFILE = PROFILE || { status: "active", plan: "pro", billing: "pix", billing_cycle: "monthly", paid_until: new Date(Date.now() + (+pp[1]) * 86400000 - 3600000).toISOString() };
       PROFILE = PROFILE || (pv ? { status: "trial", plan: "elite", trial_end: new Date(Date.now() + (+pv[1]) * 86400000 - 3600000).toISOString() }
                                : { status: "active", plan: "elite", is_admin: true });
@@ -1801,6 +1834,13 @@
   // faixa do teste grátis (abaixo do menu): dias restantes ou aviso de encerramento
   function renderTrialBar() {
     const root = $("#nav-root"); if (!root) return;
+    let vb = $("#verifBar");
+    if (verifPendente() && !verifVencida()) {
+      if (!vb) { vb = document.createElement("div"); vb.id = "verifBar"; vb.className = "trial-bar verif-bar"; root.appendChild(vb); }
+      vb.innerHTML = `<span class="tb-ic">${ic("lock")}</span><span class="tb-msg">${interp(t("ver.bar"), { n: verifDiasRest() })} <em id="verBarMsg" role="status" aria-live="polite"></em></span>
+        <button class="btn btn-ghost tb-cta" id="verBarBtn">${t("ver.resend")}</button>`;
+      $("#verBarBtn").onclick = e => reenviaVerif(e.currentTarget, $("#verBarMsg"));
+    } else if (vb) vb.remove();
     let bar = $("#trialBar");
     const pd = USER ? pixDaysLeft() : null;
     if (pd != null && pd <= 5) {
@@ -1852,10 +1892,17 @@
           const name = ($("#rg-name") || {}).value?.trim() || "";
           const email = $("#rg-email").value.trim(), pass = $("#rg-pass").value;
           if (pass.length < 8) { show(t("auth.pwShort"), false); return; }   // mínimo 8 caracteres
-          const { error } = await sb.auth.signUp({ email, password: pass, options: { data: { name }, emailRedirectTo: new URL(".", location.href).href } });
+          const { data: su, error } = await sb.auth.signUp({ email, password: pass, options: { data: { name }, emailRedirectTo: new URL(".", location.href).href } });
           if (error) throw error;
           track("signup");
-          show(t("auth.checkEmail"), true);
+          if (su && su.session) {                                    // conta liberada na hora; a confirmação vai por e-mail (7 dias)
+            show(t("auth.created"), true);
+            USER = su.session.user;
+            await reenviaVerif(null, null);
+            setTimeout(() => location.href = localStorage.getItem("seven7-intent") ? "plans.html" : "members.html", 1200);
+          } else {
+            show(t("auth.checkEmail"), true);
+          }
           f.querySelectorAll("input").forEach(i => i.value = "");
         } else {
           const email = $("#li-email").value.trim(), pass = $("#li-pass").value;
@@ -2689,6 +2736,18 @@
   }
 
   /* ---- account page ---- */
+  let VERIF_MSG = null;
+  async function handleVerify() {
+    const tk = new URLSearchParams(location.search).get("verify");
+    if (!tk || VERIF_MSG !== null || !sb) return;
+    VERIF_MSG = "";
+    let ok = false;
+    try { const r = await sb.rpc("email_verify", { p_token: tk }); ok = !r.error && r.data === true; } catch (e) { ok = false; }
+    VERIF_MSG = t(ok ? "ver.ok" : "ver.bad");
+    if (ok) { track("verify_ok"); if (PROFILE) PROFILE.email_verified_at = new Date().toISOString(); }
+    history.replaceState(null, "", location.pathname);
+    renderTrialBar(); renderAccount();
+  }
   let UNSUB_MSG = null;
   async function handleUnsub() {
     const tk = new URLSearchParams(location.search).get("unsub");
@@ -2703,8 +2762,8 @@
   }
   function renderAccount() {
     const host = $("#accountHost"); if (!host) return;
-    handleUnsub();
-    const note = UNSUB_MSG ? `<div class="acct-card acct-note">${esc(UNSUB_MSG)}</div>` : "";
+    handleUnsub(); handleVerify();
+    const note = [UNSUB_MSG, VERIF_MSG].filter(Boolean).map(m => `<div class="acct-card acct-note">${esc(m)}</div>`).join("");
     if (!USER) {
       host.innerHTML = `${note}<div class="auth-card" style="margin:0 auto">
         <h1>${t("acct.needLogin")}</h1><p class="auth-sub">${t("acct.needLoginSub")}</p>
@@ -3240,6 +3299,7 @@
     const teaser = (msgKey, btnKey, href) =>
       `<section class="section"><div class="div-siglock" style="max-width:640px;margin:0 auto"><p>${t(msgKey)}</p><a class="btn btn-primary" href="${href}">${t(btnKey)}</a></div></section>`;
     if (!USER) { gate.innerHTML = teaser("mem.gateLogin", "mem.login", "login.html"); if (content) content.hidden = true; return; }
+    if (verifVencida()) { gate.innerHTML = verifGateHtml(); wireVerifGate(); if (content) content.hidden = true; return; }
     gate.innerHTML = ""; if (content) content.hidden = false;
     // plataforma GRÁTIS p/ qualquer conta: portfólio + quant + terminal. Estratégias (Markov 3, Dividendos, vídeos) = pagas
     const member = isMember();
@@ -3269,6 +3329,7 @@
     const teaser = (msgKey, btnKey, href) =>
       `<section class="section"><div class="div-siglock" style="max-width:640px;margin:0 auto"><p>${t(msgKey)}</p><a class="btn btn-primary" href="${href}">${t(btnKey)}</a></div></section>`;
     if (!USER) { gate.innerHTML = teaser("term.gateLogin", "nav.free", "register.html"); root.hidden = true; return; }
+    if (verifVencida()) { gate.innerHTML = verifGateHtml(); wireVerifGate(); root.hidden = true; return; }
     gate.innerHTML = ""; root.hidden = false;
     // terminal.js pode ainda não ter carregado: deixa a API pendente e ele dá o boot quando chegar
     const api = { sb, user: USER, plan: (PROFILE && PROFILE.plan) || "", member: isMember(), lang: LANG, preview: PREVIEW, payload: fetchMemberPayload };

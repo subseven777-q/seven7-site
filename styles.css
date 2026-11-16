@@ -1550,3 +1550,5 @@ h2[id],section[id],[id].section{scroll-margin-top:84px}
 .q-table .num{text-align:right;font-variant-numeric:tabular-nums}
 .q-note{font-size:12px;color:var(--ink-2);margin:10px 0 0}
 @media(max-width:560px){.q-divtop{grid-template-columns:1fr 1fr}.q-divtop>div:last-child{grid-column:1/-1}}
+
+.verif-bar .tb-msg em{font-style:normal;color:var(--c-green);margin-left:6px}
