@@ -1651,3 +1651,6 @@ h2[id],section[id],[id].section{scroll-margin-top:84px}
 [data-theme="laudo"] .term-cta{background:var(--surface);border:1px solid var(--border-2);border-left:4px solid var(--marca);box-shadow:none}
 [data-theme="laudo"] .stat .l{text-transform:none;letter-spacing:0;font-size:12.5px}
 [data-theme="laudo"] .axis-label,[data-theme="laudo"] svg text{font-family:inherit}
+/* quadros embutidos (TradingView): com color-scheme diferente entre a página e o iframe o Chrome pinta o fundo
+   do iframe de BRANCO em vez de transparente. "normal" casa com o documento interno -> fundo volta transparente. */
+iframe{color-scheme:normal}
