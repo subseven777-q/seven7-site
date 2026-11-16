@@ -78,7 +78,7 @@
     let base = A().lang === "en" ? "USD" : "BRL";
     host.innerHTML = `<div class="qq-card">
       <div class="qq-head">
-        <div><div class="qq-t">${tx("Sua carteira", "Your portfolio")}</div><div class="qq-s">${tx("Digite os ativos e quanto você tem em cada um. Sem cadastro.", "Type your assets and how much you hold in each. No sign-up.")}</div></div>
+        <div><div class="qq-t">${tx("Pedido de check-up", "Check-up request")}</div><div class="qq-s">${tx("Escreva os ativos e quanto você tem em cada um.", "Type your assets and how much you hold in each.")}</div></div>
         <div class="seg qq-base">${["BRL", "USD"].map(c => `<button data-c="${c}" class="${c === base ? "on" : ""}">${c}</button>`).join("")}</div>
       </div>
       <div id="qqRows">${exemplo.map(linha).join("")}</div>
@@ -88,12 +88,14 @@
         <select class="qq-addrf"><option value="">+ ${tx("Renda fixa…", "Fixed income…")}</option>${RF_OPTS.map(o => `<option value="${o.s}">${o.l()}</option>`).join("")}</select>
         <button class="btn btn-ghost qq-clear">${tx("Limpar", "Clear")}</button>
         <span class="qq-n"></span>
-        <button class="btn btn-primary btn-lg qq-go">${tx("Quantificar", "Quantify")} →</button>
+        <button class="btn btn-primary btn-lg qq-go">${tx("Ver meu laudo", "See my report")}</button>
       </div>
       <div class="qq-note">${tx(`Catálogo: ${cat.length} ativos (ações BR/EUA, ETFs, FIIs, cripto) + renda fixa. Até ${MAX_PUB} posições sem login.`, `Catalog: ${cat.length} assets (BR/US stocks, ETFs, REITs, crypto) + fixed income. Up to ${MAX_PUB} positions without login.`)}</div>
     </div>
-    <div id="qqOut"></div>`;
-    const rows = $("#qqRows", host), out = $("#qqOut", host);
+    ${$("#qqResult") ? "" : `<div id="qqOut"></div>`}`;
+    // home nova: o laudo sai em largura total, abaixo da abertura (#qqResult); guias: logo abaixo do formulário
+    const fora = $("#qqResult"); if (fora) fora.innerHTML = `<div id="qqOut"></div>`;
+    const rows = $("#qqRows", host), out = $("#qqOut");
     const sync = () => {
       $$(".qq-cur", host).forEach(e => { e.textContent = base === "BRL" ? "R$" : "US$"; });
       const n = $$(".qq-row", host).length;
@@ -112,15 +114,15 @@
       const pos = ler(host);
       if (!pos.length) { out.innerHTML = `<div class="q-empty">${tx("Adicione pelo menos um ativo com valor.", "Add at least one asset with an amount.")}</div>`; return; }
       const go = $(".qq-go", host); go.disabled = true;
-      out.innerHTML = `<div class="q-empty">${tx("Calculando 2 anos de risco…", "Crunching 2 years of risk…")}</div>`;
+      out.innerHTML = `<div class="q-empty">${tx("Analisando 2 anos de preços…", "Analyzing 2 years of prices…")}</div>`;
       try {
         track("quantify_run", { n: pos.length, base });
         const d = await quantifyCall(base, pos);
         if (d.error) throw new Error(d.error);
         track("quantify_ok", { n: d.n_pos, base, nota: d.nota, rf: pos.some(x => x.s.startsWith("RF:")) });
         const cta = A().user && A().user.id !== "preview"
-          ? `<a class="btn btn-primary" href="members.html">${tx("Salvar na Minha mesa", "Save to My desk")} →</a>`
-          : `<a class="btn btn-primary" href="register.html">${tx("Criar conta grátis", "Create free account")} →</a>`;
+          ? `<a class="btn btn-primary" href="members.html">${tx("Salvar na Minha mesa", "Save to My desk")}</a>`
+          : `<a class="btn btn-primary" href="register.html">${tx("Criar conta grátis", "Create free account")}</a>`;
         out.innerHTML = `<div class="qq-cta"><div><b>${tx("Gostou? Salve a carteira e acompanhe todo dia.", "Like it? Save the portfolio and track it daily.")}</b>
           <small>${tx("Conta grátis: carteira salva, quantificação diária, Terminal e Ferramentas.", "Free account: saved portfolio, daily quant, Terminal and Tools.")}</small></div>${cta}</div>
           ${d.nota != null ? `<div class="qq-share"><span>${tx("Desafie um amigo:", "Challenge a friend:")}</span>

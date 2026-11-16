@@ -1552,3 +1552,93 @@ h2[id],section[id],[id].section{scroll-margin-top:84px}
 @media(max-width:560px){.q-divtop{grid-template-columns:1fr 1fr}.q-divtop>div:last-child{grid-column:1/-1}}
 
 .verif-bar .tb-msg em{font-style:normal;color:var(--c-green);margin-left:6px}
+
+/* =====================================================================
+   Tema "laudo" (nov/2026): a carteira faz um check-up e recebe um laudo.
+   Papel claro e frio, tinta azul-marinho, azul-caneta só p/ ação, azul da MARCA (logotipo) nos detalhes,
+   verde/âmbar/vermelho só p/ dizer situação. Letra única: Atkinson Hyperlegible Next (feita p/ leitura fácil).
+   Páginas entram no tema com <html data-theme="laudo">; Terminal continua escuro.
+   ===================================================================== */
+:root[data-theme="laudo"]{
+  color-scheme:light;
+  --plane:#EEF2F0; --surface:#FBFCFB; --surface-2:#F3F6F4; --raised:#FFFFFF;
+  --border:rgba(19,35,58,.14); --border-2:rgba(19,35,58,.26);
+  --ink:#13233A; --ink-2:#4A5A70; --muted:#66768A;
+  --accent:#1D4ED8; --accent-2:#163FB3; --accent-ink:#FFFFFF;
+  --marca:#0E94BC; --marca-2:#43D8F6;
+  --pos:#1E8E5A; --neg:#C2412D; --warn:#B7790F;
+  --grid:rgba(19,35,58,.07); --axis:#C9D4D0; --series:#0E94BC; --bench:#94A0B5;
+  --heat-pos:#1E8E5A; --heat-neg:#C2412D; --heat-mid:#EEF2F0;
+  --shadow:0 1px 0 rgba(19,35,58,.06);
+  --c-cyan:#0E94BC; --c-blue:#1D4ED8; --c-violet:#3F5BA9; --c-amber:#B7790F; --c-rose:#C2412D; --c-green:#1E8E5A;
+  --grad:linear-gradient(var(--ink),var(--ink)); --btn-grad:linear-gradient(#1D4ED8,#1D4ED8); --btn-ink:#FFFFFF;
+}
+[data-theme="laudo"] body{background:var(--plane);font-family:"Atkinson Hyperlegible Next","Atkinson Hyperlegible",system-ui,sans-serif;font-size:17px;line-height:1.55}
+[data-theme="laudo"] h1,[data-theme="laudo"] h2,[data-theme="laudo"] h3{font-weight:800;letter-spacing:-.02em}
+[data-theme="laudo"] .hero,[data-theme="laudo"] .section-alt{background:var(--surface-2)}
+[data-theme="laudo"] .hero{background:none}
+[data-theme="laudo"] .kicker,[data-theme="laudo"] .eyebrow-chip{display:none}
+[data-theme="laudo"] .accent{background:none;-webkit-text-fill-color:currentColor;color:inherit}
+[data-theme="laudo"] .btn{border-radius:8px}
+[data-theme="laudo"] .btn-primary{background:var(--accent);color:#fff;box-shadow:none;border:2px solid var(--accent)}
+[data-theme="laudo"] .btn-primary:hover{background:var(--accent-2);border-color:var(--accent-2);filter:none;transform:none}
+[data-theme="laudo"] .btn-ghost{border:2px solid color-mix(in srgb,var(--accent) 40%,transparent);color:var(--accent);background:transparent}
+[data-theme="laudo"] .nav{background:color-mix(in srgb,var(--plane) 92%,transparent);border-bottom:1px solid var(--border)}
+[data-theme="laudo"] .nav-links a.active{background:none;box-shadow:inset 0 -3px 0 var(--marca);border-radius:0}
+[data-theme="laudo"] .nav-links a .ic{color:var(--marca)}
+[data-theme="laudo"] .home-card,[data-theme="laudo"] .tool-card,[data-theme="laudo"] .price-card,[data-theme="laudo"] .faq details,[data-theme="laudo"] .step{box-shadow:none;background:var(--surface)}
+[data-theme="laudo"] .home-card:hover{transform:none;border-color:var(--marca)}
+[data-theme="laudo"] .step::before{display:none}
+[data-theme="laudo"] .price-card.featured{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+[data-theme="laudo"] .footer{border-top:3px solid var(--marca)}
+/* --- home: pergunta à esquerda, pedido de check-up à direita --- */
+.lau-hero{max-width:1180px;margin:0 auto;padding:clamp(28px,5vw,64px) clamp(16px,4vw,48px) 40px;display:grid;grid-template-columns:1.02fr .98fr;gap:clamp(28px,4vw,56px);align-items:start}
+.lau-hero h1{font-size:clamp(38px,5.2vw,64px);line-height:1.03;margin:0 0 20px;text-wrap:balance}
+.lau-hero .lede{font-size:19px;color:var(--ink-2);max-width:31em;margin:0 0 26px}
+.lau-provas{display:flex;gap:26px;flex-wrap:wrap;margin-top:28px;font-size:14.5px;color:var(--ink-2)}
+.lau-provas b{display:block;font-size:25px;color:var(--ink);font-weight:800}
+.lau-hero #appHost .app-card{margin:28px 0 0;max-width:none}
+[data-theme="laudo"] .qq-card{max-width:none;margin:0;border-radius:10px;box-shadow:none;border:1px solid var(--border-2);border-top:4px solid var(--marca)}
+[data-theme="laudo"] .qq-t{font-size:20px}
+[data-theme="laudo"] .qq-row input,[data-theme="laudo"] .qq-tools select{background:#fff;border-color:var(--border-2)}
+#qqResult{max-width:1180px;margin:0 auto;padding:0 clamp(16px,4vw,48px)}
+#qqResult:empty{display:none}
+/* --- o LAUDO: nota, exames com régua de referência, situação --- */
+.lau{background:var(--surface);border:1px solid var(--border-2);border-radius:10px;overflow:hidden;margin-bottom:18px}
+.lau-cab{display:grid;grid-template-columns:auto 1fr auto;gap:26px;align-items:center;padding:24px 28px;border-bottom:2px solid var(--ink);border-top:4px solid var(--marca)}
+.lau-nota{font-size:88px;font-weight:800;line-height:.9;letter-spacing:-.04em}
+.lau-nota small{font-size:20px;color:var(--ink-2);font-weight:400;letter-spacing:0}
+.lau-nota.ok{color:var(--pos)}.lau-nota.at{color:var(--warn)}.lau-nota.al{color:var(--neg)}
+.lau-cab h3{margin:0;font-size:23px}
+.lau-cab p{margin:4px 0 0;color:var(--ink-2);font-size:15.5px}
+.lau-meta{text-align:right;font-size:13.5px;color:var(--ink-2);line-height:1.6}
+.lau table{width:100%;border-collapse:collapse}
+.lau th{text-align:left;font-size:13.5px;color:var(--ink-2);font-weight:600;padding:12px 28px 8px;border-bottom:1px solid var(--border)}
+.lau td{padding:16px 28px;border-bottom:1px solid var(--border);vertical-align:middle}
+.lau tr:last-child td{border-bottom:0}
+.lau-ex b{display:block;font-size:17px}.lau-ex span{font-size:14px;color:var(--ink-2)}
+.lau-res{font-size:21px;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums}
+.lau-ref{position:relative;height:10px;border-radius:5px;min-width:200px}
+.lau-ref i{position:absolute;top:-6px;width:4px;height:22px;background:var(--ink);border-radius:2px;transform:translateX(-2px)}
+.lau-ref-t{font-size:13px;color:var(--ink-2);margin-top:8px}
+.lau-sit{font-weight:600;font-size:15px;white-space:nowrap}
+.lau-sit::before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;background:currentColor;vertical-align:1px}
+.lau-sit.ok{color:var(--pos)}.lau-sit.at{color:var(--warn)}.lau-sit.al{color:var(--neg)}
+.lau-obs{padding:18px 28px;background:var(--surface-2);border-top:2px solid var(--ink);font-size:15.5px}
+.lau-obs > b{display:block;margin-bottom:6px}
+.lau-obs ul{margin:0;padding-left:20px}.lau-obs li{margin:4px 0}
+@media (max-width:900px){
+  .lau-hero{grid-template-columns:1fr}
+  .lau-cab{grid-template-columns:1fr;gap:10px;padding:20px}
+  .lau-meta{text-align:left}
+  .lau thead{display:none}.lau tr{display:block;padding:14px 20px;border-bottom:1px solid var(--border)}.lau td{display:block;padding:5px 0;border:0}
+  .lau-ref{min-width:0}.lau-obs{padding:16px 20px}
+}
+[data-theme="laudo"] .qq-row:has(.qq-rf){grid-template-columns:1fr 1fr 34px}
+[data-theme="laudo"] .qq-row:has(.qq-rf) .qq-rf{grid-column:1/-1}
+[data-theme="laudo"] .app-card{background:var(--surface);border:1px solid var(--border-2);box-shadow:none;border-radius:10px}
+[data-theme="laudo"] .app-card-k{display:none}
+[data-theme="laudo"] .qq-cta{background:var(--surface);border:1px solid var(--border-2);border-left:4px solid var(--marca)}
+/* botões com texto longo quebram linha em vez de vazar a tela no celular */
+[data-theme="laudo"] .btn{white-space:normal;max-width:100%;text-align:center}
+[data-theme="laudo"] .center-row{flex-wrap:wrap;gap:12px}

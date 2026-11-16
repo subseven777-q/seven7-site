@@ -249,7 +249,7 @@
     "hero.perk3": { en: "US + Brazil", pt: "EUA + Brasil" },
     "nav.desk": { en: "My desk", pt: "Minha mesa" },
     "nav.terminal": { en: "Terminal", pt: "Terminal" },
-    "nav.quant": { en: "Quantify", pt: "Quantificar" },
+    "nav.quant": { en: "Check-up", pt: "Fazer o check-up" },
     "auth.created": { en: "Account created! Opening your desk… We sent a confirmation link to your email (you have 7 days).", pt: "Conta criada! Abrindo sua mesa… Enviamos um link de confirmação para o seu e-mail (você tem 7 dias)." },
     "ver.bar": { en: "Confirm your email: <b>{n} day(s) left</b>. Check your inbox (and spam).", pt: "Confirme seu e-mail: <b>faltam {n} dia(s)</b>. Veja sua caixa de entrada (e o spam)." },
     "ver.resend": { en: "Resend link", pt: "Reenviar link" },
@@ -1313,6 +1313,12 @@
     get member() { return isMember(); }, track, url: SUPABASE_URL, anon: SUPABASE_ANON_KEY, ic: (n) => ic(n), t: (k) => t(k),
   };
 
+  const BASE_THEME = document.documentElement.getAttribute("data-theme");
+  if (BASE_THEME === "laudo" && !document.getElementById("fonte-laudo")) {        // letra do tema laudo (Google Fonts)
+    const f = document.createElement("link"); f.id = "fonte-laudo"; f.rel = "stylesheet";
+    f.href = "https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;800&display=swap";
+    document.head.appendChild(f);
+  }
   function injectChrome() {
     const n = $("#nav-root"); if (n) n.innerHTML = `<a class="skip-link" href="#conteudo">${t("ui.skip")}</a>` + NAV_HTML;
     const alvo = n && n.nextElementSibling;
@@ -2936,8 +2942,8 @@
   function initToggles() {
     const th = $("#themeToggle");
     if (th) th.onclick = () => {
-      const cur = document.documentElement.getAttribute("data-theme");
-      document.documentElement.setAttribute("data-theme", cur === "dark" ? "light" : "dark");
+      const cur = document.documentElement.getAttribute("data-theme"), claro = BASE_THEME === "laudo" ? "laudo" : "light";
+      document.documentElement.setAttribute("data-theme", cur === "dark" ? claro : "dark");
       $$(".book-tabs").forEach(h => { const on = h.querySelector(".on"); if (on) on.click(); });
     };
     const lt = $("#langToggle");

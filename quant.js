@@ -24,6 +24,64 @@
   const warns = A => (A.avisos && A.avisos.length ? `<ul class="q-warn">${A.avisos.map(x => `<li>⚠ ${esc(x)}</li>`).join("")}</ul>` : "");
 
   // ---------------- saúde: nota + semáforos + diagnóstico ----------------
+  // frases do diagnóstico (usadas na saúde e no laudo)
+  function dxText(d) {
+    return ({
+      concentra: tx(`<b>${esc(d.ativo)}</b> é ${pc(d.w, 0)} do valor, mas <b>${pc(d.rc, 0)} do risco</b> do portfólio.`, `<b>${esc(d.ativo)}</b> is ${pc(d.w, 0)} of value but <b>${pc(d.rc, 0)} of risk</b>.`),
+      vs_bench: tx(`Seu portfólio oscila <b>${pc(d.sig)}</b> ao ano; o ${esc(d.bench)}, ${pc(d.sig_b)}.`, `Your portfolio moves <b>${pc(d.sig)}</b> a year; the ${esc(d.bench)}, ${pc(d.sig_b)}.`),
+      em_queda: tx(`Está <b>${pc(d.dd)}</b> abaixo do pico há ${d.dias} pregões.`, `It is <b>${pc(d.dd)}</b> below its peak for ${d.dias} sessions.`),
+      hrp_ganho: tx(`Redistribuindo entre os mesmos ativos (método HRP), a oscilação cairia de ${pc(d.vol)} para <b>${pc(d.vol_hrp)}</b> e a pior queda de ${pc(d.dd)} para ${pc(d.dd_hrp)}.`,
+        `Spreading across the same assets (HRP) would cut volatility from ${pc(d.vol)} to <b>${pc(d.vol_hrp)}</b> and the worst drawdown from ${pc(d.dd)} to ${pc(d.dd_hrp)}.`),
+      livre: tx(`${pc(d.pct, 0)} do valor está em posições livres (sem sinal Seven7).`, `${pc(d.pct, 0)} of value is in free positions (no Seven7 signal).`),
+      cambio: tx(`${pc(d.pct, 0)} do valor está em ${esc(d.ccy)} — o câmbio faz parte do seu risco.`, `${pc(d.pct, 0)} of value is in ${esc(d.ccy)} — FX is part of your risk.`),
+    }[d.t] || "");
+  }
+
+  // ---------------- LAUDO (tema "laudo"): cada semáforo vira um exame com régua de referência ----------------
+  function laudo(host, A, o) {
+    set(A, o); if (empty(host, A)) return;
+    const m = A.metricas || {}, SIT = ["al", "at", "ok"];
+    const SITT = [tx("Alto", "High"), tx("Atenção", "Watch"), tx("Normal", "Normal")];
+    const cl = (v, a, b) => Math.max(a, Math.min(b, v));
+    // régua: zonas [verde até g1, âmbar até g2, vermelho] numa escala 0..max; inv = verde fica do lado alto
+    const regua = (pos, g1, g2, max, inv) => {
+      const a = g1 / max * 100, b = g2 / max * 100, V = "var(--pos)", M = "var(--warn)", R = "var(--neg)";
+      const grad = inv ? `linear-gradient(90deg,${R} 0 ${a}%,${M} ${a}% ${b}%,${V} ${b}% 100%)` : `linear-gradient(90deg,${V} 0 ${a}%,${M} ${a}% ${b}%,${R} ${b}% 100%)`;
+      return `<div class="lau-ref" style="background:${grad}"><i style="left:${cl(pos / max * 100, 1, 99)}%"></i></div>`;
+    };
+    const L = {}; (A.luzes || []).forEach(x => { L[x.k] = x; });
+    const linhas = [];
+    if (L.risco) { const x = L.risco, ref = x.ref || 0.2, lim = 0.8 * ref;
+      linhas.push([tx("Risco", "Risk"), tx("Quanto o valor sobe e desce num ano", "How much the value swings in a year"), pc(x.valor, 0),
+        regua(x.valor, lim, 1.2 * ref, 2 * ref), tx(`Saudável até ${pc(lim, 0)} (o ${esc(m.bench || "índice")} oscila ${pc(ref, 0)})`, `Healthy up to ${pc(lim, 0)} (the ${esc(m.bench || "index")} moves ${pc(ref, 0)})`), x.nivel]); }
+    if (L.queda) { const x = L.queda, q = Math.abs(x.valor || 0);
+      linhas.push([tx("Queda atual", "Current drawdown"), tx("Quanto está abaixo do último topo", "How far below its last high"), pc(x.valor, 1),
+        regua(q, 0.05, 0.15, 0.30), tx(`Saudável até −5% (pior queda em 2 anos: ${pc(x.ref, 0)})`, `Healthy up to −5% (worst in 2 years: ${pc(x.ref, 0)})`), x.nivel]); }
+    if (L.concentracao) { const x = L.concentracao;
+      linhas.push([tx("Concentração", "Concentration"), tx(`Quanto do risco vem de ${esc(x.ativo || "um ativo")}`, `How much risk comes from ${esc(x.ativo || "one asset")}`), pc(x.valor, 0),
+        regua(x.valor, 0.25, 0.40, 1), tx("Saudável até 25%", "Healthy up to 25%"), x.nivel]); }
+    if (L.diversificacao) { const x = L.diversificacao;
+      linhas.push([tx("Diversificação", "Diversification"), tx(`Apostas realmente independentes entre ${x.n} ativos`, `Truly independent bets across ${x.n} assets`), nf(x.valor, 1),
+        regua(x.valor, 2, 3.5, 6, true), tx("Saudável a partir de 3,5", "Healthy from 3.5"), x.nivel]); }
+    if (L.eficiencia) { const x = L.eficiencia, gan = x.valor > 0 ? Math.max(0, 1 - (x.ref || x.valor) / x.valor) : 0;
+      linhas.push([tx("Eficiência", "Efficiency"), tx("Quanto do risco dá para tirar só redistribuindo", "Risk you could remove just by rebalancing"), pc(gan, 0),
+        regua(gan, 0.10, 0.25, 0.5), tx("Saudável até 10%", "Healthy up to 10%"), x.nivel]); }
+    const atn = linhas.filter(l => l[5] < 2).length, cor = SIT[A.nota >= 75 ? 2 : A.nota >= 50 ? 1 : 0];
+    const resumo = atn === 0 ? tx("Saúde boa. Nenhum exame fora da faixa.", "Good health. Every test in range.")
+      : atn === 1 ? tx("Um ponto pede atenção.", "One point needs attention.") : tx(`${atn} pontos pedem atenção.`, `${atn} points need attention.`);
+    const quando = new Date(A.asof).toLocaleDateString(loc(), { day: "2-digit", month: "2-digit", year: "numeric" });
+    host.innerHTML = `<article class="lau">
+      <div class="lau-cab"><div class="lau-nota ${cor}">${A.nota}<small>/100</small></div>
+        <div><h3>${tx("Laudo da carteira", "Portfolio report")}</h3><p>${resumo}</p></div>
+        <div class="lau-meta">${A.n_pos} ${tx("ativos", "assets")}, ${money(A.valor_total)}<br>${tx("analisado em", "analyzed on")} ${quando}</div></div>
+      <table><thead><tr><th>${tx("Exame", "Test")}</th><th>${tx("Resultado", "Result")}</th><th>${tx("Valor de referência", "Reference range")}</th><th>${tx("Situação", "Status")}</th></tr></thead><tbody>
+      ${linhas.map(l => `<tr><td class="lau-ex"><b>${l[0]}</b><span>${l[1]}</span></td><td class="lau-res">${l[2]}</td>
+        <td>${l[3]}<div class="lau-ref-t">${l[4]}</div></td><td class="lau-sit ${SIT[l[5]]}">${SITT[l[5]]}</td></tr>`).join("")}
+      </tbody></table>
+      ${A.dx && A.dx.length ? `<div class="lau-obs"><b>${tx("Observações", "Notes")}</b><ul>${A.dx.map(d => `<li>${dxText(d)}</li>`).join("")}</ul></div>` : ""}
+    </article>${warns(A)}`;
+  }
+
   function health(host, A, o) {
     set(A, o); if (empty(host, A)) return;
     const m = A.metricas || {}, cor = A.nota >= 75 ? "green" : A.nota >= 50 ? "amber" : "red";
@@ -39,15 +97,7 @@
       eficiencia: [tx("Eficiência", "Efficiency"), x => tx(`vol ${pc(x.valor)} · HRP ${pc(x.ref)}`, `vol ${pc(x.valor)} · HRP ${pc(x.ref)}`),
         [tx("dá para reduzir bem o risco", "risk can drop a lot"), tx("dá para melhorar", "room to improve"), tx("perto do eficiente", "near efficient")]],
     };
-    const dxt = d => ({
-      concentra: tx(`<b>${esc(d.ativo)}</b> é ${pc(d.w, 0)} do valor, mas <b>${pc(d.rc, 0)} do risco</b> do portfólio.`, `<b>${esc(d.ativo)}</b> is ${pc(d.w, 0)} of value but <b>${pc(d.rc, 0)} of risk</b>.`),
-      vs_bench: tx(`Seu portfólio oscila <b>${pc(d.sig)}</b> ao ano; o ${esc(d.bench)}, ${pc(d.sig_b)}.`, `Your portfolio moves <b>${pc(d.sig)}</b> a year; the ${esc(d.bench)}, ${pc(d.sig_b)}.`),
-      em_queda: tx(`Está <b>${pc(d.dd)}</b> abaixo do pico há ${d.dias} pregões.`, `It is <b>${pc(d.dd)}</b> below its peak for ${d.dias} sessions.`),
-      hrp_ganho: tx(`Rebalanceando pelo <b>HRP</b>, a volatilidade cairia de ${pc(d.vol)} para <b>${pc(d.vol_hrp)}</b> e a pior queda de ${pc(d.dd)} para ${pc(d.dd_hrp)}.`,
-        `Rebalancing by <b>HRP</b> would cut volatility from ${pc(d.vol)} to <b>${pc(d.vol_hrp)}</b> and the worst drawdown from ${pc(d.dd)} to ${pc(d.dd_hrp)}.`),
-      livre: tx(`${pc(d.pct, 0)} do valor está em posições livres (sem sinal Seven7).`, `${pc(d.pct, 0)} of value is in free positions (no Seven7 signal).`),
-      cambio: tx(`${pc(d.pct, 0)} do valor está em ${d.ccy} — o câmbio faz parte do seu risco.`, `${pc(d.pct, 0)} of value is in ${d.ccy} — FX is part of your risk.`),
-    }[d.t] || "");
+    const dxt = dxText;
     host.innerHTML = `<div class="q-health">
       <div class="q-score q-${cor}"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" class="q-ring-bg"/>
         <circle cx="60" cy="60" r="50" class="q-ring" style="stroke-dasharray:${(A.nota / 100 * 314).toFixed(1)} 314"/></svg>
@@ -208,7 +258,8 @@
   function full(host, A, o) {
     set(A, o);
     if (empty(host, A)) return;
-    host.innerHTML = `<div class="q-card"><div class="q-h">${tx("Saúde do portfólio", "Portfolio health")}</div><div id="qHealth"></div></div>
+    const eLaudo = document.documentElement.getAttribute("data-theme") === "laudo";
+    host.innerHTML = (eLaudo ? `<div id="qHealth"></div>` : `<div class="q-card"><div class="q-h">${tx("Saúde do portfólio", "Portfolio health")}</div><div id="qHealth"></div></div>`) + `
       ${A.dividendos ? `<div class="q-card"><div class="q-h">${tx("Dividendos e rendimentos", "Dividends and income")}</div><div id="qDiv"></div></div>` : ""}
       <div class="q-card"><div class="q-h">${tx("Números de risco", "Risk numbers")}</div><div id="qMetrics"></div></div>
       <div class="q-2col"><div class="q-card"><div class="q-h">${tx("Quem carrega o risco", "Who carries the risk")}</div><div id="qRisk"></div></div>
@@ -217,7 +268,7 @@
         <div class="q-card"><div class="q-h">${tx("Otimização sugerida (HRP)", "Suggested optimization (HRP)")}</div><div id="qHRP"></div></div></div>
       <div class="q-card"><div class="q-h">${tx("Correlação entre os ativos", "Correlation between assets")}</div><div id="qCorr"></div></div><div id="qForm"></div>`;
     const g = id => host.querySelector("#" + id);
-    health(g("qHealth"), A, o); if (A.dividendos) dividends(g("qDiv"), A, o); metrics(g("qMetrics"), A, o); risk(g("qRisk"), A, o); frontier(g("qFront"), A, o);
+    (eLaudo ? laudo : health)(g("qHealth"), A, o); if (A.dividendos) dividends(g("qDiv"), A, o); metrics(g("qMetrics"), A, o); risk(g("qRisk"), A, o); frontier(g("qFront"), A, o);
     dd(g("qDD"), A, o); hrpView(g("qHRP"), A, o); corr(g("qCorr"), A, o); formulas(g("qForm"));
   }
 
@@ -300,6 +351,6 @@
     });
   }
 
-  window.S7Quant = { full, health, dividends, metrics, risk, dd, frontier, hrp: hrpView, corr, formulas, scoreCanvas, shareImage, shareButtons };
+  window.S7Quant = { full, laudo, health, dividends, metrics, risk, dd, frontier, hrp: hrpView, corr, formulas, scoreCanvas, shareImage, shareButtons };
   if (window.__s7QuantPending) { const f = window.__s7QuantPending; delete window.__s7QuantPending; f(); }
 })();
