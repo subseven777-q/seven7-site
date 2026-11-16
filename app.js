@@ -2548,13 +2548,38 @@
     if (msg) { msg.textContent = error ? t("sig.addErr") : t("beta.applied"); msg.className = "add-msg " + (error ? "err" : "ok"); }
     if (!error) renderPortfolio();
   }
-  async function renderPortfolio() {
+  // ---- Minha mesa ao vivo: o pipeline marca as posições a cada 15 min; a página confere a cada 5 min (e ao voltar para a aba)
+  //      se há números novos e redesenha SEM a tela de "carregando". O formulário em edição volta pelo rascunho (s7-ff).
+  let PF_STAMP = null, PF_TIMER = null;
+  async function pfCarimbo() {
+    if (!sb || !USER || USER.id === "preview") return null;
+    const [st, po] = await Promise.all([
+      sb.from("portfolio_stats").select("i:data->>intraday_at,a:data->analytics->>asof").eq("user_id", USER.id).maybeSingle(),
+      sb.from("portfolio_positions").select("updated_at", { count: "exact" }).order("updated_at", { ascending: false }).limit(1),
+    ]);
+    const s = st.data || {}, u = (po.data && po.data[0] && po.data[0].updated_at) || "";
+    return [s.i || "", s.a || "", u, po.count || 0].join("|");
+  }
+  async function pfConfere() {
+    if (document.hidden || !$("#portfolioHost") || PF_STAMP === null) return;
+    const ae = document.activeElement;
+    if (ae && ae.closest && ae.closest("#portfolioHost") && /INPUT|SELECT|TEXTAREA/.test(ae.tagName)) return;   // digitando: espera
+    try { const c = await pfCarimbo(); if (c && c !== PF_STAMP) renderPortfolio(true); } catch (e) { /* sem rede: tenta depois */ }
+  }
+  function pfAoVivo() {
+    if (PF_TIMER || !["portfolio", "members"].includes(document.body.dataset.page)) return;
+    PF_TIMER = setInterval(pfConfere, 5 * 60 * 1000);
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) pfConfere(); });
+  }
+  async function renderPortfolio(silencioso = false) {
     const host = $("#portfolioHost"); if (!host || !["portfolio", "members"].includes(document.body.dataset.page)) return;
     if (!USER) {
       host.innerHTML = `<div class="auth-card" style="margin:0 auto"><h1>${t("acct.needLogin")}</h1><p class="auth-sub">${t("pf.needLoginSub")}</p><a class="btn btn-primary btn-block" href="login.html">${t("nav.login")}</a></div>`;
       return;
     }
-    host.innerHTML = `<p class="muted-note">${t("sig.loading")}</p>`;
+    if (!silencioso) host.innerHTML = `<p class="muted-note">${t("sig.loading")}</p>`;
+    pfAoVivo();
+    pfCarimbo().then(c => { PF_STAMP = c; }, () => {});
     let pr, po, st;
     if (sb && USER && USER.id !== "preview") {
       [pr, po, st] = await Promise.all([
