@@ -1819,8 +1819,15 @@
       await loadProfile();
       if (STANDALONE && USER && document.body.dataset.page === "home" && !location.hash && /utm_source=app/.test(location.search)) { location.replace("members.html"); return; }
       updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio(); renderDivSignals(); renderMembers(); renderKmlmCard(); renderMonitor(); renderTerminal();
+      // Ao voltar para a aba o Supabase reconfere a sessão e emite SIGNED_IN / TOKEN_REFRESHED de novo com o MESMO usuário.
+      // Redesenhar nesses casos apagava o que a pessoa estava digitando (ex.: formulário de adicionar ativo). Só redesenha
+      // quando a pessoa realmente entra, sai ou troca de conta.
+      let quem = USER ? USER.id : null;
       sb.auth.onAuthStateChange(async (_ev, session) => {
-        USER = session?.user || (PREVIEW ? USER : null); await loadProfile(); updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio(); renderDivSignals(); renderMembers(); renderKmlmCard(); renderMonitor(); renderTerminal();
+        const novo = session?.user || (PREVIEW ? USER : null);
+        if ((novo ? novo.id : null) === quem) { if (novo) USER = novo; return; }
+        quem = novo ? novo.id : null;
+        USER = novo; await loadProfile(); updateAuthUI(); renderAccount(); renderMemberSignals(); renderPortfolio(); renderDivSignals(); renderMembers(); renderKmlmCard(); renderMonitor(); renderTerminal();
       });
     } catch (e) { console.error("auth init failed", e); renderAccount(); }
     wireAuthForms();
@@ -2319,6 +2326,29 @@
       el.innerHTML = `<b>${esc(r.ticker)}</b> · ${esc(nome)} · ` + (px ? `${t("pf.fLast")} <b>${fmt(px)}</b>${q > 0 ? ` · ${t("pf.fTotal")} <b>${fmt(px * q)}</b>` : ""}` : esc(t("pf.fPxLater")));
       if (px && !$("#ffOwn").checked) $("#ffPrice").value = px;
     };
+    // rascunho: se a página for redesenhada ou recarregada (o iPhone descarta abas em segundo plano), o que foi digitado volta
+    const CAMPOS = ["ffCode", "ffQty", "ffPrice", "ffDate", "ffName", "ffInv", "ffRate", "ffMat", "ffDateRf"];
+    const guarda = () => {
+      try {
+        const r = { kind, own: $("#ffOwn").checked, rf: ty.value, idx: $("#ffIdx").value };
+        CAMPOS.forEach(i => { const e = $("#" + i); if (e) r[i] = e.value; });
+        sessionStorage.setItem("s7-ff", JSON.stringify(r));
+      } catch (e) { /* navegador sem storage */ }
+    };
+    try {
+      const r = JSON.parse(sessionStorage.getItem("s7-ff") || "null");
+      if (r) {
+        if (r.rf) { ty.value = r.rf; syncRf(); }
+        CAMPOS.forEach(i => { const e = $("#" + i); if (e && r[i]) e.value = r[i]; });
+        if (r.idx) $("#ffIdx").value = r.idx;
+        if (r.own) { $("#ffOwn").checked = true; $("#ffOwnBox").hidden = false; }
+        if (r.kind === "rf") $('.ff-kind button[data-k="rf"]').click();
+        if (r.ffCode || r.ffName) { PF_FORM_OPEN = true; if (dt) dt.open = true; }
+        if (r.ffCode) setTimeout(prev, 50);
+      }
+    } catch (e) { /* rascunho inválido */ }
+    $$(".pf-free-body input, .pf-free-body select").forEach(e => { e.addEventListener("input", guarda); e.addEventListener("change", guarda); });
+    $$(".ff-kind button").forEach(b => b.addEventListener("click", guarda));
     let tm; code.oninput = $("#ffQty").oninput = () => { clearTimeout(tm); tm = setTimeout(prev, 250); };
     $("#ffSave").onclick = async () => {
       const msg = $("#ffMsg"), say = (k, ok) => { msg.textContent = t(k); msg.className = "add-msg " + (ok ? "ok" : "err"); };
@@ -2347,6 +2377,7 @@
       const { error } = await sb.from("portfolio_positions").insert(row);
       btn.disabled = false;
       if (error) return say(/column|asset_class|strategy|check constraint/i.test(error.message || "") ? "pf.fMig" : "sig.addErr");
+      try { sessionStorage.setItem("s7-ff", "null"); } catch (e) { /* navegador sem storage */ }     // salvo: descarta o rascunho
       track("pos_add", { tipo: row.asset_class, ccy: row.currency, preco: row.entry ? (kind === "rf" ? "rf" : $("#ffOwn").checked ? "meu" : "mercado") : "depois" });
       say("pf.fOk", true); renderPortfolio();
     };
