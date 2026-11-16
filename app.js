@@ -509,7 +509,7 @@
     "sig.buyNoDep": { en: "Set your initial deposit on the Portfolio page to see exactly how much to buy.", pt: "Defina seu depósito inicial na página Portfólio para ver exatamente quanto comprar." },
 
     "div.kicker": { en: "DIVIDENDS · INCOME-FIRST", pt: "DIVIDENDOS · INCOME-FIRST" },
-    "div.h1": { en: "Your growing <span class='accent'>dividend salary</span>", pt: "Seu <span class='accent'>salário de dividendos</span> crescente" },
+    "div.h1": { en: "Your growing dividend salary", pt: "Seu salário de dividendos crescente" },
     "div.sub": { en: "A long-term income portfolio built from the most consistent dividend payers — bought only on weakness, <b>never sold</b>, every payout reinvested. Brazil (Beginner) and the US (Pro). Real, auditable data over 10 years.", pt: "Uma carteira de renda de longo prazo com as pagadoras de dividendos mais consistentes — compradas só na queda, <b>nunca vendidas</b>, cada provento reinvestido. Brasil (Beginner) e EUA (Pro). Dados reais e auditáveis de 10 anos." },
     "div.mkt.BR": { en: "Brazil", pt: "Brasil" },
     "div.mkt.US": { en: "United States", pt: "Estados Unidos" },
@@ -2438,7 +2438,7 @@
     el.innerHTML = "";
     new window.TradingView.widget({
       container_id: "tvChart", symbol, interval: "D", autosize: true,
-      theme: document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark",
+      theme: ["light", "laudo"].includes(document.documentElement.getAttribute("data-theme")) ? "light" : "dark",
       style: "1", locale: LANG === "pt" ? "br" : "en",
       hide_side_toolbar: true, allow_symbol_change: false, save_image: false,
     });
@@ -3383,7 +3383,7 @@
     const tc = $("#termCta");
     if (tc) tc.innerHTML = `<a class="term-cta" href="terminal.html"><span class="term-cta-ic">${ic("gauge")}</span>
       <span class="term-cta-txt"><b>${t("desk.termT")}</b><small>${t("desk.termD")}</small></span>
-      <span class="btn btn-primary">${t("desk.termOpen")} →</span></a>`;
+      <span class="btn btn-primary">${t("desk.termOpen")}</span></a>`;
     initDeskViews();
     renderPushCard();
     if (!member) { renderPortfolio(); return; }
