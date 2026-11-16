@@ -749,12 +749,12 @@
     "pf.fLast": { en: "last price", pt: "último preço" },
     "pf.fTotal": { en: "total", pt: "total" },
     "pf.fPxLater": { en: "we'll fetch the price within 15 minutes", pt: "o preço entra em até 15 minutos" },
-    "pf.fNotCode": { en: "We didn't recognize this ticker. Examples: PETR4, HGLG11, AAPL, BTC, SAP.DE", pt: "Não reconhecemos esse código. Exemplos: PETR4, HGLG11, AAPL, BTC, SAP.DE" },
+    "pf.fNotCode": { en: "We didn't recognize this ticker. Examples: PETR4, HGLG11, AAPL, BTC, USD (dollar), SAP.DE", pt: "Não reconhecemos esse código. Exemplos: PETR4, HGLG11, AAPL, BTC, USD (dólar), SAP.DE" },
     "pf.fBadQty": { en: "Enter how many units you have.", pt: "Informe quantas unidades você tem." },
     "pf.fBadPx": { en: "Enter your average price, or uncheck the option to use today's price.", pt: "Informe seu preço médio, ou desmarque a opção para usar o preço de hoje." },
     "pf.fBadRf": { en: "Fill in name, amount and rate.", pt: "Preencha nome, valor aplicado e taxa." },
     "pf.fDateRf": { en: "Investment date", pt: "Data da aplicação" },
-    "pf.freeHint": { en: "Just the ticker and quantity — we find the rest. Brazil, US, other markets, crypto and fixed income.", pt: "Só o código e a quantidade — o resto a gente descobre. Brasil, EUA, outros países, cripto e renda fixa." },
+    "pf.freeHint": { en: "Just the ticker and quantity — we find the rest. Brazil, US, other markets, crypto, dollars/euros (USD, EUR) and fixed income.", pt: "Só o código e a quantidade — o resto a gente descobre. Brasil, EUA, outros países, cripto, dólar/euro (USD, EUR) e renda fixa." },
     "pf.fEx": { en: "Country / exchange", pt: "País / bolsa" },
     "pf.fExNote": { en: "Type the ticker as it trades on that exchange (e.g. SAP in Germany, 7203 in Japan). Price and currency are picked up automatically; quantity × price is converted to your portfolio currency. Can't find it? Choose “Other exchange” and type the Yahoo Finance code.", pt: "Digite o código como é negociado naquela bolsa (ex.: SAP na Alemanha, 7203 no Japão). Preço e moeda entram sozinhos; quantidade × preço é convertido para a moeda da sua carteira. Não achou? Escolha “Outra bolsa” e digite o código do Yahoo Finance." },
     "pf.showAll": { en: "Show all {n} positions", pt: "Ver todas as {n} posições" },
@@ -2224,13 +2224,22 @@
     CO: ["Dinamarca", "Denmark", "DKK"], SI: ["Singapura", "Singapore", "SGD"], JO: ["África do Sul", "South Africa", "ZAR"], SN: ["Chile", "Chile", "CLP"],
   };
   const CLS_NOME = { acao_br: ["Ação Brasil", "Brazilian stock"], fii: ["Fundo imobiliário (FII)", "Real estate fund (FII)"], etf_br: ["ETF Brasil", "Brazilian ETF"],
-    acao_us: ["Ação EUA", "US stock"], etf_us: ["ETF EUA", "US ETF"], cripto: ["Cripto", "Crypto"], outro: ["Ação no exterior", "Foreign stock"] };
+    acao_us: ["Ação EUA", "US stock"], etf_us: ["ETF EUA", "US ETF"], cripto: ["Cripto", "Crypto"], outro: ["Ação no exterior", "Foreign stock"],
+    moeda: ["Moeda estrangeira (preço em reais)", "Foreign currency (priced in BRL)"] };
   let PF_CAT = null;
   const pfCatalogo = () => PF_CAT ? Promise.resolve(PF_CAT)
     : fetch("data/quant_catalog.json").then(r => r.json()).then(c => (PF_CAT = c)).catch(() => (PF_CAT = []));
-  // código digitado -> o que é. Ex.: PETR4, HGLG11, AAPL, BTC, SAP.DE, 7203.T
+  // dólar/euro comprado no Brasil: quantidade = unidades da moeda; "preço" = cotação em reais (o pipeline usa a PTAX)
+  const MOEDAS_BR = { USD: ["BRL=X", "FX_IDC:USDBRL"], DOLAR: "USD", DOLARES: "USD", "US$": "USD", USDBRL: "USD", DOLLAR: "USD",
+                      EUR: ["EURBRL=X", "FX_IDC:EURBRL"], EURO: "EUR", EUROS: "EUR", EURBRL: "EUR" };
+  // código digitado -> o que é. Ex.: PETR4, HGLG11, AAPL, BTC, SAP.DE, 7203.T, USD (dólar), EUR (euro)
   function resolveTicker(raw) {
     let u = String(raw || "").trim().toUpperCase().replace(/\s+/g, "");
+    const semAcento = u.normalize("NFD").replace(/[̀-ͯ]/g, "");
+    if (MOEDAS_BR[semAcento]) {
+      const cod = typeof MOEDAS_BR[semAcento] === "string" ? MOEDAS_BR[semAcento] : semAcento, m = MOEDAS_BR[cod];
+      return { ticker: cod, market: "FX", currency: "BRL", price_symbol: m[0], tv_symbol: m[1], asset_class: "moeda", quote: null, chave: cod === "USD" ? "USD" : m[0] };
+    }
     if (!u || !/^[A-Z0-9.\-^=]{1,20}$/.test(u)) return null;
     u = u.replace(/\.SA$/, "");
     const cat = PF_CAT || [], hit = cat.find(c => c.s === u) || cat.find(c => c.s === u + "-USD");
@@ -2275,7 +2284,7 @@
         </div>
         <div class="ff-mkt">
           <div class="ff-grid ff-main">
-            <label>${t("pf.fCode")}<input id="ffCode" placeholder="PETR4, HGLG11, AAPL, BTC…" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="20"></label>
+            <label>${t("pf.fCode")}<input id="ffCode" placeholder="PETR4, HGLG11, AAPL, BTC, USD…" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="20"></label>
             <label>${t("pf.fQty")}<input id="ffQty" type="number" inputmode="decimal" min="0" step="any" placeholder="100"></label>
           </div>
           <p class="ff-preview" id="ffPrev" aria-live="polite"></p>
