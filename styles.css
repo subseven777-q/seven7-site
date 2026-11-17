@@ -1654,3 +1654,8 @@ h2[id],section[id],[id].section{scroll-margin-top:84px}
 /* quadros embutidos (TradingView): com color-scheme diferente entre a página e o iframe o Chrome pinta o fundo
    do iframe de BRANCO em vez de transparente. "normal" casa com o documento interno -> fundo volta transparente. */
 iframe{color-scheme:normal}
+
+/* hedge por mercado (EUA: KMLM, Brasil: DOLA11) */
+.hedge-mkt{margin:32px 0 14px;font-size:20px;font-weight:700}
+.hedge-mkt:first-child{margin-top:0}
+#betaCtrlHost .beta-card + .beta-card,#kmlmHost .kmlm-card + .kmlm-card{margin-top:18px}

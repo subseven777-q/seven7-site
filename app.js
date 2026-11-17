@@ -696,10 +696,12 @@
     "kmlm.sub": { en: "Tail hedge · managed-futures (uncorrelated)", pt: "Hedge de cauda · managed futures (descorrelacionado)" },
     "kmlm.recommended": { en: "Recommended now", pt: "Recomendado agora" },
     "kmlm.current": { en: "Your portfolio", pt: "No seu portfólio" },
-    "kmlm.under": { en: "Below target — bring KMLM up to {rec}% to match the current regime.", pt: "Abaixo do alvo — leve o KMLM a {rec}% para acompanhar o regime atual." },
+    "kmlm.under": { en: "Below target: bring {tk} up to {rec}% to match the current regime.", pt: "Abaixo do alvo: leve o {tk} a {rec}% para acompanhar o regime atual." },
+    "dola.sub": { en: "Brazil hedge · US dollar futures (moves against the Ibovespa)", pt: "Hedge do Brasil · dólar futuro (anda contra o Ibovespa)" },
+    "dola.desc": { en: "DOLA11 tracks US dollar futures, which tend to rise when Brazilian stocks fall. We hold 15% normally and 30% when the market turns defensive.", pt: "O DOLA11 acompanha o dólar futuro, que costuma subir quando a bolsa brasileira cai. Mantemos 15% no normal e 30% quando o mercado fica defensivo." },
     "kmlm.onTarget": { en: "On target — your hedge matches the current regime.", pt: "No alvo — seu hedge acompanha o regime atual." },
     "kmlm.desc": { en: "KMLM rises when stocks fall. We hold 15% normally, 30% when the market turns defensive — cutting drawdowns without killing returns.", pt: "O KMLM sobe quando as ações caem. Mantemos 15% no normal e 30% quando o mercado fica defensivo — cortando o drawdown sem matar o retorno." },
-    "kmlm.addBtn": { en: "＋ Add KMLM at {rec}%", pt: "＋ Adicionar KMLM a {rec}%" },
+    "kmlm.addBtn": { en: "Add {tk} at {rec}%", pt: "Adicionar {tk} a {rec}%" },
     "kmlm.added": { en: "Added to your portfolio.", pt: "Adicionado ao seu portfólio." },
     "mcc.kicker": { en: "COVERED CALL · ELITE", pt: "COVERED CALL · ELITE" },
     "mcc.h": { en: "The income layer — covered calls", pt: "A camada de renda — covered calls" },
@@ -804,25 +806,28 @@
     "pf.frozenNote": { en: "Positions cleared — the metrics below are kept from your portfolio history. Use “Reset portfolio” to zero everything.", pt: "Posições zeradas — as métricas abaixo são mantidas do histórico do portfólio. Use “Zerar portfólio” para zerar tudo." },
     "pf.noOpenPos": { en: "No open positions.", pt: "Nenhuma posição aberta." },
     "beta.title": { en: "Portfolio protection", pt: "Proteção da carteira" },
-    "beta.sub": { en: "Reduce how much your portfolio moves with the market using KMLM, the Pro/Elite protection asset (Markov 3 + Dividends included).", pt: "Reduza o quanto sua carteira oscila junto com o mercado usando o KMLM, o ativo de proteção dos planos Pro e Elite (inclui Markov 3 + Dividendos)." },
+    "beta.sub": { en: "Reduce how much your portfolio moves with this market using {tk}, the Pro/Elite protection asset.", pt: "Reduza o quanto sua carteira oscila junto com este mercado usando o {tk}, o ativo de proteção dos planos Pro e Elite." },
+    "beta.mktUS": { en: "US stocks", pt: "ações americanas" },
+    "beta.mktBR": { en: "Brazilian stocks", pt: "ações brasileiras" },
     "beta.net": { en: "Market sensitivity now", pt: "Sensibilidade ao mercado hoje" },
     "beta.book": { en: "Stocks only", pt: "Só as ações" },
     "beta.kmlm": { en: "KMLM β", pt: "β do KMLM" },
-    "beta.curk": { en: "In protection (KMLM)", pt: "Em proteção (KMLM)" },
+    "beta.curk": { en: "In protection ({tk})", pt: "Em proteção ({tk})" },
     "beta.neutro": { en: "Full (0)", pt: "Total (0)" },
     "beta.half": { en: "Half", pt: "Metade" },
     "beta.moderate": { en: "Light", pt: "Leve" },
     "beta.custom": { en: "Custom", pt: "Personalizado" },
-    "beta.note": { en: "KMLM moves only slightly against the market (≈ −0.14), so full protection needs a large slice of it. Measured over 5 years, updated daily.", pt: "O KMLM anda só um pouco contra o mercado (≈ −0,14), então proteção total exige uma fatia grande dele. Medido em 5 anos, atualizado todo dia." },
-    "beta.recLine": { en: "To reach <b>{b}</b>: KMLM should be <b>{pct}%</b> of the portfolio (stocks ~{eq}%).", pt: "Para chegar a <b>{b}</b>: o KMLM deve ser <b>{pct}%</b> da carteira (ações ~{eq}%)." },
-    "beta.addLine": { en: "→ add {d} percentage points of KMLM.", pt: "→ adicionar {d} pontos percentuais de KMLM." },
-    "beta.trimLine": { en: "→ trim {d} percentage points of KMLM.", pt: "→ reduzir {d} pontos percentuais de KMLM." },
-    "beta.onTarget": { en: "→ already at target.", pt: "→ já está no alvo." },
-    "beta.aggressive": { en: "Aggressive: this KMLM weight heavily dilutes the strategy's return.", pt: "Agressivo: esse peso de KMLM dilui muito o retorno da estratégia." },
-    "beta.apply": { en: "Set KMLM to {pct}%", pt: "Definir KMLM em {pct}%" },
-    "beta.applyConfirm": { en: "Set your KMLM position to {pct}% of the deposit? (Trim your equity positions to make room.)", pt: "Definir a posição de KMLM em {pct}% do depósito? (Reduza as posições de ações para abrir espaço.)" },
-    "beta.applied": { en: "KMLM updated.", pt: "KMLM atualizado." },
-    "beta.noPrice": { en: "KMLM price unavailable — run the daily update first.", pt: "Preço do KMLM indisponível — rode o update diário primeiro." },
+    "beta.noteUS": { en: "KMLM moves only slightly against the market (≈ {b}), so full protection needs a large slice of it. Measured over 5 years, updated daily.", pt: "O KMLM anda só um pouco contra o mercado (≈ {b}), então proteção total exige uma fatia grande dele. Medido em 5 anos, atualizado todo dia." },
+    "beta.noteBR": { en: "DOLA11 (US dollar futures) tends to rise when the Brazilian market falls (≈ {b}). Measured since it started trading in Sep/2025, updated daily.", pt: "O DOLA11 (dólar futuro) costuma subir quando a bolsa brasileira cai (≈ {b}). Medido desde o início das negociações, em set/2025, atualizado todo dia." },
+    "beta.recLine": { en: "To reach <b>{b}</b>: {tk} should be <b>{pct}%</b> of the portfolio (stocks ~{eq}%).", pt: "Para chegar a <b>{b}</b>: o {tk} deve ser <b>{pct}%</b> da carteira (ações ~{eq}%)." },
+    "beta.addLine": { en: "Add {d} percentage points of {tk}.", pt: "Adicionar {d} pontos percentuais de {tk}." },
+    "beta.trimLine": { en: "Trim {d} percentage points of {tk}.", pt: "Reduzir {d} pontos percentuais de {tk}." },
+    "beta.onTarget": { en: "Already at target.", pt: "Já está no alvo." },
+    "beta.aggressive": { en: "Aggressive: this {tk} weight heavily dilutes the strategy's return.", pt: "Agressivo: esse peso de {tk} dilui muito o retorno da estratégia." },
+    "beta.apply": { en: "Set {tk} to {pct}%", pt: "Definir {tk} em {pct}%" },
+    "beta.applyConfirm": { en: "Set your {tk} position to {pct}% of the deposit? (Trim your equity positions to make room.)", pt: "Definir a posição de {tk} em {pct}% do depósito? (Reduza as posições de ações para abrir espaço.)" },
+    "beta.applied": { en: "{tk} updated.", pt: "{tk} atualizado." },
+    "beta.noPrice": { en: "{tk} price unavailable. Try again after the daily update.", pt: "Preço do {tk} indisponível. Tente de novo depois da atualização diária." },
     "pf.open": { en: "Open positions", pt: "Posições abertas" },
     "pf.you": { en: "You", pt: "Você" },
     "pf.chart": { en: "You vs Buy & Hold (SPY · BOVA11)", pt: "Você vs Buy & Hold (SPY · BOVA11)" },
@@ -877,6 +882,9 @@
     "hg.rCagr": { en: "CAGR", pt: "CAGR" },
     "hg.eliteT": { en: "The asset is for Pro and Elite members", pt: "O ativo é dos planos Pro e Elite" },
     "hg.eliteS": { en: "{base}% of capital in protection at all times, raised to {stress}% under stress. Pro and Elite members get which asset it is and the signal to switch.", pt: "{base}% do capital em proteção sempre, elevado a {stress}% em estresse. Membros Pro e Elite recebem qual é o ativo e o sinal de quando alternar." },
+    "hg.mktUS": { en: "US stocks", pt: "Ações americanas" },
+    "hg.mktBR": { en: "Brazilian stocks", pt: "Ações brasileiras" },
+    "hg.noteBR": { en: "Measured over {years} year, since the Brazilian protection asset started trading ({desde}). Short window: the numbers get more reliable over time. Correlation to the portfolio: {corr}.", pt: "Avaliado em {years} ano, desde que o ativo de proteção brasileiro começou a ser negociado ({desde}). Janela curta: os números ficam mais confiáveis com o tempo. Correlação com a carteira: {corr}." },
     "hg.eliteCta": { en: "See Pro and Elite plans", pt: "Ver planos Pro e Elite" },
     "hg.note": { en: "Measured over {years} years — a window that includes the 2022 stress. Correlation to the portfolio: {corr}.", pt: "Avaliado ao longo de {years} anos — janela que inclui o estresse de 2022. Correlação com a carteira: {corr}." },
     // cherry on top (mistério — mecanismo oculto, só métricas)
@@ -1582,23 +1590,26 @@
   }
 
   function renderHedge() {
-    const h = DATA.hedge; if (!h) { $("#hedgeHost").closest("section")?.style && ($("#hedgeHost").closest("section").style.display = "none"); return; }
-    const u = h.unhedged, hh = h.hedged;
-    const hero = [
-      { v: `−${nf(h.dd_reduction)}pp`, l: t("hg.ddRed"), good: true },
-      { v: `${nf(u.worst_year)}%<span class="arrow">→</span><b class="pos">${nf(hh.worst_year)}%</b>`, l: t("hg.worst") },
-      { v: `${u.sharpe}<span class="arrow">→</span><b class="pos">${hh.sharpe}</b>`, l: t("hg.sharpe") },
-    ];
+    const blocos = [["US", DATA.hedge], ["BR", DATA.hedge_br]].filter(x => x[1]);
+    if (!blocos.length) { $("#hedgeHost").closest("section")?.style && ($("#hedgeHost").closest("section").style.display = "none"); return; }
     const pct = v => (v > 0 ? "+" : "") + nf(v) + "%", dd = v => "-" + nf(Math.abs(v)) + "%";
-    const rows = [
-      [t("hg.rMaxdd"), dd(u.max_dd), dd(hh.max_dd), hh.max_dd < u.max_dd],
-      [t("hg.rWorst"), pct(u.worst_year), pct(hh.worst_year), hh.worst_year > u.worst_year],
-      [t("hg.rSharpe"), nf(u.sharpe, 2), nf(hh.sharpe, 2), hh.sharpe > u.sharpe],
-      [t("hg.rVol"), nf(u.ann_vol) + "%", nf(hh.ann_vol) + "%", hh.ann_vol < u.ann_vol],
-      [t("hg.rCagr"), pct(u.cagr), pct(hh.cagr), hh.cagr > u.cagr],
-    ];
-    const body = rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td class="col-h ${r[3] ? "hc-better" : ""}">${r[2]}</td></tr>`).join("");
-    $("#hedgeHost").innerHTML = `
+    const um = (m, h) => {
+      const u = h.unhedged, hh = h.hedged;
+      const hero = [
+        { v: `−${nf(h.dd_reduction)}pp`, l: t("hg.ddRed"), good: true },
+        { v: `${nf(u.worst_year)}%<span class="arrow">→</span><b class="pos">${nf(hh.worst_year)}%</b>`, l: t("hg.worst") },
+        { v: `${u.sharpe}<span class="arrow">→</span><b class="pos">${hh.sharpe}</b>`, l: t("hg.sharpe") },
+      ];
+      const rows = [
+        [t("hg.rMaxdd"), dd(u.max_dd), dd(hh.max_dd), hh.max_dd < u.max_dd],
+        [t("hg.rWorst"), pct(u.worst_year), pct(hh.worst_year), hh.worst_year > u.worst_year],
+        [t("hg.rSharpe"), nf(u.sharpe, 2), nf(hh.sharpe, 2), hh.sharpe > u.sharpe],
+        [t("hg.rVol"), nf(u.ann_vol) + "%", nf(hh.ann_vol) + "%", hh.ann_vol < u.ann_vol],
+        [t("hg.rCagr"), pct(u.cagr), pct(hh.cagr), hh.cagr > u.cagr],
+      ];
+      const body = rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td class="col-h ${r[3] ? "hc-better" : ""}">${r[2]}</td></tr>`).join("");
+      const desde = h.period && h.period.start ? h.period.start.slice(5, 7) + "/" + h.period.start.slice(0, 4) : "";
+      return `${blocos.length > 1 ? `<h3 class="hedge-mkt">${t("hg.mkt" + m)}</h3>` : ""}
       <div class="hedge-head">${hero.map(x => `<div class="hedge-hero"><div class="v ${x.good ? "good" : ""}">${x.v}</div><div class="l">${x.l}</div></div>`).join("")}</div>
       <div class="hedge-wrap">
         <div class="hedge-table-card"><table class="hedge-table">
@@ -1610,7 +1621,9 @@
           <a class="btn btn-primary" href="plans.html">${t("hg.eliteCta")}</a>
         </div>
       </div>
-      <p class="hedge-note">${interp(t("hg.note"), { years: nf(h.period.years), corr: h.corr_to_equity })}</p>`;
+      <p class="hedge-note">${interp(t(m === "BR" ? "hg.noteBR" : "hg.note"), { years: nf(h.period.years), corr: h.corr_to_equity, desde })}</p>`;
+    };
+    $("#hedgeHost").innerHTML = blocos.map(([m, h]) => um(m, h)).join("");
   }
   // ---- Intraday EUA (intraday_us.py via IB Gateway, a cada 15 min no pregão) ----
   // Público: só preço + variação do universo (sem estado nem níveis). Membros: o preço vem da tabela
@@ -2477,90 +2490,109 @@
     if (/[?&]pfempty=1/.test(location.search)) return { deposit: 10000, cur: "USD", positions: [], stats };  // testa "posições zeradas, métricas mantidas"
     return { deposit: 10000, cur: "USD", positions, stats };
   }
-  /* ---- controle de beta via KMLM (neutralização de risco sistemático) ---- */
-  let BETA_MODE = "half", BETA_CUSTOM = null;
-  function betaTargetVal(betaL) {
-    if (BETA_MODE === "neutro") return 0;
-    if (BETA_MODE === "moderate") return Math.min(0.5, betaL);
-    if (BETA_MODE === "custom" && BETA_CUSTOM != null) return BETA_CUSTOM;
+  /* ---- controle de beta por mercado: EUA com KMLM, Brasil com DOLA11 (neutralização de risco sistemático) ---- */
+  const HEDGE_CFG = {
+    US: { tk: "KMLM", tv: "AMEX:KMLM", sig: "__HEDGE__", fb: -0.137 },
+    BR: { tk: "DOLA11", tv: "BMFBOVESPA:DOLA11", sig: "__HEDGE_BR__", fb: -0.377 },
+  };
+  const HEDGE_TKS = Object.values(HEDGE_CFG).map(c => c.tk);
+  const BETA_ST = { US: { mode: "half", custom: null }, BR: { mode: "half", custom: null } };
+  function betaTargetVal(m, betaL) {
+    const st = BETA_ST[m];
+    if (st.mode === "neutro") return 0;
+    if (st.mode === "moderate") return Math.min(0.5, betaL);
+    if (st.mode === "custom" && st.custom != null) return st.custom;
     return betaL / 2;   // "metade" (padrão)
   }
   async function renderBetaControl(positions, deposit) {
     const host = $("#betaCtrlHost"); if (!host) return;
     await new Promise(res => loadBetas(res));
-    const bK = betaOf("US", "KMLM"); const betaK = bK != null ? bK : -0.137;
-    const eq = positions.filter(p => p.ticker !== "KMLM");
-    const kml = positions.filter(p => p.ticker === "KMLM");
-    let we = 0, wbe = 0;
-    eq.forEach(p => { const b = betaOf(p.market, p.ticker); const a = Number(p.alloc_pct) || 0; if (b != null) { we += a; wbe += a * b; } });
-    if (we <= 0) { host.innerHTML = ""; return; }
-    const betaL = wbe / we;
-    const kAlloc = kml.reduce((s, p) => s + (Number(p.alloc_pct) || 0), 0);
-    const sleeve = we + kAlloc;
-    const betaNet = (wbe + kAlloc * betaK) / sleeve;
-    const curKmlmPct = sleeve > 0 ? kAlloc / sleeve * 100 : 0;
-    const presets = [["neutro", t("beta.neutro")], ["half", t("beta.half")], ["moderate", t("beta.moderate")], ["custom", t("beta.custom")]];
-    host.innerHTML = `<div class="chart-card beta-card">
-      <div class="chart-head"><div class="beta-head"><span class="beta-hic">${ic("shield")}</span><div><div class="chart-title">${t("beta.title")}</div><div class="chart-sub">${t("beta.sub")}</div></div></div></div>
+    const cards = [], ctx = {};
+    for (const m of ["US", "BR"]) {
+      const c = HEDGE_CFG[m];
+      const bK = betaOf(m, c.tk); const betaK = bK != null ? bK : c.fb;
+      const eq = positions.filter(p => p.market === m && !HEDGE_TKS.includes(p.ticker));
+      const hp = positions.filter(p => p.ticker === c.tk);
+      let we = 0, wbe = 0;
+      eq.forEach(p => { const b = betaOf(p.market, p.ticker); const a = Number(p.alloc_pct) || 0; if (b != null) { we += a; wbe += a * b; } });
+      if (we <= 0) continue;
+      const betaL = wbe / we;
+      const kAlloc = hp.reduce((sm, p) => sm + (Number(p.alloc_pct) || 0), 0);
+      const sleeve = we + kAlloc;
+      const betaNet = (wbe + kAlloc * betaK) / sleeve;
+      const curPct = sleeve > 0 ? kAlloc / sleeve * 100 : 0;
+      ctx[m] = { betaL, betaK, curPct };
+      const st = BETA_ST[m];
+      const presets = [["neutro", t("beta.neutro")], ["half", t("beta.half")], ["moderate", t("beta.moderate")], ["custom", t("beta.custom")]];
+      cards.push(`<div class="chart-card beta-card" data-mkt="${m}">
+      <div class="chart-head"><div class="beta-head"><span class="beta-hic">${ic("shield")}</span><div><div class="chart-title">${t("beta.title")}: ${t("beta.mkt" + m)}</div><div class="chart-sub">${interp(t("beta.sub"), { tk: c.tk })}</div></div></div></div>
       <div class="beta-now">
         <div class="beta-metric"><div class="bm-v">${nf(betaNet, 2)}</div><div class="bm-l">${t("beta.net")}</div></div>
         <div class="beta-metric"><div class="bm-v">${nf(betaL, 2)}</div><div class="bm-l">${t("beta.book")}</div></div>
-        <div class="beta-metric"><div class="bm-v">${nf(curKmlmPct, 0)}%</div><div class="bm-l">${t("beta.curk")}</div></div>
+        <div class="beta-metric"><div class="bm-v">${nf(curPct, 0)}%</div><div class="bm-l">${interp(t("beta.curk"), { tk: c.tk })}</div></div>
       </div>
       <div class="beta-explain">${t("beta.explain")}</div>
       <div class="beta-ask">${t("beta.ask")}</div>
-      <div class="seg beta-presets" id="betaPresets">${presets.map(p => `<button data-m="${p[0]}" class="${BETA_MODE === p[0] ? "on" : ""}">${p[1]}</button>`).join("")}</div>
-      <div class="beta-slider ${BETA_MODE === "custom" ? "" : "off"}" id="betaSliderWrap">
-        <input type="range" id="betaSlider" min="0" max="${Math.max(0.1, betaL).toFixed(2)}" step="0.01" value="${(BETA_CUSTOM != null ? BETA_CUSTOM : betaL / 2).toFixed(2)}">
-        <span class="beta-slider-v" id="betaSliderV"></span>
+      <div class="seg beta-presets" id="betaPresets${m}">${presets.map(p => `<button data-m="${p[0]}" class="${st.mode === p[0] ? "on" : ""}">${p[1]}</button>`).join("")}</div>
+      <div class="beta-slider ${st.mode === "custom" ? "" : "off"}" id="betaSliderWrap${m}">
+        <input type="range" id="betaSlider${m}" aria-label="${t("beta.target")}" min="0" max="${Math.max(0.1, betaL).toFixed(2)}" step="0.01" value="${(st.custom != null ? st.custom : betaL / 2).toFixed(2)}">
+        <span class="beta-slider-v" id="betaSliderV${m}"></span>
       </div>
-      <div id="betaRec"></div>
-      <div class="beta-note">${t("beta.note")}</div>
-    </div>`;
-    const rec = () => paintBetaRec(betaL, betaK, curKmlmPct, deposit);
-    ($("#betaPresets")?.querySelectorAll("button") || []).forEach(b => b.onclick = () => {
-      BETA_MODE = b.dataset.m;
-      ($("#betaPresets")?.querySelectorAll("button") || []).forEach(x => x.classList.toggle("on", x === b));
-      $("#betaSliderWrap").classList.toggle("off", BETA_MODE !== "custom");
+      <div id="betaRec${m}"></div>
+      <div class="beta-note">${interp(t("beta.note" + m), { b: nf(betaK, 2) })}</div>
+    </div>`);
+    }
+    host.innerHTML = cards.join("");
+    for (const m of Object.keys(ctx)) {
+      const { betaL, betaK, curPct } = ctx[m]; const st = BETA_ST[m];
+      const rec = () => paintBetaRec(m, betaL, betaK, curPct);
+      const pres = $("#betaPresets" + m);
+      (pres?.querySelectorAll("button") || []).forEach(b => b.onclick = () => {
+        st.mode = b.dataset.m;
+        pres.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+        $("#betaSliderWrap" + m).classList.toggle("off", st.mode !== "custom");
+        rec();
+      });
+      const sl = $("#betaSlider" + m);
+      if (sl) sl.oninput = () => {
+        st.mode = "custom"; st.custom = parseFloat(sl.value);
+        (pres?.querySelectorAll("button") || []).forEach(x => x.classList.toggle("on", x.dataset.m === "custom"));
+        $("#betaSliderWrap" + m).classList.remove("off"); rec();
+      };
       rec();
-    });
-    const sl = $("#betaSlider");
-    if (sl) sl.oninput = () => {
-      BETA_MODE = "custom"; BETA_CUSTOM = parseFloat(sl.value);
-      ($("#betaPresets")?.querySelectorAll("button") || []).forEach(x => x.classList.toggle("on", x.dataset.m === "custom"));
-      $("#betaSliderWrap").classList.remove("off"); rec();
-    };
-    rec();
+    }
   }
-  function paintBetaRec(betaL, betaK, curKmlmPct, deposit) {
-    const host = $("#betaRec"); if (!host) return;
-    const tgt = Math.max(betaK, Math.min(betaL, betaTargetVal(betaL)));
-    const w = betaL > betaK ? (betaL - tgt) / (betaL - betaK) : 0;   // fração do sleeve em KMLM (realocação)
-    const kmlmPct = Math.max(0, Math.min(100, w * 100));
-    const delta = kmlmPct - curKmlmPct;
-    const sv = $("#betaSliderV"); if (sv) sv.textContent = t("beta.target") + " " + nf(tgt, 2);
+  function paintBetaRec(m, betaL, betaK, curPct) {
+    const host = $("#betaRec" + m); if (!host) return;
+    const tk = HEDGE_CFG[m].tk;
+    const tgt = Math.max(betaK, Math.min(betaL, betaTargetVal(m, betaL)));
+    const w = betaL > betaK ? (betaL - tgt) / (betaL - betaK) : 0;   // fração do sleeve no ativo de proteção
+    const hPct = Math.max(0, Math.min(100, w * 100));
+    const delta = hPct - curPct;
+    const sv = $("#betaSliderV" + m); if (sv) sv.textContent = t("beta.target") + " " + nf(tgt, 2);
     host.innerHTML = `<div class="beta-rec">
-      <div class="br-line">${interp(t("beta.recLine"), { pct: nf(kmlmPct, 0), eq: nf(100 - kmlmPct, 0), b: nf(tgt, 2) })}</div>
+      <div class="br-line">${interp(t("beta.recLine"), { tk, pct: nf(hPct, 0), eq: nf(100 - hPct, 0), b: nf(tgt, 2) })}</div>
       ${Math.abs(delta) < 1 ? `<div class="br-ok">${t("beta.onTarget")}</div>`
-        : delta > 0 ? `<div class="br-add">${interp(t("beta.addLine"), { d: nf(delta, 0) })}</div>`
-          : `<div class="br-add">${interp(t("beta.trimLine"), { d: nf(-delta, 0) })}</div>`}
-      ${kmlmPct > 55 ? `<div class="br-warn">⚠ ${t("beta.aggressive")}</div>` : ""}
-      <button class="btn btn-primary" id="betaApply">${interp(t("beta.apply"), { pct: nf(kmlmPct, 0) })}</button>
-      <span role="status" aria-live="polite" class="add-msg" id="betaMsg"></span>
+        : delta > 0 ? `<div class="br-add">${interp(t("beta.addLine"), { tk, d: nf(delta, 0) })}</div>`
+          : `<div class="br-add">${interp(t("beta.trimLine"), { tk, d: nf(-delta, 0) })}</div>`}
+      ${hPct > 55 ? `<div class="br-warn">⚠ ${interp(t("beta.aggressive"), { tk })}</div>` : ""}
+      <button class="btn btn-primary" id="betaApply${m}">${interp(t("beta.apply"), { tk, pct: nf(hPct, 0) })}</button>
+      <span role="status" aria-live="polite" class="add-msg" id="betaMsg${m}"></span>
     </div>`;
-    const apply = $("#betaApply");
-    if (apply) apply.onclick = () => applyBetaKmlm(kmlmPct);
+    const apply = $("#betaApply" + m);
+    if (apply) apply.onclick = () => applyBetaHedge(m, hPct);
   }
-  async function applyBetaKmlm(kmlmPct) {
+  async function applyBetaHedge(m, hPct) {
     if (!sb || !USER || USER.id === "preview") return;
-    if (!confirm(interp(t("beta.applyConfirm"), { pct: nf(kmlmPct, 0) }))) return;
-    const msg = $("#betaMsg"); const apply = $("#betaApply"); if (apply) apply.disabled = true;
+    const c = HEDGE_CFG[m];
+    if (!confirm(interp(t("beta.applyConfirm"), { tk: c.tk, pct: nf(hPct, 0) }))) return;
+    const msg = $("#betaMsg" + m); const apply = $("#betaApply" + m); if (apply) apply.disabled = true;
     let price = null;
-    try { const { data } = await sb.from("signals").select("price").eq("ticker", "__HEDGE__").maybeSingle(); price = data && data.price; } catch (e) {}
-    if (!price) { if (msg) { msg.textContent = t("beta.noPrice"); msg.className = "add-msg err"; } if (apply) apply.disabled = false; return; }
-    await sb.from("portfolio_positions").delete().eq("user_id", USER.id).eq("ticker", "KMLM");
-    const error = await insertPosition({ ticker: "KMLM", tv_symbol: "AMEX:KMLM", market: "US", entry: price, stop: null, tp: null, alloc_pct: Math.round(kmlmPct * 10) / 10, status: "open", entry_type: "market" });
-    if (msg) { msg.textContent = error ? t("sig.addErr") : t("beta.applied"); msg.className = "add-msg " + (error ? "err" : "ok"); }
+    try { const { data } = await sb.from("signals").select("price").eq("ticker", c.sig).maybeSingle(); price = data && data.price; } catch (e) {}
+    if (!price) { if (msg) { msg.textContent = interp(t("beta.noPrice"), { tk: c.tk }); msg.className = "add-msg err"; } if (apply) apply.disabled = false; return; }
+    await sb.from("portfolio_positions").delete().eq("user_id", USER.id).eq("ticker", c.tk);
+    const error = await insertPosition({ ticker: c.tk, tv_symbol: c.tv, market: m, entry: price, stop: null, tp: null, alloc_pct: Math.round(hPct * 10) / 10, status: "open", entry_type: "market" });
+    if (msg) { msg.textContent = error ? t("sig.addErr") : interp(t("beta.applied"), { tk: c.tk }); msg.className = "add-msg " + (error ? "err" : "ok"); }
     if (!error) renderPortfolio();
   }
   // ---- Minha mesa ao vivo: o pipeline marca as posições a cada 15 min; a página confere a cada 5 min (e ao voltar para a aba)
@@ -3409,42 +3441,48 @@
   async function renderKmlmCard() {
     const host = $("#kmlmHost"); if (!host) return;
     if (!sb || !USER || !hasHedge()) { host.innerHTML = ""; return; }
-    let hedge = null, positions = [];
+    let rows = [], positions = [];
     try {
       const [hg, po] = await Promise.all([
-        sb.from("signals").select("*").eq("ticker", "__HEDGE__").maybeSingle(),
+        sb.from("signals").select("*").in("ticker", ["__HEDGE__", "__HEDGE_BR__"]),
         sb.from("portfolio_positions").select("ticker,alloc_pct"),
       ]);
-      hedge = hg.data; positions = po.data || [];
-    } catch (e) { hedge = null; }
-    if (!hedge) { host.innerHTML = ""; return; }
-    const stress = hedge.state === "STRESS";
-    const rec = Number(hedge.pct_in_range) || 0;
-    const cur = positions.filter(p => p.ticker === "KMLM").reduce((s, p) => s + (Number(p.alloc_pct) || 0), 0);
-    const under = cur < rec - 0.5;
-    host.innerHTML = `<div class="kmlm-card ${stress ? "stress" : ""}">
+      rows = hg.data || []; positions = po.data || [];
+    } catch (e) { rows = []; }
+    const itens = ["US", "BR"].map(m => ({ m, c: HEDGE_CFG[m], hedge: rows.find(r => r.ticker === HEDGE_CFG[m].sig) })).filter(x => x.hedge);
+    if (!itens.length) { host.innerHTML = ""; return; }
+    host.innerHTML = itens.map(({ m, c, hedge }) => {
+      const stress = hedge.state === "STRESS";
+      const rec = Number(hedge.pct_in_range) || 0;
+      const cur = positions.filter(p => p.ticker === c.tk).reduce((sm, p) => sm + (Number(p.alloc_pct) || 0), 0);
+      const under = cur < rec - 0.5;
+      return `<div class="kmlm-card ${stress ? "stress" : ""}" data-mkt="${m}">
       <div class="kmlm-top">
-        <div class="kmlm-id"><span class="kmlm-badge">🛡 KMLM</span><span class="kmlm-sub">${t("kmlm.sub")}</span></div>
+        <div class="kmlm-id"><span class="kmlm-badge">🛡 ${c.tk}</span><span class="kmlm-sub">${t(m === "BR" ? "dola.sub" : "kmlm.sub")}</span></div>
         <span class="dsig-badge ${stress ? "watch" : "buy"}">${stress ? t("mem.hedgeStress") : t("mem.hedgeNormal")}</span>
       </div>
       <div class="kmlm-grid">
         <div class="kmlm-metric"><div class="kmlm-v accent">${nf(rec, 0)}%</div><div class="kmlm-l">${t("kmlm.recommended")}</div></div>
         <div class="kmlm-metric"><div class="kmlm-v ${under ? "neg" : "pos"}">${nf(cur, 0)}%</div><div class="kmlm-l">${t("kmlm.current")}</div></div>
       </div>
-      <div class="${under ? "kmlm-alert" : "kmlm-ok"}">${under ? interp(t("kmlm.under"), { rec: nf(rec, 0) }) : t("kmlm.onTarget")}</div>
-      <div class="kmlm-desc">${t("kmlm.desc")}</div>
-      ${hedge.price ? `<button class="btn btn-primary" id="kmlmAdd">${interp(t("kmlm.addBtn"), { rec: nf(rec, 0) })}</button><span role="status" aria-live="polite" class="add-msg" id="kmlmMsg"></span>` : ""}
+      <div class="${under ? "kmlm-alert" : "kmlm-ok"}">${under ? interp(t("kmlm.under"), { tk: c.tk, rec: nf(rec, 0) }) : t("kmlm.onTarget")}</div>
+      <div class="kmlm-desc">${t(m === "BR" ? "dola.desc" : "kmlm.desc")}</div>
+      ${hedge.price ? `<button class="btn btn-primary" id="kmlmAdd${m}">${interp(t("kmlm.addBtn"), { tk: c.tk, rec: nf(rec, 0) })}</button><span role="status" aria-live="polite" class="add-msg" id="kmlmMsg${m}"></span>` : ""}
     </div>`;
-    const add = $("#kmlmAdd");
-    if (add) add.onclick = async () => {
-      add.disabled = true;
-      const error = await insertPosition({
-        ticker: "KMLM", tv_symbol: "AMEX:KMLM", market: "US",
-        entry: hedge.price, stop: null, tp: null, alloc_pct: rec, status: "open", entry_type: "market",
-      });
-      const m = $("#kmlmMsg"); if (m) { m.textContent = error ? t("sig.addErr") : t("kmlm.added"); m.className = "add-msg " + (error ? "err" : "ok"); }
-      renderKmlmCard(); if (document.body.dataset.page === "members") renderPortfolio();
-    };
+    }).join("");
+    itens.forEach(({ m, c, hedge }) => {
+      const add = $("#kmlmAdd" + m); if (!add) return;
+      const rec = Number(hedge.pct_in_range) || 0;
+      add.onclick = async () => {
+        add.disabled = true;
+        const error = await insertPosition({
+          ticker: c.tk, tv_symbol: c.tv, market: m,
+          entry: hedge.price, stop: null, tp: null, alloc_pct: rec, status: "open", entry_type: "market",
+        });
+        const msg = $("#kmlmMsg" + m); if (msg) { msg.textContent = error ? t("sig.addErr") : t("kmlm.added"); msg.className = "add-msg " + (error ? "err" : "ok"); }
+        renderKmlmCard(); if (document.body.dataset.page === "members") renderPortfolio();
+      };
+    });
   }
   function renderCoveredCallMembers() {
     const sec = $("#ccMembersSection"), host = $("#ccMembersHost"); if (!host) return;
