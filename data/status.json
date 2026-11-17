@@ -1,49 +1,49 @@
 {
-  "last_run": "2026-11-16T22:08:22+00:00",
+  "last_run": "2026-11-17T22:06:38+00:00",
   "success": true,
-  "data_through": "2026-11-16",
+  "data_through": "2026-11-17",
   "steps": [
     {
       "step": "update_data",
       "ok": true,
       "returncode": 0,
-      "seconds": 52.0
+      "seconds": 47.0
     },
     {
       "step": "build_metrics",
       "ok": true,
       "returncode": 0,
-      "seconds": 18.0
+      "seconds": 21.0
     },
     {
       "step": "build_risk_levels",
       "ok": true,
       "returncode": 0,
-      "seconds": 27.0
+      "seconds": 24.0
     },
     {
       "step": "compute_fscores",
       "ok": true,
       "returncode": 0,
-      "seconds": 3.0
+      "seconds": 2.0
     },
     {
       "step": "compute_formulas",
       "ok": true,
       "returncode": 0,
-      "seconds": 5.0
+      "seconds": 2.0
     },
     {
       "step": "build_dividends",
       "ok": true,
       "returncode": 0,
-      "seconds": 29.0
+      "seconds": 26.0
     },
     {
       "step": "push_signals",
       "ok": true,
       "returncode": 0,
-      "seconds": 1.0
+      "seconds": 2.0
     },
     {
       "step": "push_dividend_signals",
@@ -55,37 +55,43 @@
       "step": "update_portfolios",
       "ok": true,
       "returncode": 0,
-      "seconds": 99.0
+      "seconds": 89.0
     },
     {
       "step": "portfolio_analytics",
       "ok": true,
       "returncode": 0,
-      "seconds": 74.0
+      "seconds": 15.0
     },
     {
       "step": "quant_matrix",
       "ok": true,
       "returncode": 0,
-      "seconds": 50.0
+      "seconds": 48.0
     },
     {
       "step": "push_notify",
       "ok": true,
       "returncode": 0,
-      "seconds": 3.0
+      "seconds": 4.0
     },
     {
       "step": "weekly_email",
       "ok": true,
       "returncode": 0,
-      "seconds": 4.0
+      "seconds": 2.0
     },
     {
       "step": "compute_betas",
       "ok": true,
       "returncode": 0,
-      "seconds": 3.0
+      "seconds": 4.0
+    },
+    {
+      "step": "build_sectors",
+      "ok": true,
+      "returncode": 0,
+      "seconds": 104.0
     },
     {
       "step": "measure_theta",
@@ -97,7 +103,7 @@
       "step": "markov3_monitor",
       "ok": true,
       "returncode": 0,
-      "seconds": 128.0
+      "seconds": 3.0
     },
     {
       "step": "push_member_payloads",
