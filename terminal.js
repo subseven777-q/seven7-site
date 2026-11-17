@@ -7,7 +7,7 @@
   "use strict";
   const $ = (s, r = document) => r.querySelector(s);
   const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  let API = null, ROOT = null, NEWS = null, MACRO = null, INTRA = {}, SIGS = null, PF = null;
+  let API = null, ROOT = null, NEWS = null, MACRO = null, INTRA = {}, SIGS = null, PF = null, REGIME = null, HEDGES = null;
   const LS = { get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } },
                set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* sem storage: segue sem salvar */ } } };
   const PT = () => !API || API.lang !== "en";
@@ -57,7 +57,22 @@
       try { const r = await fetch(`data/intraday_${m}.json?t=${Math.floor(Date.now() / 60000)}`); INTRA[m] = r.ok ? await r.json() : null; }
       catch (e) { INTRA[m] = null; }
     }
+    try { const r = await fetch(`data/regime.json?t=${Math.floor(Date.now() / 600000)}`); REGIME = r.ok ? await r.json() : null; } catch (e) { REGIME = null; }
+    HEDGES = null;
+    if (API.sb && API.member && !API.preview) {
+      try { const { data } = await API.sb.from("signals").select("ticker,state,pct_in_range,price").in("ticker", ["__HEDGE__", "__HEDGE_BR__"]); HEDGES = data || null; }
+      catch (e) { HEDGES = null; }
+    }
   }
+  // amplitude (breadth) do dia no universo Seven7: quantas ações sobem, média da variação
+  function breadth(k) {
+    const d = INTRA[k]; if (!d || !d.quotes) return null;
+    const v = Object.values(d.quotes).map(q => q.chg_pct).filter(x => x != null && isFinite(x));
+    if (!v.length) return null;
+    const up = v.filter(x => x > 0).length;
+    return { n: v.length, up, dn: v.filter(x => x < 0).length, pct: up / v.length * 100, avg: v.reduce((a, b) => a + b, 0) / v.length, asof: d.asof_local || d.asof_ny };
+  }
+  const SITC = ["s-al", "s-at", "s-ok"];
   const ago = iso => {
     if (!iso) return "—";
     const m = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
@@ -212,6 +227,67 @@
     if (part === "health" && A && !A.vazio) host.firstChild.insertAdjacentHTML("beforeend",
       `<div class="term-foot">${["PRSK", "PDD", "FRONT", "OPT", "PCOR"].map(k => `<a class="term-tk" data-go="${k}">${k}</a>`).join(" · ")} · <a href="members.html#portfolio">${tx("portfólio completo", "full portfolio")} →</a></div>`);
   };
+  // ---- faixa QUANT: o que importa primeiro — a saúde da SUA carteira e o regime do mercado ----
+  async function quantStrip() {
+    const el = $("#termQuant"); if (!el) return;
+    const A = await pfA().catch(() => null);
+    const tile = (go, l, v, sub, c = "") => `<button class="tq-tile ${c}" data-go="${go}"><span class="tq-l">${l}</span><span class="tq-v">${v}</span>${sub ? `<span class="tq-s">${sub}</span>` : ""}</button>`;
+    let cart;
+    if (A && !A.vazio && A.nota != null) {
+      const L = {}; (A.luzes || []).forEach(x => { L[x.k] = x; });
+      const c = x => (x ? SITC[x.nivel] || "" : ""), pc0 = (v, d = 0) => (v == null ? "—" : nf(v * 100, d) + "%");
+      const corN = SITC[A.nota >= 75 ? 2 : A.nota >= 50 ? 1 : 0];
+      cart = [
+        tile("PHLT", tx("Nota", "Score"), `${A.nota}<small>/100</small>`, tx(`${A.n_pos} ativos`, `${A.n_pos} assets`), corN + " tq-nota"),
+        L.risco ? tile("PRSK", tx("Risco a.a.", "Risk p.a."), pc0(L.risco.valor), tx(`índice ${pc0(L.risco.ref)}`, `index ${pc0(L.risco.ref)}`), c(L.risco)) : "",
+        L.queda ? tile("PDD", tx("Queda atual", "Drawdown"), pc0(L.queda.valor, 1), tx(`pior ${pc0(L.queda.ref)}`, `worst ${pc0(L.queda.ref)}`), c(L.queda)) : "",
+        L.concentracao ? tile("PRSK", tx("Concentração", "Concentration"), pc0(L.concentracao.valor), esc(L.concentracao.ativo || ""), c(L.concentracao)) : "",
+        L.diversificacao ? tile("PCOR", tx("Fontes de risco", "Risk sources"), nf(L.diversificacao.valor, 1), tx(`em ${L.diversificacao.n} ativos`, `in ${L.diversificacao.n} assets`), c(L.diversificacao)) : "",
+        tile("OPT", tx("Otimizar", "Optimize"), "HRP", tx("pesos sugeridos", "suggested weights"), "tq-act"),
+      ].join("");
+    } else {
+      cart = `<a class="tq-tile tq-cta" href="index.html#qqHost"><span class="tq-l">${tx("Sua carteira", "Your portfolio")}</span>
+        <span class="tq-v">${tx("Ainda sem laudo", "No report yet")}</span><span class="tq-s">${tx("Faça o check-up e a nota aparece aqui", "Run the check-up and your score shows here")}</span></a>`;
+    }
+    const mk = (k, nome) => {
+      const R = REGIME && REGIME[k], b = breadth(k.toLowerCase());
+      const h = (HEDGES || []).find(x => x.ticker === (k === "BR" ? "__HEDGE_BR__" : "__HEDGE__"));
+      return [
+        R ? tile("REG", `${tx("Regime", "Regime")} ${nome}`, R.stress ? tx("Estresse", "Stress") : tx("Calmo", "Calm"), tx(`vol 20d ${nf(R.vol20, 0)}% · 1a ${nf(R.vol252, 0)}%`, `20d vol ${nf(R.vol20, 0)}% · 1y ${nf(R.vol252, 0)}%`), R.stress ? "s-al" : "s-ok") : "",
+        b ? tile(`MOST ${k}`, `${tx("Amplitude", "Breadth")} ${nome}`, `${nf(b.pct, 0)}%`, tx(`${b.up} sobem · ${b.dn} caem`, `${b.up} up · ${b.dn} down`), b.pct >= 55 ? "s-ok" : b.pct <= 45 ? "s-al" : "s-at") : "",
+        h ? tile("REG", `Hedge ${nome}`, `${nf(h.pct_in_range, 0)}%`, k === "BR" ? "DOLA11" : "KMLM", h.state === "STRESS" ? "s-at" : "") : "",
+      ].join("");
+    };
+    el.innerHTML = `<div class="tq-sec"><span class="tq-h">${tx("Sua carteira", "Your portfolio")}${A && A.asof ? ` <em>${ago(A.asof)}</em>` : ""}</span><div class="tq-row">${cart}</div></div>
+      <div class="tq-sec"><span class="tq-h">${tx("Mercado em números", "Market by the numbers")}${REGIME && REGIME.asof ? ` <em>${esc(REGIME.asof.split("-").reverse().join("/"))}</em>` : ""}</span><div class="tq-row">${mk("BR", "BR")}${mk("US", tx("EUA", "US"))}</div></div>`;
+  }
+  // REG: regime quant do mercado (BR e EUA) — estado, volatilidade, amplitude, sinais e hedge
+  async function regFn(host) {
+    if (API.sb && API.member && !API.preview && !SIGS) {
+      try { const { data } = await API.sb.from("signals").select("ticker,market,state,price,entry,stop,tp,updated_at"); SIGS = (data || []).filter(x => !x.ticker.startsWith("__")); } catch (e) { SIGS = null; }
+    }
+    const bloco = (k, nome) => {
+      const R = REGIME && REGIME[k], b = breadth(k.toLowerCase());
+      const h = (HEDGES || []).find(x => x.ticker === (k === "BR" ? "__HEDGE_BR__" : "__HEDGE__"));
+      const sg = SIGS ? SIGS.filter(x => x.market === k) : null;
+      const at = sg ? sg.filter(x => x.state === "ACTIVE").length : null, wt = sg ? sg.filter(x => x.state === "WAITING").length : null;
+      const bar = (v, max) => `<span class="tq-bar"><i style="width:${Math.max(2, Math.min(100, v / max * 100))}%"></i></span>`;
+      return `<div class="reg-blk"><div class="reg-head"><b>${nome}</b>${R ? `<span class="reg-st ${R.stress ? "s-al" : "s-ok"}">${R.stress ? tx("ESTRESSE", "STRESS") : tx("CALMO", "CALM")}</span>` : ""}</div>
+        ${R ? `<p class="reg-txt">${R.stress ? tx("O índice está fraco. As estratégias Seven7 reduzem a exposição a ações e elevam a proteção.", "The index is weak. Seven7 strategies cut equity exposure and raise protection.")
+          : tx("O índice está firme. As estratégias Seven7 operam normalmente.", "The index is firm. Seven7 strategies run normally.")}</p>
+        <table class="term-table reg-tb"><tbody>
+          <tr><td>${tx("Volatilidade 20 dias", "20-day volatility")}<br>${bar(R.vol20, Math.max(R.vol20, R.vol252) * 1.1)}</td><td class="num ${R.vol20 > R.vol252 * 1.3 ? "dn" : ""}">${nf(R.vol20, 1)}%</td></tr>
+          <tr><td>${tx("Volatilidade 1 ano", "1-year volatility")}<br>${bar(R.vol252, Math.max(R.vol20, R.vol252) * 1.1)}</td><td class="num">${nf(R.vol252, 1)}%</td></tr>
+          <tr><td>${tx("Retorno 20 dias", "20-day return")} <small>${esc(R.index)}</small></td><td class="num ${cls(R.ret20)}">${pct(R.ret20, 1)}</td></tr>
+          ${b ? `<tr><td>${tx("Amplitude hoje", "Breadth today")}<br><small>${b.up} ▲ · ${b.dn} ▼ · ${tx("média", "avg")} ${pct(b.avg, 2)}</small></td><td class="num">${nf(b.pct, 0)}%</td></tr>` : ""}
+          ${at != null ? `<tr><td>${tx("Markov 3: sinais ativos", "Markov 3: active signals")}<br><small>${wt} ${tx("aguardando", "waiting")} · <a class="term-tk" data-go="SIG ${k}">SIG ${k}</a></small></td><td class="num">${at}</td></tr>` : ""}
+          ${h ? `<tr><td>${tx("Proteção recomendada", "Recommended hedge")}<br><small>${k === "BR" ? "DOLA11" : "KMLM"}${h.price ? " · " + nf(h.price) : ""}</small></td><td class="num">${nf(h.pct_in_range, 0)}%</td></tr>` : ""}
+        </tbody></table>` : missing(tx("O regime", "The regime"))}</div>`;
+    };
+    host.innerHTML = `<div class="term-scroll"><div class="reg-grid">${bloco("BR", tx("Brasil", "Brazil"))}${bloco("US", tx("EUA", "US"))}</div>
+      ${API.member ? "" : `<p class="term-foot">${tx("Sinais do Markov 3 e proteção recomendada aparecem nos planos Pro e Elite.", "Markov 3 signals and the recommended hedge are in the Pro and Elite plans.")} <a href="plans.html">${tx("Ver planos", "See plans")}</a></p>`}
+      <div class="term-foot">${tx("Amplitude: universo Seven7 (IBrX / S&P 100), com atraso. Volatilidade: retornos diários do", "Breadth: Seven7 universe (IBrX / S&P 100), delayed. Volatility: daily returns of")} BOVA11 / SPY · ${tx("atualizado no fechamento", "updated at the close")} ${REGIME && REGIME.asof ? esc(REGIME.asof.split("-").reverse().join("/")) : ""}</div></div>`;
+  }
   const FN = {
     HELP: { g: 0, n: ["Ajuda — lista de funções", "Help — function list"], run: h => help(h) },
     WEI: { g: 1, n: ["Bolsas do mundo", "World equity indices"], run: h => quotes(h, [
@@ -259,12 +335,13 @@
     FRONT: { g: 6, n: ["Fronteira eficiente — onde você está", "Efficient frontier — where you stand"], run: qfn("frontier") },
     OPT: { g: 6, n: ["Otimização HRP (López de Prado)", "HRP optimization (López de Prado)"], run: qfn("hrp") },
     PCOR: { g: 6, n: ["Correlação entre seus ativos", "Correlation between your assets"], run: qfn("corr") },
+    REG: { g: 6, n: ["Regime do mercado: estresse, volatilidade, amplitude e proteção", "Market regime: stress, volatility, breadth and hedge"], run: regFn },
   };
   const GROUPS = [["Geral", "General"], ["Mercados", "Markets"], ["Notícias e agenda", "News & calendar"], ["Juros e macro", "Rates & macro"], ["Ativo (digite o código antes)", "Security (type the ticker first)"], ["Seven7", "Seven7"], ["Seu portfólio — quant", "Your portfolio — quant"]];
   function help(host) {
-    host.innerHTML = `<div class="term-scroll"><p class="term-hint">${tx("Digite na barra de comando: <b>PETR4 GP</b>, <b>AAPL FA</b>, <b>TOP</b>, <b>ECO BR</b>. Um ativo sozinho abre o gráfico. Atalhos: <b>/</b> foca a barra · <b>Alt+1…4</b> escolhe o painel · <b>Esc</b> sai.",
-      "Type in the command bar: <b>PETR4 GP</b>, <b>AAPL FA</b>, <b>TOP</b>, <b>ECO BR</b>. A ticker alone opens the chart. Keys: <b>/</b> command bar · <b>Alt+1…4</b> pick panel · <b>Esc</b> leave.")}</p>
-      ${GROUPS.map((g, gi) => `<div class="term-sub">${tx(g[0], g[1])}</div><table class="term-table term-help"><tbody>${Object.entries(FN).filter(([, f]) => f.g === gi)
+    host.innerHTML = `<div class="term-scroll"><p class="term-hint">${tx("Comece pela sua carteira: <b>PHLT</b> (nota e exames), <b>PRSK</b> (quem carrega o risco), <b>OPT</b> (pesos sugeridos), <b>REG</b> (regime do mercado). Para o mercado: <b>PETR4 GP</b>, <b>AAPL FA</b>, <b>TOP</b>, <b>ECO BR</b>. Um ativo sozinho abre o gráfico. Atalhos: <b>/</b> foca a barra · <b>Alt+1…4</b> escolhe o painel · <b>Esc</b> sai.",
+      "Start with your portfolio: <b>PHLT</b> (score and tests), <b>PRSK</b> (who carries the risk), <b>OPT</b> (suggested weights), <b>REG</b> (market regime). For markets: <b>PETR4 GP</b>, <b>AAPL FA</b>, <b>TOP</b>, <b>ECO BR</b>. A ticker alone opens the chart. Keys: <b>/</b> command bar · <b>Alt+1…4</b> pick panel · <b>Esc</b> leave.")}</p>
+      ${[6, 5, 0, 1, 2, 3, 4].map(gi => [GROUPS[gi], gi]).map(([g, gi]) => `<div class="term-sub">${tx(g[0], g[1])}</div><table class="term-table term-help"><tbody>${Object.entries(FN).filter(([, f]) => f.g === gi)
         .map(([k, f]) => `<tr><td><a class="term-tk" data-go="${f.t ? "PETR4 " : ""}${k}">${k}</a></td><td>${tx(f.n[0], f.n[1])}</td><td class="term-dim">${f.t ? tx("&lt;ativo&gt; ", "&lt;ticker&gt; ") + k : k + (f.a ? " [" + f.a + "]" : "")}</td></tr>`).join("")}</tbody></table>`).join("")}
       <p class="term-foot">${tx("Limitações: cotações com atraso (B3 15 min; EUA conforme a fonte), notícias como manchete + link para o veículo, sem chat nem envio de ordens. Bolsa inteira e balanços vêm do TradingView.",
         "Limits: delayed quotes (B3 15 min; US per source), news as headline + link to the outlet, no chat or order entry. Whole-exchange data and financials come from TradingView.")}</p></div>`;
@@ -272,26 +349,28 @@
 
   // ---------------- painéis, comando, layouts ----------------
   const LAYOUTS = {
+    QUANT: [["PHLT"], ["PRSK"], ["REG"], ["OPT"]],
     MERCADOS: [["WEI"], ["TOP"], ["ECO"], ["GP", "IBOV"]],
     ATIVO: [["GP", "PETR4"], ["DES", "PETR4"], ["FA", "PETR4"], ["CN", "PETR4"]],
     MACRO: [["BTMM"], ["ECO"], ["GC"], ["FX"]],
-    SEVEN7: [["SIG"], ["MOST"], ["PORT"], ["BRN"]],
-    QUANT: [["PHLT"], ["FRONT"], ["PRSK"], ["OPT"]],
+    SEVEN7: [["SIG"], ["REG"], ["PORT"], ["MOST"]],
   };
   let PANELS = null, FOCUS = 0;
-  const OWN = ["TOP", "BRN", "WN", "CB", "BTMM", "GC", "MOST", "SIG", "PORT", "HELP", "PHLT", "PRSK", "PDD", "FRONT", "OPT", "PCOR"];   // painéis com dados Seven7
+  const OWN = ["TOP", "BRN", "WN", "CB", "BTMM", "GC", "MOST", "SIG", "PORT", "HELP", "PHLT", "PRSK", "PDD", "FRONT", "OPT", "PCOR", "REG"];   // painéis com dados Seven7
   const ownPanel = ([fn, a]) => OWN.includes(fn) || (fn === "CN" && isB3((a || "").toUpperCase()));
-  function save() { LS.set("s7-term", JSON.stringify({ p: PANELS, f: FOCUS })); }
+  function save() { LS.set("s7-term2", JSON.stringify({ p: PANELS, f: FOCUS })); }
   function shell() {
     ROOT.innerHTML = `<div class="term-top">
-        <div class="term-brand">S7<span>TERMINAL</span></div>
+        <div class="term-brand">S7<span>QUANT TERMINAL</span></div>
         <form class="term-cmd" autocomplete="off"><span class="term-prompt">&gt;</span>
-          <input id="termCmd" list="termFns" spellcheck="false" placeholder="${tx("PETR4 GP · TOP · ECO BR · HELP", "PETR4 GP · TOP · ECO BR · HELP")}" aria-label="${tx("Comando", "Command")}">
+          <input id="termCmd" list="termFns" spellcheck="false" placeholder="${tx("PHLT · REG · PETR4 GP · HELP", "PHLT · REG · PETR4 GP · HELP")}" aria-label="${tx("Comando", "Command")}">
           <button type="submit">GO</button><datalist id="termFns">${Object.keys(FN).map(k => `<option value="${k}">`).join("")}</datalist></form>
         <div class="term-clocks" id="termClocks"></div></div>
+      <div class="term-quant" id="termQuant" aria-live="polite"></div>
+      <div class="term-keys"><span class="tk-g">QUANT</span>${["PHLT", "PRSK", "PDD", "OPT", "FRONT", "PCOR", "REG", "SIG", "PORT"].map(k => `<button class="tk-q" data-go="${k}">${k}</button>`).join("")}
+        <span class="tk-g">${tx("MERCADO", "MARKET")}</span>${["WEI", "TOP", "ECO", "BTMM", "MOST", "HMAP BR", "EQS", "FX", "CMDTY", "HELP"].map(k => `<button data-go="${k}">${k}</button>`).join("")}
+        <span class="tk-g">LAYOUT</span>${Object.keys(LAYOUTS).map(k => `<button class="term-lay" data-lay="${k}">${k}</button>`).join("")}</div>
       <div class="term-tape" id="termTape"></div>
-      <div class="term-keys">${["HELP", "WEI", "TOP", "ECO", "BTMM", "MOST", "HMAP BR", "EQS", "FX", "CMDTY", "SIG", "PORT", "PHLT"].map(k => `<button data-go="${k}">${k}</button>`).join("")}
-        <span class="term-sep"></span>${Object.keys(LAYOUTS).map(k => `<button class="term-lay" data-lay="${k}">${k}</button>`).join("")}</div>
       <div class="term-status" id="termStatus"></div>
       <div class="term-grid" id="termGrid">${[0, 1, 2, 3].map(i => `<section class="term-panel" data-i="${i}">
         <header><span class="tp-n">${i + 1}</span><span class="tp-code"></span><span class="tp-title"></span>
@@ -360,17 +439,17 @@
     async boot(api) {
       const first = !API; API = api; ROOT = $("#termRoot"); if (!ROOT) return;
       if (first) {
-        let st = null; try { st = JSON.parse(LS.get("s7-term") || "null"); } catch (e) { st = null; }
-        PANELS = st && Array.isArray(st.p) && st.p.length === 4 ? st.p : LAYOUTS.MERCADOS.map(x => x.slice());
+        let st = null; try { st = JSON.parse(LS.get("s7-term2") || "null"); } catch (e) { st = null; }
+        PANELS = st && Array.isArray(st.p) && st.p.length === 4 ? st.p : LAYOUTS.QUANT.map(x => x.slice());
         FOCUS = st && st.f >= 0 && st.f < 4 ? st.f : 0;
         shell();
-        await loadFeeds(true); paintAll();
+        await loadFeeds(true); paintAll(); quantStrip();
         setInterval(async () => {                         // feeds próprios: a cada 5 min repinta só o que é Seven7
-          await loadFeeds(true); SIGS = null;
+          await loadFeeds(true); SIGS = null; quantStrip();
           PANELS.forEach((p, i) => { if (ownPanel(p) && p[0] !== "PORT") paint(i); });
         }, 5 * 60 * 1000);
       } else {                                            // login/sessão mudou: só os painéis com dados Seven7 (não recria widgets)
-        await loadFeeds(true); SIGS = null; PFA = undefined;
+        await loadFeeds(true); SIGS = null; PFA = undefined; quantStrip();
         PANELS.forEach((p, i) => { if (ownPanel(p)) paint(i); });
       }
     },
