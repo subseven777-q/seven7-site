@@ -225,8 +225,14 @@
         <td class="num ${r.delta_hrp > 0 ? "pos" : "neg"}">${r.delta_hrp > 0 ? tx("+ comprar ", "+ buy ") : tx("− vender ", "− sell ")}${money(Math.abs(r.delta_hrp))}</td></tr>`).join("")}</tbody></table>
       ${h.vol > a.vol * 1.03 ? `<div class="q-alert">${tx(`<b>Atenção:</b> aqui o HRP <b>aumentaria</b> a volatilidade (${pc(a.vol)} → ${pc(h.vol)}). Ele espalha o risco entre mais fontes independentes (${nf(a.enb)} → ${nf(h.enb)}), mas seu portfólio de hoje já é menos volátil — normalmente porque um ativo de baixa volatilidade e baixa correlação (como o hedge) pesa muito. Se a sua prioridade é oscilar menos, mantenha; se é não depender de poucos ativos, siga o HRP.`,
         `<b>Note:</b> here HRP would <b>raise</b> volatility (${pc(a.vol)} → ${pc(h.vol)}). It spreads risk across more bets (${nf(a.enb)} → ${nf(h.enb)}), but today's portfolio is already less volatile — usually because a low-vol, low-correlation asset (like the hedge) weighs a lot. If your priority is lower swings, keep it; if it is not depending on few assets, follow HRP.`)}</div>` : ""}
+      ${o && typeof o.onApply === "function" ? `<div class="q-apply">
+        <button class="btn btn-primary" id="qHrpApply">${tx("Seguir a recomendação: ajustar minha carteira ao HRP", "Follow the recommendation: set my portfolio to HRP")}</button>
+        <span role="status" aria-live="polite" class="add-msg" id="qHrpMsg"></span>
+        <p>${tx("Um clique ajusta as quantidades das suas posições aos pesos do HRP e recalcula a nota na hora. Não envia ordens: as compras e vendas você faz na sua corretora.", "One click sets your positions to the HRP weights and recalculates the score right away. No orders are sent: you place the trades at your broker.")}</p></div>` : ""}
       <div class="q-note">${tx("HRP (López de Prado): agrupa ativos parecidos e divide o risco entre os grupos — não usa previsão de retorno, por isso é estável. Posições com sinal Seven7 já têm tamanho pela regra de risco da estratégia; o HRP olha o portfólio inteiro. É uma sugestão, não uma recomendação individual.",
         "HRP (López de Prado): clusters similar assets and splits risk across clusters — no return forecast, hence stable. Seven7-signal positions are already sized by the strategy's risk rule; HRP looks at the whole portfolio. A suggestion, not individual advice.")}</div>`;
+    const ap = host.querySelector("#qHrpApply");
+    if (ap) ap.onclick = () => o.onApply(A, host.querySelector("#qHrpMsg"), ap);
   }
 
   // ---------------- correlação ----------------

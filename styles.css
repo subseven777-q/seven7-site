@@ -1720,3 +1720,9 @@ iframe{color-scheme:normal}
 .sx-mem td{background:#0c0e12;font-size:12px}.sx-mem td:first-child{padding-left:22px}
 .sx-etf{white-space:nowrap}
 .term-panel .term-scroll:has(.sx-tb){overflow-x:auto}
+
+/* HRP: seguir a recomendação com um clique (Minha mesa) */
+.q-apply{margin:14px 0 4px;padding:14px 16px;border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:8px;background:color-mix(in srgb,var(--accent) 5%,transparent)}
+.q-apply .btn{white-space:normal}
+.q-apply p{margin:8px 0 0;font-size:14px;color:var(--muted)}
+.q-apply .add-msg{display:block;margin-top:8px}

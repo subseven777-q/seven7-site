@@ -777,6 +777,13 @@
     "pf.fAdd": { en: "Add to portfolio", pt: "Adicionar ao portfólio" },
     "pf.fBad": { en: "Fill in the fields correctly.", pt: "Preencha os campos corretamente." },
     "pf.fMig": { en: "This type of asset is not enabled yet (database update pending).", pt: "Este tipo de ativo ainda não está habilitado (atualização do banco pendente)." },
+    "hrp.confirm": { en: "Set your portfolio to the HRP weights? {n} positions change:", pt: "Ajustar sua carteira aos pesos do HRP? {n} posições mudam:" },
+    "hrp.buy": { en: "Buy", pt: "Comprar" },
+    "hrp.sell": { en: "Sell", pt: "Vender" },
+    "hrp.working": { en: "Updating your portfolio…", pt: "Atualizando sua carteira…" },
+    "hrp.done": { en: "Done: {n} positions adjusted and the score recalculated. Now place the trades at your broker.", pt: "Pronto: {n} posições ajustadas e a nota recalculada. Agora faça as compras e vendas na sua corretora." },
+    "hrp.doneLater": { en: "Done: {n} positions adjusted. Some asset is outside the instant engine, so the new score arrives within 15 minutes.", pt: "Pronto: {n} posições ajustadas. Algum ativo está fora do cálculo instantâneo, então a nota nova chega em até 15 minutos." },
+    "hrp.preview": { en: "Sign in to apply it to your portfolio.", pt: "Entre na sua conta para aplicar na sua carteira." },
     "pf.fOk": { en: "Added ✓ — your score is recalculated within 15 minutes on weekdays (weekends: at 7 pm).", pt: "Adicionado ✓ — a nota é recalculada em até 15 minutos nos dias úteis (fim de semana: às 19:00)." },
     "pf.tAcaoBr": { en: "Brazilian stock / ETF (B3)", pt: "Ação / ETF Brasil (B3)" },
     "pf.tFii": { en: "Real estate fund (FII)", pt: "Fundo imobiliário (FII)" },
@@ -2423,8 +2430,69 @@
       A = PF_QUANT_PREVIEW || null;
     }
     host.innerHTML = `<div class="section-head"><h2>${t("pf.quantH")}</h2><p class="sub">${t("pf.quantSub")}</p></div><div class="qq-share qq-img" id="pfShare"></div><div id="pfQuantBody"></div>`;
-    window.S7Quant.full($("#pfQuantBody"), A, { lang: LANG });
+    window.S7Quant.full($("#pfQuantBody"), A, { lang: LANG, onApply: applyHrp });
     if (A && !A.vazio) window.S7Quant.shareButtons($("#pfShare"), A, { lang: LANG, onUse: (f, m) => track("share", { via: "imagem_" + f, modo: m, de: "mesa" }) });
+  }
+  // ---- seguir o HRP com um clique: ajusta quantidades/pesos das posições e recalcula a nota NA HORA (Edge Function grava;
+  //      o pipeline confirma o cálculo oficial em até 15 min). Não envia ordem a corretora nenhuma.
+  async function applyHrp(A, msg, btn) {
+    const say = (k, ok, v) => { if (msg) { msg.textContent = interp(t(k), v || {}); msg.className = "add-msg " + (ok ? "ok" : "err"); } };
+    if (!sb || !USER || USER.id === "preview") return say("hrp.preview");
+    const assets = (A.assets || []).filter(a => a.w > 0 && a.w_hrp != null);
+    if (!assets.length) return;
+    const muda = assets.filter(a => Math.abs(a.delta_hrp) >= 1).sort((x, y) => Math.abs(y.delta_hrp) - Math.abs(x.delta_hrp));
+    const lst = muda.slice(0, 15).map(a => `${a.delta_hrp > 0 ? t("hrp.buy") : t("hrp.sell")} ${a.label}: ${nf(a.w * 100, 1)}% → ${nf(a.w_hrp * 100, 1)}%`).join("\n");
+    if (!confirm(interp(t("hrp.confirm"), { n: muda.length }) + "\n\n" + lst + (muda.length > 15 ? "\n…" : ""))) return;
+    if (btn) btn.disabled = true; say("hrp.working", true);
+    const { data: pos, error } = await sb.from("portfolio_positions")
+      .select("id,ticker,market,strategy,status,quantity,alloc_pct,invested,entry,current_price,price_symbol,asset_class,rf_index,rf_rate").eq("status", "open");
+    if (error || !pos) { if (btn) btn.disabled = false; return say("sig.addErr"); }
+    // mesma chave do portfolio_analytics.py (simbolo / FX: / id da renda fixa)
+    const chave = x => {
+      const livre = (x.strategy || "po3") === "livre", cls = x.asset_class || "";
+      if (livre && /^rf_/.test(cls)) return x.id;
+      if (livre && cls === "moeda") return "FX:" + x.ticker;
+      if (!livre) return x.market === "BR" ? x.ticker + ".SA" : x.ticker;
+      return x.price_symbol || x.ticker;
+    };
+    const porChave = {}; assets.forEach(a => { porChave[a.id] = a; });
+    const upd = [];
+    pos.forEach(x => {
+      const a = porChave[chave(x)]; if (!a) return;
+      const f = a.w_hrp / a.w; if (!isFinite(f) || Math.abs(f - 1) < 0.005) return;
+      const livre = (x.strategy || "po3") === "livre", cls = x.asset_class || "";
+      let patch;
+      if (!livre) patch = { alloc_pct: Math.round(Number(x.alloc_pct || 0) * f * 100) / 100 };
+      else if (/^rf_/.test(cls)) patch = { invested: Math.round(Number(x.invested || 0) * f * 100) / 100, entry: Number(x.entry || 0) * f, current_price: Number(x.current_price || 0) * f };
+      else {
+        const q = Number(x.quantity || 0) * f;
+        patch = { quantity: /cripto|moeda|outro/.test(cls) ? Math.round(q * 1e6) / 1e6 : Math.max(1, Math.round(q)) };   // ações, FIIs e ETFs: cota inteira
+      }
+      upd.push(sb.from("portfolio_positions").update(patch).eq("id", x.id));
+    });
+    const rs = await Promise.all(upd);
+    if (rs.some(r => r.error)) { if (btn) btn.disabled = false; return say("sig.addErr"); }
+    track("hrp_aplicar", { n: upd.length });
+    // nota na hora: a mesma conta da quantificação, com os pesos novos (renda fixa vai pelo índice + taxa)
+    let salvo = false;
+    try {
+      const rfPos = {}; pos.forEach(x => { rfPos[x.id] = x; });
+      const lista = assets.map(a => {
+        const v = Math.round(a.w_hrp * A.valor_total * 100) / 100;
+        if (rfPos[a.id]) { const x = rfPos[a.id]; return { s: "RF:" + String(x.rf_index || (x.asset_class === "rf_us" ? "UST" : "PRE")).toUpperCase(), taxa: Number(x.rf_rate || 0), v, label: a.label }; }
+        return { s: a.id, v, label: a.label };
+      });
+      const { data } = await sb.auth.getSession(), tk = data && data.session && data.session.access_token;
+      if (tk) {
+        const res = await (await fetch(`${SUPABASE_URL}/functions/v1/hyper-function`, { method: "POST",
+          headers: { "content-type": "application/json", authorization: "Bearer " + tk, apikey: SUPABASE_ANON_KEY },
+          body: JSON.stringify({ base: A.base, pos: lista, salvar: true }) })).json();
+        salvo = !!(res && res.salvo);
+      }
+    } catch (e) { salvo = false; }
+    if (btn) btn.disabled = false;
+    say(salvo ? "hrp.done" : "hrp.doneLater", true, { n: upd.length });
+    renderPortfolio();
   }
   async function addPosition(sig, allocPct, entryType = "stop", fillPx = null) {
     if (!sb || !USER) return "no-auth";
