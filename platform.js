@@ -207,7 +207,7 @@
         const s = v.vol * Math.sqrt(1 / n + (1 - 1 / n) * rho), piso = v.vol * Math.sqrt(Math.max(rho, 0));
         const nEff = n / (1 + (n - 1) * rho);
         return [[tx("Vol. da carteira", "Portfolio vol"), nf(s, 1) + "%"], [tx("Piso (N → ∞)", "Floor (N → ∞)"), nf(piso, 1) + "%"],
-          [tx("Redução de risco", "Risk reduction"), nf((1 - s / v.vol) * 100, 0) + "%"], [tx("Apostas independentes equivalentes", "Equivalent independent bets"), nf(nEff, 1)]];
+          [tx("Redução de risco", "Risk reduction"), nf((1 - s / v.vol) * 100, 0) + "%"], [tx("Fontes de risco independentes", "Equivalent independent bets"), nf(nEff, 1)]];
       },
       fx: "σ_p = σ·√(1/N + (1−1/N)·ρ̄) · N_ef = N / (1 + (N−1)·ρ̄)",
     },
