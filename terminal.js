@@ -7,7 +7,7 @@
   "use strict";
   const $ = (s, r = document) => r.querySelector(s);
   const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  let API = null, ROOT = null, NEWS = null, MACRO = null, INTRA = {}, SIGS = null, PF = null, REGIME = null, HEDGES = null;
+  let API = null, ROOT = null, NEWS = null, MACRO = null, INTRA = {}, SIGS = null, PF = null, REGIME = null, HEDGES = null, SECTS = null;
   const LS = { get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } },
                set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* sem storage: segue sem salvar */ } } };
   const PT = () => !API || API.lang !== "en";
@@ -58,6 +58,7 @@
       catch (e) { INTRA[m] = null; }
     }
     try { const r = await fetch(`data/regime.json?t=${Math.floor(Date.now() / 600000)}`); REGIME = r.ok ? await r.json() : null; } catch (e) { REGIME = null; }
+    try { const r = await fetch(`data/sectors.json?t=${Math.floor(Date.now() / 600000)}`); SECTS = r.ok ? await r.json() : null; } catch (e) { SECTS = null; }
     HEDGES = null;
     if (API.sb && API.member && !API.preview) {
       try { const { data } = await API.sb.from("signals").select("ticker,state,pct_in_range,price").in("ticker", ["__HEDGE__", "__HEDGE_BR__"]); HEDGES = data || null; }
@@ -288,6 +289,61 @@
       ${API.member ? "" : `<p class="term-foot">${tx("Sinais do Markov 3 e proteção recomendada aparecem nos planos Pro e Elite.", "Markov 3 signals and the recommended hedge are in the Pro and Elite plans.")} <a href="plans.html">${tx("Ver planos", "See plans")}</a></p>`}
       <div class="term-foot">${tx("Amplitude: universo Seven7 (IBrX / S&P 100), com atraso. Volatilidade: retornos diários do", "Breadth: Seven7 universe (IBrX / S&P 100), delayed. Volatility: daily returns of")} BOVA11 / SPY · ${tx("atualizado no fechamento", "updated at the close")} ${REGIME && REGIME.asof ? esc(REGIME.asof.split("-").reverse().join("/")) : ""}</div></div>`;
   }
+  // ---- SECT: setorização (cestas de pesos iguais do universo Seven7) + ETF setorial SPDR nos EUA ----
+  const SECT_ST = { per: "r1m", open: null };
+  function sectFn(host, arg) {
+    const k = (arg || "").toUpperCase() === "US" ? "US" : "BR";
+    const D = SECTS && SECTS[k];
+    if (!D) { host.innerHTML = missing(tx("A setorização", "Sector data")); return; }
+    const iq = (INTRA[k.toLowerCase()] || {}).quotes || {};
+    // "hoje": média da variação intraday das ações do setor (cai no último fechamento se não houver intraday)
+    const hoje = sc => { const v = sc.membros.map(m => (iq[m.tk] || {}).chg_pct).filter(x => x != null && isFinite(x)); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : sc.r1d; };
+    const PER = [["hoje", tx("Hoje", "Today")], ["r5d", tx("1 sem.", "1W")], ["r1m", tx("1 mês", "1M")], ["r3m", tx("3 meses", "3M")], ["ytd", tx("No ano", "YTD")], ["r12m", "12m"]];
+    const per = SECT_ST.per;
+    const val = (sc, p) => (p === "hoje" ? hoje(sc) : sc[p]);
+    const rows = D.setores.map(sc => ({ sc, v: val(sc, per) })).sort((a, b) => (b.v ?? -1e9) - (a.v ?? -1e9));
+    const idxV = per === "hoje" ? D.indice.r1d : D.indice[per];
+    const mx = Math.max(1, ...rows.map(r => Math.abs(r.v || 0)), Math.abs(idxV || 0));
+    const heat = v => { if (v == null || !isFinite(v)) return ""; const a = Math.min(0.55, Math.abs(v) / mx * 0.55 + 0.06); return `style="background:${v >= 0 ? `rgba(61,220,132,${a})` : `rgba(255,90,79,${a})`}"`; };
+    const nome = sc => (PT() ? sc.pt : sc.en);
+    const W = 100, zero = 50;
+    const barras = rows.map(({ sc, v }) => {
+      const w = v == null ? 0 : Math.abs(v) / mx * (W / 2), x = v >= 0 ? zero : zero - w;
+      return `<div class="sx-bar" data-sec="${esc(sc.key)}"><span class="sx-n">${esc(nome(sc))}</span>
+        <span class="sx-track"><i class="${v >= 0 ? "up" : "dn"}" style="left:${x}%;width:${Math.max(0.6, w)}%"></i><b style="left:${zero}%"></b>${idxV != null ? `<em style="left:${zero + (idxV / mx) * (W / 2)}%" title="${esc(D.indice.tk)}"></em>` : ""}</span>
+        <span class="sx-v num ${cls(v)}">${pct(v, 1)}</span></div>`;
+    }).join("");
+    const cols = [["hoje", tx("Hoje", "Today")], ["r5d", "1S"], ["r1m", "1M"], ["r3m", "3M"], ["ytd", tx("Ano", "YTD")], ["r12m", "12M"]];
+    const tabela = rows.map(({ sc }) => {
+      const aberto = SECT_ST.open === k + sc.key;
+      const etf = sc.etf ? `<a class="term-tk" data-go="${sc.etf.tk} GP">${sc.etf.tk}</a> <span class="${cls(val(sc.etf, per === "hoje" ? "r1d" : per))}">${pct(val(sc.etf, per === "hoje" ? "r1d" : per), 1)}</span>` : "";
+      const lin = `<tr class="sx-row ${aberto ? "open" : ""}" data-sec="${esc(sc.key)}"><td><button class="sx-tg" aria-expanded="${aberto}">${aberto ? "▾" : "▸"}</button> ${esc(nome(sc))} <small>${sc.n}</small></td>${k === "US" ? `<td class="sx-etf">${etf}</td>` : ""}
+        ${cols.map(([c]) => { const v = val(sc, c); return `<td class="num ${c === per ? "sx-sel" : ""}" ${heat(v)}>${pct(v, 1)}</td>`; }).join("")}
+        <td class="num">${nf(sc.vol20, 0)}%</td><td class="num">${nf(sc.acima_mm50, 0)}%</td><td class="num ${cls(sc.rs1m)}">${pct(sc.rs1m, 1)}</td></tr>`;
+      if (!aberto) return lin;
+      const mem = sc.membros.map(m => { const h = (iq[m.tk] || {}).chg_pct ?? m.r1d;
+        return `<tr class="sx-mem"><td><a class="term-tk" data-go="${m.tk} GP">${esc(m.tk)}</a> <small>${esc(m.ind || "")}</small></td>${k === "US" ? "<td></td>" : ""}
+          <td class="num ${cls(h)}">${pct(h, 1)}</td><td></td><td class="num ${cls(m.r1m)}">${pct(m.r1m, 1)}</td><td></td><td class="num ${cls(m.ytd)}">${pct(m.ytd, 1)}</td><td></td><td></td><td></td><td></td></tr>`; }).join("");
+      return lin + mem;
+    }).join("");
+    host.innerHTML = `<div class="term-tools">${["BR", "US"].map(m => `<button class="term-chip ${m === k ? "on" : ""}" data-go="SECT ${m}">${m === "BR" ? "Brasil" : tx("EUA", "US")}</button>`).join("")}
+        <span class="sx-sep"></span>${PER.map(([c, l]) => `<button class="term-chip sx-per ${c === per ? "on" : ""}" data-per="${c}">${l}</button>`).join("")}
+        <span class="term-asof">${D.setores.length} ${tx("setores", "sectors")} · ${esc(D.data.split("-").reverse().join("/"))}</span></div>
+      <div class="term-scroll">
+        <div class="term-sub">${tx("Rotação setorial", "Sector rotation")} · ${PER.find(x => x[0] === per)[1]} · <span class="term-dim">${tx("linha = índice", "line = index")} ${esc(D.indice.tk)} ${pct(idxV, 1)}</span></div>
+        <div class="sx-bars">${barras}</div>
+        <table class="term-table sx-tb"><thead><tr><th>${tx("Setor", "Sector")}</th>${k === "US" ? `<th>${tx("ETF do setor", "Sector ETF")}</th>` : ""}${cols.map(([c, l]) => `<th class="num">${l}</th>`).join("")}
+          <th class="num">${tx("Vol 20d", "20d vol")}</th><th class="num">${tx("&gt; MM50", "&gt; 50DMA")}</th><th class="num">${tx("vs índice 1M", "vs index 1M")}</th></tr></thead>
+          <tbody>${tabela}</tbody></table>
+        <div class="term-foot">${tx("Cada setor é uma cesta de pesos iguais das ações do universo Seven7 (IBrX no Brasil, S&P 100 nos EUA). Hoje: média da variação intraday, com atraso. &gt; MM50: % das ações acima da média de 50 dias. Classificação: Yahoo Finance, com ajustes para a B3.", "Each sector is an equal-weight basket of the Seven7 universe (IBrX in Brazil, S&P 100 in the US). Today: average intraday move, delayed. &gt; 50DMA: share of stocks above their 50-day average. Classification: Yahoo Finance, adjusted for B3.")}
+          ${k === "US" ? tx(" ETF: o SPDR Select Sector do setor (o mesmo período).", " ETF: the sector's SPDR Select Sector fund (same period).") : ""}</div></div>`;
+    host.querySelectorAll(".sx-per").forEach(b => b.onclick = e => { e.stopPropagation(); SECT_ST.per = b.dataset.per; sectFn(host, k); });
+    host.querySelectorAll(".sx-row, .sx-bar").forEach(r => r.onclick = e => {
+      if (e.target.closest("[data-go]")) return;
+      const id = k + r.dataset.sec; SECT_ST.open = SECT_ST.open === id ? null : id; sectFn(host, k);
+      const alvo = host.querySelector(`.sx-row[data-sec="${CSS.escape(r.dataset.sec)}"]`); if (alvo && r.classList.contains("sx-bar")) alvo.scrollIntoView({ block: "nearest" });
+    });
+  }
   const FN = {
     HELP: { g: 0, n: ["Ajuda — lista de funções", "Help — function list"], run: h => help(h) },
     WEI: { g: 1, n: ["Bolsas do mundo", "World equity indices"], run: h => quotes(h, [
@@ -301,6 +357,7 @@
       [tx("Agrícolas", "Agriculture"), [["OANDA:SOYBNUSD", tx("Soja", "Soybeans")], ["OANDA:CORNUSD", tx("Milho", "Corn")], ["OANDA:WHEATUSD", tx("Trigo", "Wheat")], ["CAPITALCOM:COFFEEARABICA", tx("Café", "Coffee")], ["OANDA:SUGARUSD", tx("Açúcar", "Sugar")], ["BMFBOVESPA:BGI1!", tx("Boi gordo B3", "Live cattle B3")]]],
       [tx("Juros e câmbio B3", "B3 rates & FX"), [["BMFBOVESPA:DI1F2027", "DI jan/27"], ["BMFBOVESPA:DOL1!", tx("Mini-dólar", "USD/BRL mini fut.")], ["CAPITALCOM:DXY", "DXY"]]]]) },
     CRYPTO: { g: 1, n: ["Cripto", "Crypto"], run: h => quotes(h, [["Cripto", [["BITSTAMP:BTCUSD", "Bitcoin"], ["BITSTAMP:ETHUSD", "Ethereum"], ["BINANCE:SOLUSDT", "Solana"], ["BINANCE:XRPUSDT", "XRP"], ["BINANCE:BNBUSDT", "BNB"]]]]) },
+    SECT: { g: 1, a: "BR|US", n: ["Setores: rotação, desempenho e ETFs setoriais (EUA)", "Sectors: rotation, performance and sector ETFs (US)"], run: sectFn },
     MOST: { g: 1, a: "BR|US", n: ["Maiores altas e quedas (universo Seven7)", "Top movers (Seven7 universe)"], run: most },
     MOV: { g: 1, a: "BR|US", n: ["Destaques da bolsa inteira", "Whole-exchange movers"], run: (h, a) => tv(h, "hotlists", { width: "100%", height: "100%", exchange: (a || "").toUpperCase() === "US" ? "US" : "BMFBOVESPA", dateRange: "12M", showChart: true, showSymbolLogo: true }) },
     HMAP: { g: 1, a: "BR|US", n: ["Mapa de calor por setor", "Sector heat map"], run: (h, a) => tv(h, "stock-heatmap", { width: "100%", height: "100%", dataSource: (a || "").toUpperCase() === "BR" ? "IBOV" : "SPX500", grouping: "sector", blockSize: "market_cap_basic", blockColor: "change", hasTopBar: true, isZoomEnabled: true, hasSymbolTooltip: true }) },
@@ -350,13 +407,13 @@
   // ---------------- painéis, comando, layouts ----------------
   const LAYOUTS = {
     QUANT: [["PHLT"], ["PRSK"], ["REG"], ["OPT"]],
-    MERCADOS: [["WEI"], ["TOP"], ["ECO"], ["GP", "IBOV"]],
+    MERCADOS: [["WEI"], ["SECT", "BR"], ["TOP"], ["SECT", "US"]],
     ATIVO: [["GP", "PETR4"], ["DES", "PETR4"], ["FA", "PETR4"], ["CN", "PETR4"]],
     MACRO: [["BTMM"], ["ECO"], ["GC"], ["FX"]],
     SEVEN7: [["SIG"], ["REG"], ["PORT"], ["MOST"]],
   };
   let PANELS = null, FOCUS = 0;
-  const OWN = ["TOP", "BRN", "WN", "CB", "BTMM", "GC", "MOST", "SIG", "PORT", "HELP", "PHLT", "PRSK", "PDD", "FRONT", "OPT", "PCOR", "REG"];   // painéis com dados Seven7
+  const OWN = ["TOP", "BRN", "WN", "CB", "BTMM", "GC", "MOST", "SIG", "PORT", "HELP", "PHLT", "PRSK", "PDD", "FRONT", "OPT", "PCOR", "REG", "SECT"];   // painéis com dados Seven7
   const ownPanel = ([fn, a]) => OWN.includes(fn) || (fn === "CN" && isB3((a || "").toUpperCase()));
   function save() { LS.set("s7-term2", JSON.stringify({ p: PANELS, f: FOCUS })); }
   function shell() {
@@ -368,7 +425,7 @@
         <div class="term-clocks" id="termClocks"></div></div>
       <div class="term-quant" id="termQuant" aria-live="polite"></div>
       <div class="term-keys"><span class="tk-g">QUANT</span>${["PHLT", "PRSK", "PDD", "OPT", "FRONT", "PCOR", "REG", "SIG", "PORT"].map(k => `<button class="tk-q" data-go="${k}">${k}</button>`).join("")}
-        <span class="tk-g">${tx("MERCADO", "MARKET")}</span>${["WEI", "TOP", "ECO", "BTMM", "MOST", "HMAP BR", "EQS", "FX", "CMDTY", "HELP"].map(k => `<button data-go="${k}">${k}</button>`).join("")}
+        <span class="tk-g">${tx("MERCADO", "MARKET")}</span>${["SECT BR", "SECT US", "WEI", "TOP", "ECO", "BTMM", "MOST", "HMAP BR", "EQS", "FX", "CMDTY", "HELP"].map(k => `<button data-go="${k}">${k}</button>`).join("")}
         <span class="tk-g">LAYOUT</span>${Object.keys(LAYOUTS).map(k => `<button class="term-lay" data-lay="${k}">${k}</button>`).join("")}</div>
       <div class="term-tape" id="termTape"></div>
       <div class="term-status" id="termStatus"></div>
