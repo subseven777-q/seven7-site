@@ -61,7 +61,7 @@
       linhas.push([tx("Concentração", "Concentration"), tx(`Quanto do risco vem de ${esc(x.ativo || "um ativo")}`, `How much risk comes from ${esc(x.ativo || "one asset")}`), pc(x.valor, 0),
         regua(x.valor, 0.25, 0.40, 1), tx("Saudável até 25%", "Healthy up to 25%"), x.nivel]); }
     if (L.diversificacao) { const x = L.diversificacao;
-      linhas.push([tx("Diversificação", "Diversification"), tx(`Apostas realmente independentes entre ${x.n} ativos`, `Truly independent bets across ${x.n} assets`), nf(x.valor, 1),
+      linhas.push([tx("Diversificação", "Diversification"), tx(`Fontes de risco realmente diferentes entre ${x.n} ativos`, `Truly independent bets across ${x.n} assets`), nf(x.valor, 1),
         regua(x.valor, 2, 3.5, 6, true), tx("Saudável a partir de 3,5", "Healthy from 3.5"), x.nivel]); }
     if (L.eficiencia) { const x = L.eficiencia, gan = x.valor > 0 ? Math.max(0, 1 - (x.ref || x.valor) / x.valor) : 0;
       linhas.push([tx("Eficiência", "Efficiency"), tx("Quanto do risco dá para tirar só redistribuindo", "Risk you could remove just by rebalancing"), pc(gan, 0),
@@ -92,7 +92,7 @@
         [tx("queda forte", "deep drawdown"), tx("em correção", "correcting"), tx("perto do topo", "near the high")]],
       concentracao: [tx("Concentração", "Concentration"), x => tx(`${esc(x.ativo)} = ${pc(x.valor, 0)} do risco`, `${esc(x.ativo)} = ${pc(x.valor, 0)} of risk`),
         [tx("um ativo domina", "one asset dominates"), tx("atenção", "watch"), tx("risco bem distribuído", "risk well spread")]],
-      diversificacao: [tx("Diversificação", "Diversification"), x => tx(`${nf(x.valor)} apostas independentes em ${x.n} ativos`, `${nf(x.valor)} independent bets across ${x.n} assets`),
+      diversificacao: [tx("Diversificação", "Diversification"), x => tx(`${nf(x.valor)} fontes de risco independentes em ${x.n} ativos`, `${nf(x.valor)} independent bets across ${x.n} assets`),
         [tx("pouca", "low"), tx("razoável", "fair"), tx("boa", "good")]],
       eficiencia: [tx("Eficiência", "Efficiency"), x => tx(`vol ${pc(x.valor)} · HRP ${pc(x.ref)}`, `vol ${pc(x.valor)} · HRP ${pc(x.ref)}`),
         [tx("dá para reduzir bem o risco", "risk can drop a lot"), tx("dá para melhorar", "room to improve"), tx("perto do eficiente", "near efficient")]],
@@ -142,7 +142,7 @@
     const it = [[tx("Volatilidade anual", "Annual volatility"), pc(m.vol), `${esc(m.bench)} ${pc(m.vol_bench)}`], [tx("Retorno anual (2a)", "Annual return (2y)"), sp(m.ret_ann), tx("com os pesos de hoje", "at today's weights")],
       [tx("Pior queda (2a)", "Max drawdown (2y)"), pc(m.max_dd), tx(`atual ${pc(m.dd_atual)}`, `now ${pc(m.dd_atual)}`)], ["VaR 95% (1 dia)", pc(m.var95, 2), tx("perda em 1 de cada 20 dias", "loss on 1 in 20 days")],
       ["ES 97,5% (1 dia)", pc(m.es975, 2), tx("média dos piores 2,5% dos dias", "avg of worst 2.5% days")], ["Beta", nf(m.beta, 2), tx(`vs ${m.bench}`, `vs ${m.bench}`)],
-      [tx("Apostas independentes", "Independent bets"), nf(m.enb), "(Σ wᵢσᵢ / σₚ)²"], [tx("Correlação média", "Avg correlation"), nf(m.corr_media, 2), tx("entre os ativos", "between assets")]];
+      [tx("Fontes de risco independentes", "Independent bets"), nf(m.enb), "(Σ wᵢσᵢ / σₚ)²"], [tx("Correlação média", "Avg correlation"), nf(m.corr_media, 2), tx("entre os ativos", "between assets")]];
     host.innerHTML = `<div class="q-metrics">${it.map(([l, v, s]) => `<div class="q-m"><div class="q-ml">${l}</div><div class="q-mv">${v}</div><div class="q-ms">${s}</div></div>`).join("")}</div>`;
   }
 
@@ -219,11 +219,11 @@
     const cmp = (l, x, y, inv) => `<tr><td>${l}</td><td class="num">${x}</td><td class="num"><b>${y}</b></td></tr>`;
     host.innerHTML = `<table class="q-tbl q-cmp"><thead><tr><th></th><th class="num">${tx("Hoje", "Today")}</th><th class="num">HRP</th></tr></thead><tbody>
       ${cmp(tx("Volatilidade", "Volatility"), pc(a.vol), pc(h.vol))}${cmp(tx("Pior queda (2a)", "Max drawdown"), pc(a.max_dd), pc(h.max_dd))}
-      ${cmp("ES 97,5%", pc(a.es975, 2), pc(h.es975, 2))}${cmp(tx("Apostas independentes", "Independent bets"), nf(a.enb), nf(h.enb))}</tbody></table>
+      ${cmp("ES 97,5%", pc(a.es975, 2), pc(h.es975, 2))}${cmp(tx("Fontes de risco independentes", "Independent bets"), nf(a.enb), nf(h.enb))}</tbody></table>
       <table class="q-tbl"><thead><tr><th>${tx("Ativo", "Asset")}</th><th class="num">${tx("Hoje", "Today")}</th><th class="num">HRP</th><th class="num">${tx("Ajuste", "Change")}</th></tr></thead><tbody>
       ${rows.map(r => `<tr><td><b>${esc(r.label)}</b>${r.sinal ? ` <small class="q-sig">${tx("sinal Seven7", "Seven7 signal")}</small>` : ""}</td><td class="num">${pc(r.w)}</td><td class="num">${pc(r.w_hrp)}</td>
         <td class="num ${r.delta_hrp > 0 ? "pos" : "neg"}">${r.delta_hrp > 0 ? tx("+ comprar ", "+ buy ") : tx("− vender ", "− sell ")}${money(Math.abs(r.delta_hrp))}</td></tr>`).join("")}</tbody></table>
-      ${h.vol > a.vol * 1.03 ? `<div class="q-alert">${tx(`<b>Atenção:</b> aqui o HRP <b>aumentaria</b> a volatilidade (${pc(a.vol)} → ${pc(h.vol)}). Ele espalha o risco entre mais apostas (${nf(a.enb)} → ${nf(h.enb)}), mas seu portfólio de hoje já é menos volátil — normalmente porque um ativo de baixa volatilidade e baixa correlação (como o hedge) pesa muito. Se a sua prioridade é oscilar menos, mantenha; se é não depender de poucos ativos, siga o HRP.`,
+      ${h.vol > a.vol * 1.03 ? `<div class="q-alert">${tx(`<b>Atenção:</b> aqui o HRP <b>aumentaria</b> a volatilidade (${pc(a.vol)} → ${pc(h.vol)}). Ele espalha o risco entre mais fontes independentes (${nf(a.enb)} → ${nf(h.enb)}), mas seu portfólio de hoje já é menos volátil — normalmente porque um ativo de baixa volatilidade e baixa correlação (como o hedge) pesa muito. Se a sua prioridade é oscilar menos, mantenha; se é não depender de poucos ativos, siga o HRP.`,
         `<b>Note:</b> here HRP would <b>raise</b> volatility (${pc(a.vol)} → ${pc(h.vol)}). It spreads risk across more bets (${nf(a.enb)} → ${nf(h.enb)}), but today's portfolio is already less volatile — usually because a low-vol, low-correlation asset (like the hedge) weighs a lot. If your priority is lower swings, keep it; if it is not depending on few assets, follow HRP.`)}</div>` : ""}
       <div class="q-note">${tx("HRP (López de Prado): agrupa ativos parecidos e divide o risco entre os grupos — não usa previsão de retorno, por isso é estável. Posições com sinal Seven7 já têm tamanho pela regra de risco da estratégia; o HRP olha o portfólio inteiro. É uma sugestão, não uma recomendação individual.",
         "HRP (López de Prado): clusters similar assets and splits risk across clusters — no return forecast, hence stable. Seven7-signal positions are already sized by the strategy's risk rule; HRP looks at the whole portfolio. A suggestion, not individual advice.")}</div>`;
@@ -248,7 +248,7 @@
       <li><b>Drawdown</b>: DD<sub>t</sub> = V<sub>t</sub> / max<sub>s≤t</sub> V<sub>s</sub> − 1</li>
       <li><b>VaR 95% / ES 97,5%</b>: ${tx("históricos de 1 dia — quantil de 5% e média abaixo do quantil de 2,5%", "1-day historical — 5% quantile and mean below the 2.5% quantile")}</li>
       <li><b>${tx("Covariância", "Covariance")}</b>: Σ = δ·m·I + (1−δ)·S ${tx("(Ledoit-Wolf, δ ótimo)", "(Ledoit-Wolf, optimal δ)")}</li>
-      <li><b>${tx("Contribuição ao risco", "Risk contribution")}</b>: RC<sub>i</sub> = w<sub>i</sub>(Σw)<sub>i</sub> / (wᵀΣw) · ${tx("apostas independentes", "independent bets")} = (Σ w<sub>i</sub>σ<sub>i</sub> / σ<sub>p</sub>)² ${tx("— a razão de diversificação ao quadrado: desconta os ativos que andam juntos", "— the squared diversification ratio: discounts assets that move together")}</li>
+      <li><b>${tx("Contribuição ao risco", "Risk contribution")}</b>: RC<sub>i</sub> = w<sub>i</sub>(Σw)<sub>i</sub> / (wᵀΣw) · ${tx("fontes de risco independentes", "independent bets")} = (Σ w<sub>i</sub>σ<sub>i</sub> / σ<sub>p</sub>)² ${tx("— a razão de diversificação ao quadrado: desconta os ativos que andam juntos", "— the squared diversification ratio: discounts assets that move together")}</li>
       <li><b>Beta</b>: β = cov(r<sub>p</sub>, r<sub>b</sub>) / var(r<sub>b</sub>)</li>
       <li><b>${tx("Fronteira", "Frontier")}</b>: min wᵀΣw ${tx("sujeito a", "s.t.")} wᵀμ = alvo, Σw = 1, w ≥ 0 · μ ${tx("encolhido 50% para a média", "shrunk 50% to the mean")}</li>
       <li><b>HRP</b>: ${tx("distância", "distance")} d = √(½(1−ρ)) → ${tx("árvore (single linkage) → ordem quase-diagonal → bissecção recursiva com variância inversa", "tree (single linkage) → quasi-diagonal order → recursive bisection by inverse variance")}</li>
