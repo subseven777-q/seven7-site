@@ -290,19 +290,16 @@
       <div class="term-foot">${tx("Amplitude: universo Seven7 (IBrX / S&P 100), com atraso. Volatilidade: retornos diários do", "Breadth: Seven7 universe (IBrX / S&P 100), delayed. Volatility: daily returns of")} BOVA11 / SPY · ${tx("atualizado no fechamento", "updated at the close")} ${REGIME && REGIME.asof ? esc(REGIME.asof.split("-").reverse().join("/")) : ""}</div></div>`;
   }
   // ---- SECT: setorização (cestas de pesos iguais do universo Seven7) + ETF setorial SPDR nos EUA ----
-  const SECT_ST = { per: "r1m", open: null };
+  const SECT_ST = { per: "r1m", open: null };   // per: r1d|r5d|r1m|r3m|ytd|r12m
   function sectFn(host, arg) {
     const k = (arg || "").toUpperCase() === "US" ? "US" : "BR";
     const D = SECTS && SECTS[k];
     if (!D) { host.innerHTML = missing(tx("A setorização", "Sector data")); return; }
-    const iq = (INTRA[k.toLowerCase()] || {}).quotes || {};
-    // "hoje": média da variação intraday das ações do setor (cai no último fechamento se não houver intraday)
-    const hoje = sc => { const v = sc.membros.map(m => (iq[m.tk] || {}).chg_pct).filter(x => x != null && isFinite(x)); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : sc.r1d; };
-    const PER = [["hoje", tx("Hoje", "Today")], ["r5d", tx("1 sem.", "1W")], ["r1m", tx("1 mês", "1M")], ["r3m", tx("3 meses", "3M")], ["ytd", tx("No ano", "YTD")], ["r12m", "12m"]];
+    const PER = [["r1d", tx("Dia", "Day")], ["r5d", tx("1 sem.", "1W")], ["r1m", tx("1 mês", "1M")], ["r3m", tx("3 meses", "3M")], ["ytd", tx("No ano", "YTD")], ["r12m", "12m"]];
     const per = SECT_ST.per;
-    const val = (sc, p) => (p === "hoje" ? hoje(sc) : sc[p]);
+    const val = (sc, p) => (sc ? sc[p] : null);
     const rows = D.setores.map(sc => ({ sc, v: val(sc, per) })).sort((a, b) => (b.v ?? -1e9) - (a.v ?? -1e9));
-    const idxV = per === "hoje" ? D.indice.r1d : D.indice[per];
+    const idxV = D.indice[per];
     const mx = Math.max(1, ...rows.map(r => Math.abs(r.v || 0)), Math.abs(idxV || 0));
     const heat = v => { if (v == null || !isFinite(v)) return ""; const a = Math.min(0.55, Math.abs(v) / mx * 0.55 + 0.06); return `style="background:${v >= 0 ? `rgba(61,220,132,${a})` : `rgba(255,90,79,${a})`}"`; };
     const nome = sc => (PT() ? sc.pt : sc.en);
@@ -313,30 +310,32 @@
         <span class="sx-track"><i class="${v >= 0 ? "up" : "dn"}" style="left:${x}%;width:${Math.max(0.6, w)}%"></i><b style="left:${zero}%"></b>${idxV != null ? `<em style="left:${zero + (idxV / mx) * (W / 2)}%" title="${esc(D.indice.tk)}"></em>` : ""}</span>
         <span class="sx-v num ${cls(v)}">${pct(v, 1)}</span></div>`;
     }).join("");
-    const cols = [["hoje", tx("Hoje", "Today")], ["r5d", "1S"], ["r1m", "1M"], ["r3m", "3M"], ["ytd", tx("Ano", "YTD")], ["r12m", "12M"]];
+    const cols = [["r1d", tx("Dia", "Day")], ["r5d", "1S"], ["r1m", "1M"], ["r3m", "3M"], ["ytd", tx("Ano", "YTD")], ["r12m", "12M"]];
     const tabela = rows.map(({ sc }) => {
       const aberto = SECT_ST.open === k + sc.key;
-      const etf = sc.etf ? `<a class="term-tk" data-go="${sc.etf.tk} GP">${sc.etf.tk}</a> <span class="${cls(val(sc.etf, per === "hoje" ? "r1d" : per))}">${pct(val(sc.etf, per === "hoje" ? "r1d" : per), 1)}</span>` : "";
-      const lin = `<tr class="sx-row ${aberto ? "open" : ""}" data-sec="${esc(sc.key)}"><td><button class="sx-tg" aria-expanded="${aberto}">${aberto ? "▾" : "▸"}</button> ${esc(nome(sc))} <small>${sc.n}</small></td>${k === "US" ? `<td class="sx-etf">${etf}</td>` : ""}
+      const rf = sc.ref, etf = rf ? `<a class="term-tk" data-go="${rf.tipo === "etf" ? rf.tk : "BMFBOVESPA:" + rf.tk} GP">${rf.tk}</a> <span class="${cls(val(rf, per))}">${pct(val(rf, per), 1)}</span>` : `<span class="term-dim">—</span>`;
+      const lin = `<tr class="sx-row ${aberto ? "open" : ""}" data-sec="${esc(sc.key)}"><td><button class="sx-tg" aria-expanded="${aberto}">${aberto ? "▾" : "▸"}</button> ${esc(nome(sc))} <small>${sc.n}</small></td><td class="sx-etf">${etf}</td>
         ${cols.map(([c]) => { const v = val(sc, c); return `<td class="num ${c === per ? "sx-sel" : ""}" ${heat(v)}>${pct(v, 1)}</td>`; }).join("")}
         <td class="num">${nf(sc.vol20, 0)}%</td><td class="num">${nf(sc.acima_mm50, 0)}%</td><td class="num ${cls(sc.rs1m)}">${pct(sc.rs1m, 1)}</td></tr>`;
       if (!aberto) return lin;
-      const mem = sc.membros.map(m => { const h = (iq[m.tk] || {}).chg_pct ?? m.r1d;
-        return `<tr class="sx-mem"><td><a class="term-tk" data-go="${m.tk} GP">${esc(m.tk)}</a> <small>${esc(m.ind || "")}</small></td>${k === "US" ? "<td></td>" : ""}
+      const mem = sc.membros.map(m => { const h = m.r1d;
+        return `<tr class="sx-mem"><td><a class="term-tk" data-go="${m.tk} GP">${esc(m.tk)}</a> <small>${esc(m.nome || m.ind || "")}</small></td><td class="num term-dim">${m.peso != null ? nf(m.peso, 1) + "%" : ""}</td>
           <td class="num ${cls(h)}">${pct(h, 1)}</td><td></td><td class="num ${cls(m.r1m)}">${pct(m.r1m, 1)}</td><td></td><td class="num ${cls(m.ytd)}">${pct(m.ytd, 1)}</td><td></td><td></td><td></td><td></td></tr>`; }).join("");
       return lin + mem;
     }).join("");
     host.innerHTML = `<div class="term-tools">${["BR", "US"].map(m => `<button class="term-chip ${m === k ? "on" : ""}" data-go="SECT ${m}">${m === "BR" ? "Brasil" : tx("EUA", "US")}</button>`).join("")}
         <span class="sx-sep"></span>${PER.map(([c, l]) => `<button class="term-chip sx-per ${c === per ? "on" : ""}" data-per="${c}">${l}</button>`).join("")}
-        <span class="term-asof">${D.setores.length} ${tx("setores", "sectors")} · ${esc(D.data.split("-").reverse().join("/"))}</span></div>
+        <span class="term-asof">${D.universo ? D.universo.n + " " + tx("empresas", "companies") + " · " : ""}${D.setores.length} ${tx("setores", "sectors")} · ${esc(D.data.split("-").reverse().join("/"))}</span></div>
       <div class="term-scroll">
         <div class="term-sub">${tx("Rotação setorial", "Sector rotation")} · ${PER.find(x => x[0] === per)[1]} · <span class="term-dim">${tx("linha = índice", "line = index")} ${esc(D.indice.tk)} ${pct(idxV, 1)}</span></div>
         <div class="sx-bars">${barras}</div>
-        <table class="term-table sx-tb"><thead><tr><th>${tx("Setor", "Sector")}</th>${k === "US" ? `<th>${tx("ETF do setor", "Sector ETF")}</th>` : ""}${cols.map(([c, l]) => `<th class="num">${l}</th>`).join("")}
+        <table class="term-table sx-tb"><thead><tr><th>${tx("Setor", "Sector")} <small>${tx("empresas", "cos.")}</small></th><th>${k === "US" ? tx("ETF do setor", "Sector ETF") : tx("Índice B3", "B3 index")}</th>${cols.map(([c, l]) => `<th class="num">${l}</th>`).join("")}
           <th class="num">${tx("Vol 20d", "20d vol")}</th><th class="num">${tx("&gt; MM50", "&gt; 50DMA")}</th><th class="num">${tx("vs índice 1M", "vs index 1M")}</th></tr></thead>
           <tbody>${tabela}</tbody></table>
-        <div class="term-foot">${tx("Cada setor é uma cesta de pesos iguais das ações do universo Seven7 (IBrX no Brasil, S&P 100 nos EUA). Hoje: média da variação intraday, com atraso. &gt; MM50: % das ações acima da média de 50 dias. Classificação: Yahoo Finance, com ajustes para a B3.", "Each sector is an equal-weight basket of the Seven7 universe (IBrX in Brazil, S&P 100 in the US). Today: average intraday move, delayed. &gt; 50DMA: share of stocks above their 50-day average. Classification: Yahoo Finance, adjusted for B3.")}
-          ${k === "US" ? tx(" ETF: o SPDR Select Sector do setor (o mesmo período).", " ETF: the sector's SPDR Select Sector fund (same period).") : ""}</div></div>`;
+        <div class="term-foot">${k === "US"
+          ? tx(`Cada setor é um ETF SPDR Select Sector, com todas as ${D.universo ? D.universo.n : ""} empresas das carteiras (S&P 500) e o peso de cada uma no ETF (carteira do dia, State Street). O desempenho do setor é o do próprio ETF.`, `Each sector is an SPDR Select Sector ETF, with all ${D.universo ? D.universo.n : ""} companies in its holdings (S&P 500) and each one's weight in the ETF (daily holdings, State Street). Sector performance is the ETF itself.`)
+          : tx(`Universo: ${D.universo ? D.universo.n : ""} empresas dos índices da B3 (Ibovespa, Small Caps e setoriais). Cada setor é uma cesta de pesos iguais; ao lado, o índice setorial oficial da B3 correspondente (IFNC, IMAT, UTIL, IMOB, ICON, INDX), calculado pela carteira teórica do dia. Peso: participação da empresa nesse índice. Setor: classificação do Yahoo Finance com ajustes para a B3.`, `Universe: ${D.universo ? D.universo.n : ""} companies in B3 indices (Ibovespa, Small Caps and sector indices). Each sector is an equal-weight basket; next to it, the matching official B3 sector index, computed from today's theoretical portfolio. Weight: the company's share of that index.`)}
+          ${tx(" Dia: último pregão. &gt; MM50: % das empresas acima da média de 50 dias.", " Day: last session. &gt; 50DMA: share of companies above their 50-day average.")}</div></div>`;
     host.querySelectorAll(".sx-per").forEach(b => b.onclick = e => { e.stopPropagation(); SECT_ST.per = b.dataset.per; sectFn(host, k); });
     host.querySelectorAll(".sx-row, .sx-bar").forEach(r => r.onclick = e => {
       if (e.target.closest("[data-go]")) return;
