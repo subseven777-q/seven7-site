@@ -777,10 +777,9 @@
     "pf.fAdd": { en: "Add to portfolio", pt: "Adicionar ao portfólio" },
     "pf.fBad": { en: "Fill in the fields correctly.", pt: "Preencha os campos corretamente." },
     "pf.fMig": { en: "This type of asset is not enabled yet (database update pending).", pt: "Este tipo de ativo ainda não está habilitado (atualização do banco pendente)." },
-    "hrp.confirm": { en: "Set your portfolio to the HRP weights? {n} positions change:", pt: "Ajustar sua carteira aos pesos do HRP? {n} posições mudam:" },
-    "hrp.buy": { en: "Buy", pt: "Comprar" },
-    "hrp.sell": { en: "Sell", pt: "Vender" },
-    "hrp.working": { en: "Updating your portfolio…", pt: "Atualizando sua carteira…" },
+    "hrp.working": { en: "Adjusting…", pt: "Ajustando…" },
+    "hrp.doneOne": { en: "{a} adjusted to the HRP weight and score recalculated. Now place the trade at your broker.", pt: "{a} ajustado ao peso do HRP e nota recalculada. Agora faça a operação na sua corretora." },
+    "hrp.doneOneLater": { en: "{a} adjusted to the HRP weight. The new score arrives within 15 minutes.", pt: "{a} ajustado ao peso do HRP. A nota nova chega em até 15 minutos." },
     "hrp.done": { en: "Done: {n} positions adjusted and the score recalculated. Now place the trades at your broker.", pt: "Pronto: {n} posições ajustadas e a nota recalculada. Agora faça as compras e vendas na sua corretora." },
     "hrp.doneLater": { en: "Done: {n} positions adjusted. Some asset is outside the instant engine, so the new score arrives within 15 minutes.", pt: "Pronto: {n} posições ajustadas. Algum ativo está fora do cálculo instantâneo, então a nota nova chega em até 15 minutos." },
     "hrp.preview": { en: "Sign in to apply it to your portfolio.", pt: "Entre na sua conta para aplicar na sua carteira." },
@@ -2431,19 +2430,21 @@
     }
     host.innerHTML = `<div class="section-head"><h2>${t("pf.quantH")}</h2><p class="sub">${t("pf.quantSub")}</p></div><div class="qq-share qq-img" id="pfShare"></div><div id="pfQuantBody"></div>`;
     window.S7Quant.full($("#pfQuantBody"), A, { lang: LANG, onApply: applyHrp });
+    try {                                                 // mensagem do último ajuste do HRP (a tela foi redesenhada)
+      const m = JSON.parse(sessionStorage.getItem("s7-hrp-msg") || "null"); sessionStorage.removeItem("s7-hrp-msg");
+      const el = $("#qHrpMsg"); if (m && el) { el.textContent = interp(t(m.k), m.v || {}); el.className = "add-msg ok"; el.scrollIntoView({ block: "center" }); }
+    } catch (e) { /* sem storage */ }
     if (A && !A.vazio) window.S7Quant.shareButtons($("#pfShare"), A, { lang: LANG, onUse: (f, m) => track("share", { via: "imagem_" + f, modo: m, de: "mesa" }) });
   }
   // ---- seguir o HRP com um clique: ajusta quantidades/pesos das posições e recalcula a nota NA HORA (Edge Function grava;
   //      o pipeline confirma o cálculo oficial em até 15 min). Não envia ordem a corretora nenhuma.
-  async function applyHrp(A, msg, btn) {
+  async function applyHrp(A, ids, msg, btn) {          // ids = ativos escolhidos (null = todos)
     const say = (k, ok, v) => { if (msg) { msg.textContent = interp(t(k), v || {}); msg.className = "add-msg " + (ok ? "ok" : "err"); } };
     if (!sb || !USER || USER.id === "preview") return say("hrp.preview");
-    const assets = (A.assets || []).filter(a => a.w > 0 && a.w_hrp != null);
-    if (!assets.length) return;
-    const muda = assets.filter(a => Math.abs(a.delta_hrp) >= 1).sort((x, y) => Math.abs(y.delta_hrp) - Math.abs(x.delta_hrp));
-    const lst = muda.slice(0, 15).map(a => `${a.delta_hrp > 0 ? t("hrp.buy") : t("hrp.sell")} ${a.label}: ${nf(a.w * 100, 1)}% → ${nf(a.w_hrp * 100, 1)}%`).join("\n");
-    if (!confirm(interp(t("hrp.confirm"), { n: muda.length }) + "\n\n" + lst + (muda.length > 15 ? "\n…" : ""))) return;
-    if (btn) btn.disabled = true; say("hrp.working", true);
+    const todos = (A.assets || []).filter(a => a.w > 0 && a.w_hrp != null);
+    const alvo = todos.filter(a => (ids ? ids.includes(a.id) : Math.abs(a.delta_hrp) >= 1));
+    if (!alvo.length) return;
+    if (btn) { btn.disabled = true; btn.textContent = t("hrp.working"); }
     const { data: pos, error } = await sb.from("portfolio_positions")
       .select("id,ticker,market,strategy,status,quantity,alloc_pct,invested,entry,current_price,price_symbol,asset_class,rf_index,rf_rate").eq("status", "open");
     if (error || !pos) { if (btn) btn.disabled = false; return say("sig.addErr"); }
@@ -2455,7 +2456,7 @@
       if (!livre) return x.market === "BR" ? x.ticker + ".SA" : x.ticker;
       return x.price_symbol || x.ticker;
     };
-    const porChave = {}; assets.forEach(a => { porChave[a.id] = a; });
+    const porChave = {}; alvo.forEach(a => { porChave[a.id] = a; });
     const upd = [];
     pos.forEach(x => {
       const a = porChave[chave(x)]; if (!a) return;
@@ -2472,13 +2473,13 @@
     });
     const rs = await Promise.all(upd);
     if (rs.some(r => r.error)) { if (btn) btn.disabled = false; return say("sig.addErr"); }
-    track("hrp_aplicar", { n: upd.length });
-    // nota na hora: a mesma conta da quantificação, com os pesos novos (renda fixa vai pelo índice + taxa)
+    track("hrp_aplicar", { n: alvo.length, todos: !ids });
+    // nota na hora: valores de hoje, com o(s) ativo(s) ajustado(s) no peso do HRP
     let salvo = false;
     try {
       const rfPos = {}; pos.forEach(x => { rfPos[x.id] = x; });
-      const lista = assets.map(a => {
-        const v = Math.round(a.w_hrp * A.valor_total * 100) / 100;
+      const lista = todos.map(a => {
+        const v = Math.round((porChave[a.id] ? a.w_hrp * A.valor_total : a.valor) * 100) / 100;
         if (rfPos[a.id]) { const x = rfPos[a.id]; return { s: "RF:" + String(x.rf_index || (x.asset_class === "rf_us" ? "UST" : "PRE")).toUpperCase(), taxa: Number(x.rf_rate || 0), v, label: a.label }; }
         return { s: a.id, v, label: a.label };
       });
@@ -2490,8 +2491,8 @@
         salvo = !!(res && res.salvo);
       }
     } catch (e) { salvo = false; }
-    if (btn) btn.disabled = false;
-    say(salvo ? "hrp.done" : "hrp.doneLater", true, { n: upd.length });
+    const nome = alvo.length === 1 ? alvo[0].label : null;
+    try { sessionStorage.setItem("s7-hrp-msg", JSON.stringify({ k: salvo ? (nome ? "hrp.doneOne" : "hrp.done") : (nome ? "hrp.doneOneLater" : "hrp.doneLater"), v: { n: alvo.length, a: nome } })); } catch (e) { /* sem storage */ }
     renderPortfolio();
   }
   async function addPosition(sig, allocPct, entryType = "stop", fillPx = null) {

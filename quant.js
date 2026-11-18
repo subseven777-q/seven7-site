@@ -212,27 +212,44 @@
   }
 
   // ---------------- sugestão HRP ----------------
+  let HRP_TODOS = false;
   function hrpView(host, A, o) {
     set(A, o); if (empty(host, A)) return;
     const H = A.hrp || {}, a = H.atual || {}, h = H.hrp || {};
-    const rows = (A.assets || []).slice().sort((x, y) => Math.abs(y.delta_hrp) - Math.abs(x.delta_hrp)).slice(0, 15);
-    const cmp = (l, x, y, inv) => `<tr><td>${l}</td><td class="num">${x}</td><td class="num"><b>${y}</b></td></tr>`;
+    const pode = o && typeof o.onApply === "function";
+    const todas = (A.assets || []).slice().sort((x, y) => Math.abs(y.delta_hrp) - Math.abs(x.delta_hrp));
+    const rows = HRP_TODOS ? todas : todas.slice(0, 15);
+    const cmp = (l, x, y) => `<tr><td>${l}</td><td class="num">${x}</td><td class="num"><b>${y}</b></td></tr>`;
+    const ajusta = r => Math.abs(r.delta_hrp) >= 1 && r.w > 0;
+    const nAj = todas.filter(ajusta).length;
     host.innerHTML = `<table class="q-tbl q-cmp"><thead><tr><th></th><th class="num">${tx("Hoje", "Today")}</th><th class="num">HRP</th></tr></thead><tbody>
       ${cmp(tx("Volatilidade", "Volatility"), pc(a.vol), pc(h.vol))}${cmp(tx("Pior queda (2a)", "Max drawdown"), pc(a.max_dd), pc(h.max_dd))}
       ${cmp("ES 97,5%", pc(a.es975, 2), pc(h.es975, 2))}${cmp(tx("Fontes de risco independentes", "Independent bets"), nf(a.enb), nf(h.enb))}</tbody></table>
-      <table class="q-tbl"><thead><tr><th>${tx("Ativo", "Asset")}</th><th class="num">${tx("Hoje", "Today")}</th><th class="num">HRP</th><th class="num">${tx("Ajuste", "Change")}</th></tr></thead><tbody>
+      ${pode ? `<p class="q-adj-hint">${tx("Escolha o que seguir: o botão <b>Ajustar</b> de cada ativo atualiza só aquela posição na sua carteira e recalcula a nota. Não envia ordens: a compra ou venda você faz na sua corretora.", "Pick what to follow: each asset's <b>Adjust</b> button updates only that position and recalculates the score. No orders are sent: you trade at your broker.")}</p>
+        <span role="status" aria-live="polite" class="add-msg" id="qHrpMsg"></span>` : ""}
+      <table class="q-tbl q-hrp"><thead><tr><th>${tx("Ativo", "Asset")}</th><th class="num">${tx("Hoje", "Today")}</th><th class="num">HRP</th><th class="num">${tx("Ajuste", "Change")}</th></tr></thead><tbody>
       ${rows.map(r => `<tr><td><b>${esc(r.label)}</b>${r.sinal ? ` <small class="q-sig">${tx("sinal Seven7", "Seven7 signal")}</small>` : ""}</td><td class="num">${pc(r.w)}</td><td class="num">${pc(r.w_hrp)}</td>
-        <td class="num ${r.delta_hrp > 0 ? "pos" : "neg"}">${r.delta_hrp > 0 ? tx("+ comprar ", "+ buy ") : tx("− vender ", "− sell ")}${money(Math.abs(r.delta_hrp))}</td></tr>`).join("")}</tbody></table>
+        <td class="num ${r.delta_hrp > 0 ? "pos" : "neg"}">${r.delta_hrp > 0 ? tx("+ comprar ", "+ buy ") : tx("− vender ", "− sell ")}${money(Math.abs(r.delta_hrp))}
+        ${pode ? `<div class="q-adj-c">${ajusta(r) ? `<button class="btn btn-ghost q-adj" data-id="${esc(r.id)}" aria-label="${tx("Ajustar", "Adjust")} ${esc(r.label)}">${tx("Ajustar", "Adjust")}</button>` : `<span class="q-ok">${tx("no peso", "on weight")}</span>`}</div>` : ""}</td></tr>`).join("")}</tbody></table>
+      ${todas.length > 15 ? `<button class="btn btn-ghost q-mais" id="qHrpMais">${HRP_TODOS ? tx("Mostrar só os 15 maiores ajustes", "Show the 15 largest changes") : tx(`Ver todos os ${todas.length} ativos`, `See all ${todas.length} assets`)}</button>` : ""}
+      ${pode && nAj > 1 ? `<div class="q-todos"><button class="btn btn-ghost" id="qHrpTodos">${tx(`Ajustar todos (${nAj} ativos)`, `Adjust all (${nAj} assets)`)}</button></div>` : ""}
       ${h.vol > a.vol * 1.03 ? `<div class="q-alert">${tx(`<b>Atenção:</b> aqui o HRP <b>aumentaria</b> a volatilidade (${pc(a.vol)} → ${pc(h.vol)}). Ele espalha o risco entre mais fontes independentes (${nf(a.enb)} → ${nf(h.enb)}), mas seu portfólio de hoje já é menos volátil — normalmente porque um ativo de baixa volatilidade e baixa correlação (como o hedge) pesa muito. Se a sua prioridade é oscilar menos, mantenha; se é não depender de poucos ativos, siga o HRP.`,
         `<b>Note:</b> here HRP would <b>raise</b> volatility (${pc(a.vol)} → ${pc(h.vol)}). It spreads risk across more bets (${nf(a.enb)} → ${nf(h.enb)}), but today's portfolio is already less volatile — usually because a low-vol, low-correlation asset (like the hedge) weighs a lot. If your priority is lower swings, keep it; if it is not depending on few assets, follow HRP.`)}</div>` : ""}
-      ${o && typeof o.onApply === "function" ? `<div class="q-apply">
-        <button class="btn btn-primary" id="qHrpApply">${tx("Seguir a recomendação: ajustar minha carteira ao HRP", "Follow the recommendation: set my portfolio to HRP")}</button>
-        <span role="status" aria-live="polite" class="add-msg" id="qHrpMsg"></span>
-        <p>${tx("Um clique ajusta as quantidades das suas posições aos pesos do HRP e recalcula a nota na hora. Não envia ordens: as compras e vendas você faz na sua corretora.", "One click sets your positions to the HRP weights and recalculates the score right away. No orders are sent: you place the trades at your broker.")}</p></div>` : ""}
       <div class="q-note">${tx("HRP (López de Prado): agrupa ativos parecidos e divide o risco entre os grupos — não usa previsão de retorno, por isso é estável. Posições com sinal Seven7 já têm tamanho pela regra de risco da estratégia; o HRP olha o portfólio inteiro. É uma sugestão, não uma recomendação individual.",
         "HRP (López de Prado): clusters similar assets and splits risk across clusters — no return forecast, hence stable. Seven7-signal positions are already sized by the strategy's risk rule; HRP looks at the whole portfolio. A suggestion, not individual advice.")}</div>`;
-    const ap = host.querySelector("#qHrpApply");
-    if (ap) ap.onclick = () => o.onApply(A, host.querySelector("#qHrpMsg"), ap);
+    const msg = host.querySelector("#qHrpMsg");
+    const mais = host.querySelector("#qHrpMais");
+    if (mais) mais.onclick = () => { HRP_TODOS = !HRP_TODOS; hrpView(host, A, o); };
+    host.querySelectorAll(".q-adj").forEach(b => b.onclick = () => o.onApply(A, [b.dataset.id], msg, b));
+    const td = host.querySelector("#qHrpTodos");
+    if (td) td.onclick = () => {                       // confirmação na própria página (dois toques), sem janela do navegador
+      if (!td.classList.contains("confirma")) {
+        td.classList.add("confirma"); td.textContent = tx(`Confirmar: ajustar os ${nAj} ativos`, `Confirm: adjust all ${nAj} assets`);
+        setTimeout(() => { if (td.isConnected && td.classList.contains("confirma")) { td.classList.remove("confirma"); td.textContent = tx(`Ajustar todos (${nAj} ativos)`, `Adjust all (${nAj} assets)`); } }, 6000);
+        return;
+      }
+      o.onApply(A, null, msg, td);
+    };
   }
 
   // ---------------- correlação ----------------

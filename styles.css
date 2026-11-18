@@ -1726,3 +1726,14 @@ iframe{color-scheme:normal}
 .q-apply .btn{white-space:normal}
 .q-apply p{margin:8px 0 0;font-size:14px;color:var(--muted)}
 .q-apply .add-msg{display:block;margin-top:8px}
+
+/* HRP: botão Ajustar por ativo */
+.q-adj-hint{font-size:14px;color:var(--muted);margin:14px 0 6px}
+.q-hrp .q-adj-c{margin-top:5px}
+.q-hrp td{vertical-align:top}
+.q-adj{padding:5px 12px;font-size:13px;min-height:0}
+.q-ok{font-size:12px;color:var(--muted)}
+.q-mais{margin-top:8px;font-size:14px}
+.q-todos{margin-top:10px}
+#qHrpTodos.confirma{background:var(--accent);color:#fff;border-color:var(--accent)}
+#qHrpMsg{display:block;margin-bottom:6px}
