@@ -1758,3 +1758,17 @@ iframe{color-scheme:normal}
 .kmlm-money span{font-size:13px;color:var(--muted)}.kmlm-money b{font-size:18px;font-variant-numeric:tabular-nums}
 .kmlm-money b small{font-size:13px;color:var(--muted);font-weight:500}.kmlm-money>div>small{font-size:12px;color:var(--muted)}
 .kmlm-money .pos b{color:var(--pos)}.kmlm-money .neg b{color:var(--neg)}
+
+/* adicionar posição de estratégia: por quantidade ou por valor */
+.add-form{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 14px;margin:10px 0}
+.add-form .add-modo{flex-basis:100%}
+.add-in{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.add-in input{font:inherit;font-size:16px;padding:9px 10px;border:1px solid var(--border);border-radius:8px;width:170px;background:var(--surface);color:var(--text)}
+.add-prev{flex-basis:100%;margin:0;font-size:14px;color:var(--text);font-variant-numeric:tabular-nums}
+.add-sug{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:4px 0 10px;font-size:13px}
+.add-go{margin-top:4px}
+.btn-sm{padding:6px 12px;font-size:13px;min-height:0}
+.div-add-row td{background:color-mix(in srgb,var(--accent) 5%,transparent)}
+.div-add-box{padding:10px 4px}
+.dsig-actions{white-space:nowrap}
+.dsig-actions .pf-addbtn{white-space:nowrap;width:auto;height:auto;border-radius:8px;margin-right:8px;font-size:13px;padding:6px 12px;background:var(--accent);border-color:var(--accent);color:#fff}

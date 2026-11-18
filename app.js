@@ -760,6 +760,15 @@
     "pf.freeAdd": { en: "Add an asset", pt: "Adicionar ativo" },
     "pf.kAtivo": { en: "Stock, REIT, ETF or crypto", pt: "Ação, FII, ETF ou cripto" },
     "pf.kRf": { en: "Fixed income", pt: "Renda fixa" },
+    "add.btn": { en: "Add to portfolio", pt: "Adicionar à carteira" },
+    "add.cancel": { en: "Cancel", pt: "Cancelar" },
+    "add.titulo": { en: "Add {tk} to your portfolio", pt: "Adicionar {tk} à sua carteira" },
+    "add.modoVal": { en: "By amount", pt: "Por valor" },
+    "add.qtd": { en: "Shares", pt: "Quantidade de ações/cotas" },
+    "add.val": { en: "Amount ({s})", pt: "Valor ({s})" },
+    "add.prev": { en: "{q} shares × {px} = {tot}", pt: "{q} unidades × {px} = {tot}" },
+    "add.semQtd": { en: "Enter the quantity or the amount.", pt: "Informe a quantidade ou o valor." },
+    "add.sugRisco": { en: "Suggested size by the risk rule (% of portfolio risked per trade):", pt: "Tamanho sugerido pela regra de risco (% da carteira arriscado por operação):" },
     "pf.fModo": { en: "How to enter", pt: "Como informar" },
     "pf.fModoQtd": { en: "By quantity", pt: "Por quantidade" },
     "pf.fModoVal": { en: "By amount invested", pt: "Por valor investido" },
@@ -2187,9 +2196,11 @@
       const flow = late
         ? `<div class="late-box">${ic("lock")}<div>${interp(t("sig.lateWarn"), { entry: moneyLvl(s.entry), price: moneyLvl(fillPx), pct: upPct != null ? nf(upPct, 1) : "—" })}</div></div>`
         : `<div class="order-box">${ic("target")}<div>${interp(t("sig.orderHint"), { entry: moneyLvl(s.entry), stop: moneyLvl(s.stop), tp: moneyLvl(s.tp) })}</div></div>`;
-      add.innerHTML = `${flow}<span class="alloc-lbl">${t("sig.riskLbl")}</span>
-        <select id="riskSel" class="alloc-in alloc-sel">${opts}</select>
-        <button class="btn ${late ? "btn-ghost" : "btn-primary"}" id="addPortfolioBtn">${late ? t("sig.addLate") : t("sig.addOrder")}</button>
+      add.innerHTML = `${flow}
+        ${addFormHTML("sigAddForm", s.market === "BR" ? "R$" : "US$", "")}
+        <div class="add-sug"><span class="alloc-lbl">${t("add.sugRisco")}</span>
+        <select id="riskSel" class="alloc-in alloc-sel">${opts}</select></div>
+        <button class="btn ${late ? "btn-ghost" : "btn-primary"} add-go" id="addPortfolioBtn">${late ? t("sig.addLate") : t("sig.addOrder")}</button>
         <span role="status" aria-live="polite" class="add-msg" id="addMsg"></span>
         <div class="buy-calc" id="buyCalc"></div>
         <div class="risk-note" id="riskNote"></div>
@@ -2232,16 +2243,19 @@
             <a href="#riskCmp" class="risk-cmp-link">${t("risk.compare")} ↓</a></div>`;
         });
       };
-      paintBuy(); paintRiskNote();
-      $("#riskSel").onchange = () => { localStorage.setItem("seven7-risk", $("#riskSel").value); paintBuy(); paintRiskNote(); renderRiskCmp(); };
+      const F = wireAddForm($("#sigAddForm"), fillPx, s.market === "BR" ? "R$" : "US$", s.market === "BR"); F.marca();
+      const sugere = () => { const z = sizeTrade(parseFloat($("#riskSel").value)); F.setSug(z.shares > 0 ? (z.whole ? z.shares : Math.round(z.shares * 100) / 100) : ""); };
+      paintBuy(); paintRiskNote(); sugere();
+      $("#riskSel").onchange = () => { localStorage.setItem("seven7-risk", $("#riskSel").value); paintBuy(); paintRiskNote(); renderRiskCmp(); sugere(); };
       $("#addPortfolioBtn").onclick = async () => {
-        if (late && !confirm(t("sig.lateConfirm"))) return;
+        // (entrada atrasada: o aviso já aparece no painel, sem janela do navegador)
         const rk = parseFloat($("#riskSel").value) || RISK_DEFAULT;
         localStorage.setItem("seven7-risk", String(rk));
-        const z = sizeTrade(rk);
-        // grava o % de notional consumido (motor reconstrói as mesmas ações)
-        const pct = Math.min(100, Math.max(0.01, z.consumedPct != null ? z.consumedPct : 1));
-        const msg = $("#addMsg"), btn = $("#addPortfolioBtn"); btn.disabled = true;
+        const n = F.qtd(), msg = $("#addMsg");
+        if (!(n > 0)) { msg.textContent = t("add.semQtd"); msg.className = "add-msg err"; return; }
+        // grava o % da carteira equivalente (o motor reconstrói as mesmas ações)
+        const pct = pctDaCarteira(n * fillPx, s.market);
+        const btn = $("#addPortfolioBtn"); btn.disabled = true;
         const err = await addPosition(s, pct, late ? "market" : "stop", fillPx);
         if (err) { msg.textContent = t("sig.addErr"); msg.className = "add-msg err"; btn.disabled = false; return; }
         await loadHeld(true);       // passa a constar como "No portfólio" na lista e no painel
@@ -2249,6 +2263,48 @@
       };
     }
     showTVChart(s.tv_symbol);
+  }
+  // ---- adicionar posição de ESTRATÉGIA por quantidade ou por valor (Markov 3 e Dividendos) ----
+  // posições de estratégia ficam em "% da carteira" (alloc_pct); a carteira = valor automático do perfil (moeda base).
+  function pctDaCarteira(notionalAtivo, mercado) {
+    const dep = PROFILE && PROFILE.portfolio_deposit ? Number(PROFILE.portfolio_deposit) : 10000;
+    const base = (PROFILE && PROFILE.portfolio_currency) || "USD", moedaAtivo = mercado === "BR" ? "BRL" : "USD";
+    const fx = JUROS && JUROS.usdbrl ? Number(JUROS.usdbrl.valor) : null;
+    const emBase = moedaAtivo === base || !fx ? notionalAtivo : base === "BRL" ? notionalAtivo * fx : notionalAtivo / fx;
+    return Math.min(100, Math.max(0.01, emBase / dep * 100));
+  }
+  function addFormHTML(id, sym, qSug) {
+    return `<div class="add-form" id="${id}">
+      <div class="seg add-modo" role="tablist" aria-label="${t("pf.fModo")}">
+        <button type="button" class="on" data-m="qtd" role="tab" aria-selected="true">${t("pf.fModoQtd")}</button>
+        <button type="button" data-m="valor" role="tab" aria-selected="false">${t("add.modoVal")}</button>
+      </div>
+      <label class="add-in add-q">${t("add.qtd")}<input type="number" inputmode="decimal" min="0" step="any" value="${qSug || ""}" class="add-qtd"></label>
+      <label class="add-in add-v" hidden>${interp(t("add.val"), { s: sym })}<input type="number" inputmode="decimal" min="0" step="any" class="add-val"></label>
+      <p class="add-prev" aria-live="polite"></p></div>`;
+  }
+  // devolve () => quantidade escolhida (inteira na B3)
+  function wireAddForm(root, px, sym, whole) {
+    let modo = "qtd";
+    const q = root.querySelector(".add-qtd"), v = root.querySelector(".add-val"), pv = root.querySelector(".add-prev");
+    const qtd = () => {
+      let n = modo === "qtd" ? parseFloat(q.value) : (parseFloat(v.value) > 0 && px > 0 ? parseFloat(v.value) / px : 0);
+      if (!(n > 0)) return 0;
+      return whole ? Math.max(1, Math.floor(n)) : Math.round(n * 1e4) / 1e4;
+    };
+    const paint = () => {
+      const n = qtd(), fmt = x => sym + " " + Number(x).toLocaleString(locale(), { maximumFractionDigits: 2 });
+      pv.textContent = n > 0 && px > 0 ? interp(t("add.prev"), { q: n.toLocaleString(locale(), { maximumFractionDigits: 4 }), px: fmt(px), tot: fmt(n * px) }) : "";
+    };
+    root.querySelectorAll(".add-modo button").forEach(b => b.onclick = () => {
+      modo = b.dataset.m;
+      root.querySelectorAll(".add-modo button").forEach(x => { x.classList.toggle("on", x === b); x.setAttribute("aria-selected", x === b ? "true" : "false"); });
+      root.querySelector(".add-q").hidden = modo !== "qtd"; root.querySelector(".add-v").hidden = modo !== "valor";
+      if (modo === "valor" && !v.value && parseFloat(q.value) > 0) v.value = Math.round(parseFloat(q.value) * px * 100) / 100;
+      paint();
+    });
+    q.oninput = v.oninput = paint; paint();
+    return { qtd, setSug: n => { if (!q.dataset.mexeu) { q.value = n || ""; paint(); } }, marca: () => { q.addEventListener("input", () => { q.dataset.mexeu = "1"; }); } };
   }
   // grava a posição já com o status certo: ordem buy stop = PENDENTE; a mercado = ABERTA
   async function insertPosition(row) {
@@ -3389,7 +3445,7 @@
         `<td class="num">${consBadge(r.market, r.ticker)}</td>` +
         `<td class="dsig-actions">${isHeld(r)
           ? `<span class="pf-held" title="${interp(t("held.box"), { d: heldDate(heldInfo("dividends", r.market, r.ticker)) })}">${ic("check")}</span>`
-          : `<button class="pf-addbtn" title="${t("div.addTitle")}" data-tk="${r.ticker}" data-mkt="${r.market}" data-px="${r.price}" data-tv="${encodeURIComponent(r.tv_symbol || r.ticker)}">＋</button>`}` +
+          : `<button class="btn btn-primary btn-sm pf-addbtn" data-tk="${r.ticker}" data-mkt="${r.market}" data-px="${r.price}" data-tv="${encodeURIComponent(r.tv_symbol || r.ticker)}">${t("add.btn")}</button>`}` +
         `<a class="dsig-tv" href="https://www.tradingview.com/chart/?symbol=${encodeURIComponent(r.tv_symbol || r.ticker)}" target="_blank" rel="noopener">${t("div.sig.tv")}</a></td>` +
         `</tr>`).join("") +
       `</tbody></table></div><div id="divFDrill"></div>`;
@@ -3409,22 +3465,32 @@
   async function addDivPosition(btn) {
     if (!sb || !USER) { location.href = "login.html"; return; }
     if (!isMember()) { location.href = "plans.html"; return; }
-    const tk = btn.dataset.tk;
-    const raw = prompt(interp(t("div.addPrompt"), { tk }), "5");
-    if (raw == null) return;
-    const pct = parseFloat(String(raw).replace(",", "."));
-    if (!(pct > 0)) return;
-    btn.disabled = true;
-    const error = await insertPosition({
-      ticker: tk, tv_symbol: decodeURIComponent(btn.dataset.tv), market: btn.dataset.mkt,
-      entry: Number(btn.dataset.px), stop: null, tp: null, alloc_pct: pct, strategy: "dividends",
-      status: "open", entry_type: "market",
-    });
-    if (error) { btn.textContent = "✕"; setTimeout(() => { btn.textContent = "＋"; btn.disabled = false; }, 1500); return; }
-    await loadHeld(true);           // passa a constar como "No portfólio" (tabela e mapa)
-    paintDivSignals(); drawDivHeat();
-    if (document.body.dataset.page === "members") renderPortfolio();
+    const tr = btn.closest("tr"), aberta = tr.nextElementSibling && tr.nextElementSibling.classList.contains("div-add-row");
+    document.querySelectorAll(".div-add-row").forEach(x => x.remove());
+    if (aberta) return;                                   // segundo clique fecha
+    const tk = btn.dataset.tk, mkt = btn.dataset.mkt, px = Number(btn.dataset.px), sym = mkt === "BR" ? "R$" : "US$";
+    const linha = document.createElement("tr"); linha.className = "div-add-row";
+    linha.innerHTML = `<td colspan="${tr.children.length}"><div class="div-add-box"><b>${interp(t("add.titulo"), { tk })}</b>
+      ${addFormHTML("divAddForm", sym, "")}
+      <button class="btn btn-primary add-go" id="divAddGo">${t("add.btn")}</button> <button class="btn btn-ghost" id="divAddCancel">${t("add.cancel")}</button>
+      <span role="status" aria-live="polite" class="add-msg" id="divAddMsg"></span></div></td>`;
+    tr.after(linha);
+    const F = wireAddForm(linha.querySelector("#divAddForm"), px, sym, mkt === "BR");
+    linha.querySelector(".add-qtd").focus();
+    linha.querySelector("#divAddCancel").onclick = () => linha.remove();
+    linha.querySelector("#divAddGo").onclick = async () => {
+      const n = F.qtd(), msg = linha.querySelector("#divAddMsg");
+      if (!(n > 0)) { msg.textContent = t("add.semQtd"); msg.className = "add-msg err"; return; }
+      const go = linha.querySelector("#divAddGo"); go.disabled = true;
+      const error = await insertPosition({
+        ticker: tk, tv_symbol: decodeURIComponent(btn.dataset.tv), market: mkt,
+        entry: px, stop: null, tp: null, alloc_pct: Math.round(pctDaCarteira(n * px, mkt) * 100) / 100, strategy: "dividends",
+        status: "open", entry_type: "market" });
+      if (error) { msg.textContent = t("sig.addErr"); msg.className = "add-msg err"; go.disabled = false; return; }
+      await loadHeld(true); paintDivSignals();
+    };
   }
+
   /* ---- monitor (admin-only) ---- */
   // ---- Audiência (admin): números AGREGADOS do analytics próprio, via função site_stats() no banco ----
   let AUD_DAYS = 30;
