@@ -1772,3 +1772,7 @@ iframe{color-scheme:normal}
 .div-add-box{padding:10px 4px}
 .dsig-actions{white-space:nowrap}
 .dsig-actions .pf-addbtn{white-space:nowrap;width:auto;height:auto;border-radius:8px;margin-right:8px;font-size:13px;padding:6px 12px;background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* verificação anti-robô (Turnstile) no login/cadastro */
+.cf-ts{margin:6px 0 10px;min-height:0}
+.cf-ts:empty{display:none}

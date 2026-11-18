@@ -21,6 +21,9 @@
 
   // Supabase (chaves PÚBLICAS — seguras no cliente; a segurança vem das regras RLS)
   const SUPABASE_URL = "https://ehqxuveyprrmjfcqmkhs.supabase.co";
+  // Cloudflare Turnstile (anti-robô no login/cadastro). Chave PÚBLICA do site; vazia = desligado.
+  // A chave secreta fica só no painel do Supabase (Auth > Bot and Abuse Protection).
+  const TURNSTILE_SITEKEY = "";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocXh1dmV5cHJybWpmY3Fta2hzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1ODcwNDgsImV4cCI6MjEwMTE2MzA0OH0.KB2mXvqiFgc7SgKDLQU4uvplC-UGcFgE9SaauCQDAhU";
   let sb = null, USER = null, PROFILE = null, PREVIEW = false;
   const trialEnd = () => (PROFILE && PROFILE.status === "trial" && PROFILE.trial_end) ? new Date(PROFILE.trial_end) : null;
@@ -1013,6 +1016,7 @@
     "trial.statusOn": { en: "Free trial until {d} ({n} day(s) left)", pt: "Teste grátis até {d} (faltam {n} dia(s))" },
     "trial.statusOff": { en: "Free trial ended on {d}", pt: "Teste grátis encerrado em {d}" },
     "trial.ended": { en: "Your 7-day strategies trial has ended. Your portfolio quant, the Terminal and the Tools remain free — subscribe to unlock the strategies again.", pt: "Seu teste de 7 dias das estratégias terminou. A quantificação da carteira, o Terminal e as Ferramentas continuam grátis — assine para liberar as estratégias de novo." },
+    "auth.captcha": { en: "Wait a second for the security check below to finish, then try again.", pt: "Aguarde um instante a verificação de segurança abaixo terminar e tente de novo." },
     "auth.pwShort": { en: "Use at least 8 characters for your password.", pt: "Use pelo menos 8 caracteres na senha." },
     "auth.loginOk": { en: "Logged in. Welcome back!", pt: "Login feito. Bem-vindo de volta!" },
     "auth.err": { en: "Couldn't complete: {msg}", pt: "Não deu certo: {msg}" },
@@ -1952,21 +1956,41 @@
       host.innerHTML = `<a class="btn btn-ghost" href="login.html">${t("nav.login")}</a><a class="btn btn-primary" href="register.html">${t("nav.free")}</a>`;
     }
   }
+  // ---- Turnstile: verificação anti-robô (normalmente invisível; só pede um clique se desconfiar) ----
+  let TS_TOKEN = null, TS_ID = null;
+  function initTurnstile(form) {
+    if (!TURNSTILE_SITEKEY) return;
+    const box = document.createElement("div"); box.className = "cf-ts";
+    const msg = form.querySelector(".auth-msg"); form.insertBefore(box, msg || form.querySelector("button[type=submit]"));
+    window.s7TsLoad = () => {
+      TS_ID = window.turnstile.render(box, {
+        sitekey: TURNSTILE_SITEKEY, theme: "auto", size: "flexible", language: LANG === "pt" ? "pt-br" : "en",
+        callback: tk => { TS_TOKEN = tk; }, "expired-callback": () => { TS_TOKEN = null; }, "error-callback": () => { TS_TOKEN = null; },
+      });
+    };
+    const sc = document.createElement("script");
+    sc.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=s7TsLoad"; sc.async = true; sc.defer = true;
+    document.head.appendChild(sc);
+  }
+  const tsReset = () => { TS_TOKEN = null; try { if (window.turnstile && TS_ID != null) window.turnstile.reset(TS_ID); } catch (e) {} };
   function wireAuthForms() {
     const f = $(".auth-form"); if (!f) return;
     const page = document.body.dataset.page;
     const msg = f.querySelector(".auth-msg");
     const show = (txt, ok) => { if (!msg) return; msg.textContent = txt; msg.classList.add("show"); msg.classList.toggle("err", !ok); };
+    initTurnstile(f);
     f.onsubmit = async ev => {
       ev.preventDefault();
       if (!sb) { show(t("auth.unavailable"), false); return; }
+      if (TURNSTILE_SITEKEY && !TS_TOKEN) { show(t("auth.captcha"), false); return; }
+      const captchaToken = TS_TOKEN || undefined;
       const btn = f.querySelector("button[type=submit]"); if (btn) btn.disabled = true;
       try {
         if (page === "register") {
           const name = ($("#rg-name") || {}).value?.trim() || "";
           const email = $("#rg-email").value.trim(), pass = $("#rg-pass").value;
           if (pass.length < 8) { show(t("auth.pwShort"), false); return; }   // mínimo 8 caracteres
-          const { data: su, error } = await sb.auth.signUp({ email, password: pass, options: { data: { name }, emailRedirectTo: new URL(".", location.href).href } });
+          const { data: su, error } = await sb.auth.signUp({ email, password: pass, options: { data: { name }, emailRedirectTo: new URL(".", location.href).href, captchaToken } });
           if (error) throw error;
           track("signup");
           if (su && su.session) {                                    // conta liberada na hora; a confirmação vai por e-mail (7 dias)
@@ -1980,7 +2004,7 @@
           f.querySelectorAll("input").forEach(i => i.value = "");
         } else {
           const email = $("#li-email").value.trim(), pass = $("#li-pass").value;
-          const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+          const { error } = await sb.auth.signInWithPassword({ email, password: pass, options: { captchaToken } });
           if (error) throw error;
           show(t("auth.loginOk"), true);
           const intent = localStorage.getItem("seven7-intent");
@@ -1989,7 +2013,7 @@
         }
       } catch (e) {
         show(interp(t("auth.err"), { msg: (e && e.message) || e }), false);
-      } finally { if (btn) btn.disabled = false; f.querySelectorAll('input[type="password"]').forEach(i => i.value = ""); }
+      } finally { if (btn) btn.disabled = false; f.querySelectorAll('input[type="password"]').forEach(i => i.value = ""); tsReset(); }
     };
   }
 
