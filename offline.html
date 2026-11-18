@@ -2,6 +2,10 @@
 <html lang="pt-BR" data-theme="dark">
 <head>
 <meta charset="utf-8">
+<!-- sec -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://esm.sh https://s3.tradingview.com https://cdn.plot.ly; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://ehqxuveyprrmjfcqmkhs.supabase.co wss://ehqxuveyprrmjfcqmkhs.supabase.co https://esm.sh; frame-src https://*.tradingview.com https://*.tradingview-widget.com https://www.youtube-nocookie.com; worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<!-- /sec -->
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#070b14">
@@ -19,7 +23,7 @@
   <img src="icons/icon-192.png" alt="Seven7" width="84" height="84">
   <h1>Você está sem internet</h1>
   <p>A quantificação da carteira precisa de conexão para buscar os dados de mercado. Assim que a internet voltar, é só tentar de novo.</p>
-  <button onclick="location.reload()">Tentar de novo</button>
+  <a class="btn" href="">Tentar de novo</a>
 </div>
 </body>
 </html>

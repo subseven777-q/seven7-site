@@ -4,6 +4,11 @@
    Public data only (metrics.json): no signal levels, no method, no ETF name. */
 (function () {
   "use strict";
+  // anti-clickjacking: o site não roda dentro de quadro (iframe) de outro domínio — leva a página inteira para fora
+  if (window.top !== window.self) {
+    let alheio = true; try { alheio = window.top.location.hostname !== location.hostname; } catch (e) { alheio = true; }
+    if (alheio) { document.documentElement.style.display = "none"; try { window.top.location.href = location.href; } catch (e) { /* bloqueado */ } }
+  }
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   // escapa texto vindo do usuário (nome/e-mail) antes de entrar em innerHTML
