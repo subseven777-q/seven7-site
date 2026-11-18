@@ -4,6 +4,10 @@
    Public data only (metrics.json): no signal levels, no method, no ETF name. */
 (function () {
   "use strict";
+  // HTTPS sempre: quem chegar por http:// no domínio público vai para https:// (o login nunca trafega aberto)
+  if (location.protocol === "http:" && /(^|\.)seven7invest\.com$/.test(location.hostname)) {
+    location.replace("https://" + location.host + location.pathname + location.search + location.hash);
+  }
   // anti-clickjacking: o site não roda dentro de quadro (iframe) de outro domínio — leva a página inteira para fora
   if (window.top !== window.self) {
     let alheio = true; try { alheio = window.top.location.hostname !== location.hostname; } catch (e) { alheio = true; }
