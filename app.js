@@ -2339,6 +2339,17 @@
   // juros de hoje (Banco Central, data/juros.json do pipeline): "100% do CDI" vira a taxa anual de hoje, sozinha
   let JUROS = null;
   fetch(`data/juros.json?t=${Math.floor(Date.now() / 3600000)}`).then(r => (r.ok ? r.json() : null)).then(j => { JUROS = j; }).catch(() => {});
+  async function cambioHoje() {                       // R$ por US$ do dia (Banco Central, data/juros.json)
+    if (!JUROS) { try { JUROS = await (await fetch(`data/juros.json?t=${Math.floor(Date.now() / 3600000)}`)).json(); } catch (e) { JUROS = null; } }
+    return JUROS && JUROS.usdbrl ? Number(JUROS.usdbrl.valor) : null;
+  }
+  // valor da carteira na moeda escolhida: a análise vem na moeda em que foi calculada (A.base); converte pelo câmbio do dia
+  function valorNaMoeda(A, cur, reserva) {
+    if (!A || !A.valor_total) return reserva;
+    const v = Number(A.valor_total), fx = JUROS && JUROS.usdbrl ? Number(JUROS.usdbrl.valor) : null;
+    if (!A.base || A.base === cur || !fx) return v;
+    return cur === "BRL" ? v * fx : v / fx;
+  }
   function taxaHoje(p) {
     const k = p.rf_rate == null ? null : Number(p.rf_rate), J = JUROS;
     if (k == null || !J) return null;
@@ -2771,6 +2782,7 @@
   }
   async function renderPortfolio(silencioso = false) {
     const host = $("#portfolioHost"); if (!host || !["portfolio", "members"].includes(document.body.dataset.page)) return;
+    await cambioHoje();                               // câmbio do dia antes de desenhar valores em R$/US$
     if (!USER) {
       host.innerHTML = `<div class="auth-card" style="margin:0 auto"><h1>${t("acct.needLogin")}</h1><p class="auth-sub">${t("pf.needLoginSub")}</p><a class="btn btn-primary btn-block" href="login.html">${t("nav.login")}</a></div>`;
       return;
@@ -2835,7 +2847,7 @@
         </div></details>` : "";
     let html = `<div class="pf-toolbar">
       <div class="pf-deposit">
-        <span class="pf-auto">${ic("wallet")}<span>${t("pf.valAuto")}</span> <b>${sym} ${Number((d && d.analytics && d.analytics.valor_total) || deposit).toLocaleString(locale(), { maximumFractionDigits: 0 })}</b>
+        <span class="pf-auto">${ic("wallet")}<span>${t("pf.valAuto")}</span> <b>${sym} ${Number(valorNaMoeda(d && d.analytics, cur, deposit)).toLocaleString(locale(), { maximumFractionDigits: 0 })}</b>
           <small>${t("pf.valAutoS")}</small></span>
         <select id="pfCur" class="pf-cur" title="${t("pf.currency")}" aria-label="${t("pf.currency")}">${["BRL", "USD"].map(c => `<option ${c === cur ? "selected" : ""}>${c}</option>`).join("")}</select>
         ${isEliteNow && positions.length ? `<button class="btn btn-ghost" id="pfExport">${ic("down")}${t("pf.export")}</button>` : ""}
@@ -2926,7 +2938,10 @@
     const curSel = $("#pfCur");                       // moeda de exibição: salva ao trocar (o valor da carteira é automático)
     if (curSel) curSel.onchange = async () => {
       if (!sb || !USER || USER.id === "preview") return;
-      const { error } = await sb.from("profiles").update({ portfolio_currency: curSel.value }).eq("id", USER.id);
+      // converte a base pela cotação do dia (Banco Central) na hora; o pipeline reconverte tudo em até 15 min
+      const fx = await cambioHoje(), nc = curSel.value;
+      const novoDep = fx && nc !== cur ? Math.round((nc === "BRL" ? deposit * fx : deposit / fx) * 100) / 100 : deposit;
+      const { error } = await sb.from("profiles").update({ portfolio_currency: nc, portfolio_deposit: novoDep }).eq("id", USER.id);
       const m = $("#pfDepMsg"); m.textContent = error ? t("sig.addErr") : t("pf.curSaved"); m.className = "add-msg " + (error ? "err" : "ok");
       if (!error) renderPortfolio();
     };
