@@ -747,6 +747,17 @@
     "pf.freeAdd": { en: "Add an asset", pt: "Adicionar ativo" },
     "pf.kAtivo": { en: "Stock, REIT, ETF or crypto", pt: "Ação, FII, ETF ou cripto" },
     "pf.kRf": { en: "Fixed income", pt: "Renda fixa" },
+    "pf.fModo": { en: "How to enter", pt: "Como informar" },
+    "pf.fModoQtd": { en: "By quantity", pt: "Por quantidade" },
+    "pf.fModoVal": { en: "By amount invested", pt: "Por valor investido" },
+    "pf.fVal": { en: "Amount invested (asset currency)", pt: "Quanto investiu (na moeda do ativo)" },
+    "pf.fDateBuy": { en: "Purchase date", pt: "Data da compra" },
+    "pf.fValPrev": { en: "the quantity comes from the closing price of {d}", pt: "a quantidade sai do preço de fechamento de {d}" },
+    "pf.fBadVal": { en: "Enter how much you invested.", pt: "Informe quanto você investiu." },
+    "pf.fOkVal": { en: "Added: {q} units at {p} (close of {d}). Score recalculated within 15 minutes.", pt: "Adicionado: {q} unidades a {p} (fechamento de {d}). A nota é recalculada em até 15 minutos." },
+    "pf.fOkValLater": { en: "Added. The quantity is calculated from the close of {d} within 15 minutes.", pt: "Adicionado. A quantidade é calculada pelo fechamento de {d} em até 15 minutos." },
+    "pf.rfHoje": { en: "p.a. today", pt: "a.a. hoje" },
+    "pf.rfHojeT": { en: "Follows the index automatically (Central Bank of Brazil, updated daily)", pt: "Acompanha o índice sozinho (Banco Central, atualizado todo dia)" },
     "pf.fOwn": { en: "I want to enter my own average price and purchase date", pt: "Quero informar meu preço médio e a data da compra" },
     "pf.fLast": { en: "last price", pt: "último preço" },
     "pf.fTotal": { en: "total", pt: "total" },
@@ -2299,6 +2310,31 @@
     return PX_CACHE[k];
   }
   const SIMB = { BRL: "R$", USD: "US$", EUR: "€", GBP: "£", GBX: "GBp", JPY: "¥" };
+  let VAL_MSG = null;
+  async function precoNaData(r, dia) {
+    if (!sb || !USER || USER.id === "preview") return null;
+    try {
+      const { data } = await sb.auth.getSession(), tk = data && data.session && data.session.access_token;
+      if (!tk) return null;
+      const res = await (await fetch(`${SUPABASE_URL}/functions/v1/hyper-function`, { method: "POST",
+        headers: { "content-type": "application/json", authorization: "Bearer " + tk, apikey: SUPABASE_ANON_KEY },
+        body: JSON.stringify({ preco_data: { s: r.chave || r.price_symbol || r.ticker, d: dia } }) })).json();
+      const q = res && res.preco;
+      return q && q.p > 0 && q.m === r.currency ? q.p : null;
+    } catch (e) { return null; }
+  }
+  // juros de hoje (Banco Central, data/juros.json do pipeline): "100% do CDI" vira a taxa anual de hoje, sozinha
+  let JUROS = null;
+  fetch(`data/juros.json?t=${Math.floor(Date.now() / 3600000)}`).then(r => (r.ok ? r.json() : null)).then(j => { JUROS = j; }).catch(() => {});
+  function taxaHoje(p) {
+    const k = p.rf_rate == null ? null : Number(p.rf_rate), J = JUROS;
+    if (k == null || !J) return null;
+    const anual = (base, pctDoIndice) => (Math.pow(Math.pow(1 + base / 100, 1 / 252) - 1 + 0, 1) * pctDoIndice / 100 + 1) ** 252 - 1;
+    if (p.rf_index === "CDI" && J.cdi) return anual(J.cdi.valor, k) * 100;
+    if (p.rf_index === "SELIC" && J.selic) return anual(J.selic.valor, k) * 100;
+    if (p.rf_index === "IPCA" && J.ipca12) return ((1 + J.ipca12.valor / 100) * (1 + k / 100) - 1) * 100;
+    return k;                                                     // pré e Treasury: a própria taxa
+  }
   function freePositionForm() {
     const today = new Date().toISOString().slice(0, 10);
     return `<details class="pf-free" id="pfFree" ${PF_FORM_OPEN ? "open" : ""}><summary><span class="btn btn-primary">＋ ${t("pf.freeAdd")}</span><small class="pf-free-hint">${t("pf.freeHint")}</small></summary>
@@ -2308,12 +2344,18 @@
           <button type="button" data-k="rf" role="tab" aria-selected="false">${t("pf.kRf")}</button>
         </div>
         <div class="ff-mkt">
+          <div class="seg ff-modo" role="tablist" aria-label="${t("pf.fModo")}">
+            <button type="button" class="on" data-m="qtd" role="tab" aria-selected="true">${t("pf.fModoQtd")}</button>
+            <button type="button" data-m="valor" role="tab" aria-selected="false">${t("pf.fModoVal")}</button>
+          </div>
           <div class="ff-grid ff-main">
             <label>${t("pf.fCode")}<input id="ffCode" placeholder="PETR4, HGLG11, AAPL, BTC, USD…" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="20"></label>
-            <label>${t("pf.fQty")}<input id="ffQty" type="number" inputmode="decimal" min="0" step="any" placeholder="100"></label>
+            <label class="ff-q">${t("pf.fQty")}<input id="ffQty" type="number" inputmode="decimal" min="0" step="any" placeholder="100"></label>
+            <label class="ff-v" hidden>${t("pf.fVal")}<input id="ffVal" type="number" inputmode="decimal" min="0" step="any" placeholder="5000"></label>
+            <label class="ff-v" hidden>${t("pf.fDateBuy")}<input id="ffDateV" type="date" value="${today}" max="${today}"></label>
           </div>
           <p class="ff-preview" id="ffPrev" aria-live="polite"></p>
-          <label class="ff-check"><input type="checkbox" id="ffOwn"> <span>${t("pf.fOwn")}</span></label>
+          <label class="ff-check ff-q"><input type="checkbox" id="ffOwn"> <span>${t("pf.fOwn")}</span></label>
           <div class="ff-grid" id="ffOwnBox" hidden>
             <label>${t("pf.fPrice")}<input id="ffPrice" type="number" inputmode="decimal" min="0" step="any"></label>
             <label>${t("pf.fDate")}<input id="ffDate" type="date" value="${today}" max="${today}"></label>
@@ -2345,6 +2387,15 @@
     const ty = $("#ffType"), syncRf = () => { $("#ffIdx").innerHTML = (ty.value === "rf_us" ? ["UST"] : ["CDI", "SELIC", "IPCA", "PRE"]).map(x => `<option>${x}</option>`).join(""); };
     ty.onchange = syncRf; syncRf();
     $("#ffOwn").onchange = e => { $("#ffOwnBox").hidden = !e.target.checked; };
+    let modo = "qtd";
+    const setModo = m => {
+      modo = m;
+      $$(".ff-modo button").forEach(x => { x.classList.toggle("on", x.dataset.m === m); x.setAttribute("aria-selected", x.dataset.m === m ? "true" : "false"); });
+      $$(".ff-q").forEach(e => { e.hidden = m !== "qtd"; }); $$(".ff-v").forEach(e => { e.hidden = m !== "valor"; });
+      $("#ffOwnBox").hidden = m !== "qtd" || !$("#ffOwn").checked;
+      prev(); guarda();
+    };
+    $$(".ff-modo button").forEach(b => b.onclick = () => setModo(b.dataset.m));
     const dt = $("#pfFree"); if (dt) dt.ontoggle = () => { PF_FORM_OPEN = dt.open; };
     // pré-visualização: o que entendemos do código + preço atual
     const prev = async () => {
@@ -2357,14 +2408,17 @@
       if (code.value.trim() !== raw) return;                     // o usuário continuou digitando
       const fmt = v => (SIMB[r.currency] || r.currency + " ") + " " + Number(v).toLocaleString(locale(), v < 1 ? { maximumFractionDigits: 6 } : { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       el.className = "ff-preview ok";
-      el.innerHTML = `<b>${esc(r.ticker)}</b> · ${esc(nome)} · ` + (px ? `${t("pf.fLast")} <b>${fmt(px)}</b>${q > 0 ? ` · ${t("pf.fTotal")} <b>${fmt(px * q)}</b>` : ""}` : esc(t("pf.fPxLater")));
+      const val = parseFloat(($("#ffVal") || {}).value), dv = ($("#ffDateV") || {}).value || "";
+      el.innerHTML = `<b>${esc(r.ticker)}</b> · ${esc(nome)} · ` + (px ? `${t("pf.fLast")} <b>${fmt(px)}</b>` : esc(t("pf.fPxLater")))
+        + (modo === "qtd" && px && q > 0 ? ` · ${t("pf.fTotal")} <b>${fmt(px * q)}</b>` : "")
+        + (modo === "valor" && val > 0 ? ` · ${interp(t("pf.fValPrev"), { d: dv ? dv.split("-").reverse().join("/") : "" })}` : "");
       if (px && !$("#ffOwn").checked) $("#ffPrice").value = px;
     };
     // rascunho: se a página for redesenhada ou recarregada (o iPhone descarta abas em segundo plano), o que foi digitado volta
-    const CAMPOS = ["ffCode", "ffQty", "ffPrice", "ffDate", "ffName", "ffInv", "ffRate", "ffMat", "ffDateRf"];
+    const CAMPOS = ["ffCode", "ffQty", "ffPrice", "ffDate", "ffName", "ffInv", "ffRate", "ffMat", "ffDateRf", "ffVal", "ffDateV"];
     const guarda = () => {
       try {
-        const r = { kind, own: $("#ffOwn").checked, rf: ty.value, idx: $("#ffIdx").value };
+        const r = { kind, modo, own: $("#ffOwn").checked, rf: ty.value, idx: $("#ffIdx").value };
         CAMPOS.forEach(i => { const e = $("#" + i); if (e) r[i] = e.value; });
         sessionStorage.setItem("s7-ff", JSON.stringify(r));
       } catch (e) { /* navegador sem storage */ }
@@ -2377,13 +2431,14 @@
         if (r.idx) $("#ffIdx").value = r.idx;
         if (r.own) { $("#ffOwn").checked = true; $("#ffOwnBox").hidden = false; }
         if (r.kind === "rf") $('.ff-kind button[data-k="rf"]').click();
+        if (r.modo === "valor") setTimeout(() => setModo("valor"), 0);
         if (r.ffCode || r.ffName) { PF_FORM_OPEN = true; if (dt) dt.open = true; }
         if (r.ffCode) setTimeout(prev, 50);
       }
     } catch (e) { /* rascunho inválido */ }
     $$(".pf-free-body input, .pf-free-body select").forEach(e => { e.addEventListener("input", guarda); e.addEventListener("change", guarda); });
     $$(".ff-kind button").forEach(b => b.addEventListener("click", guarda));
-    let tm; code.oninput = $("#ffQty").oninput = () => { clearTimeout(tm); tm = setTimeout(prev, 250); };
+    let tm; code.oninput = $("#ffQty").oninput = $("#ffVal").oninput = $("#ffDateV").onchange = () => { clearTimeout(tm); tm = setTimeout(prev, 250); };
     $("#ffSave").onclick = async () => {
       const msg = $("#ffMsg"), say = (k, ok) => { msg.textContent = t(k); msg.className = "add-msg " + (ok ? "ok" : "err"); };
       if (!sb || !USER || USER.id === "preview") return say("sig.addErr");
@@ -2396,15 +2451,28 @@
                 rf_index: $("#ffIdx").value, rf_rate: rate, rf_maturity: $("#ffMat").value || null, entry: inv, current_price: inv };
       } else {
         await Promise.all([pfCatalogo(), loadIntraday()]);
-        const r = resolveTicker(code.value), qty = parseFloat($("#ffQty").value);
+        const r = resolveTicker(code.value);
         if (!r) return say("pf.fNotCode");
-        if (!(qty > 0)) return say("pf.fBadQty");
-        const own = $("#ffOwn").checked, mine = parseFloat($("#ffPrice").value), px = await precoAgora(r);
+        if (modo === "valor") {
+          const val = parseFloat($("#ffVal").value), dia = $("#ffDateV").value || today;
+          if (!(val > 0)) return say("pf.fBadVal");
+          const px = await precoAgora(r), pdia = dia === today ? px : await precoNaData(r, dia);
+          date = dia;
+          row = { ticker: r.ticker, market: r.market, currency: r.currency, price_symbol: r.price_symbol, tv_symbol: r.tv_symbol, asset_class: r.asset_class,
+                  invested: val, quantity: pdia ? Math.round(val / pdia * 1e6) / 1e6 : null, entry: pdia || null, current_price: px || pdia || null };
+          VAL_MSG = pdia ? { k: "pf.fOkVal", v: { q: Number(row.quantity).toLocaleString(locale(), { maximumFractionDigits: 6 }), p: (SIMB[r.currency] || r.currency) + " " + Number(pdia).toLocaleString(locale(), { maximumFractionDigits: 4 }), d: dia.split("-").reverse().join("/") } }
+                         : { k: "pf.fOkValLater", v: { d: dia.split("-").reverse().join("/") } };
+        }
+        const qty = parseFloat($("#ffQty").value);
+        if (modo !== "valor" && !(qty > 0)) return say("pf.fBadQty");
+        const own = modo !== "valor" && $("#ffOwn").checked, mine = parseFloat($("#ffPrice").value), px = modo !== "valor" ? await precoAgora(r) : null;
         if (own && !(mine > 0)) return say("pf.fBadPx");
         const entrada = own ? mine : px;                         // sem preço agora: o pipeline grava o de mercado em até 15 min
+        if (modo !== "valor") {
         if (own) date = $("#ffDate").value || today;
         row = { ticker: r.ticker, market: r.market, currency: r.currency, price_symbol: r.price_symbol, tv_symbol: r.tv_symbol, asset_class: r.asset_class,
                 quantity: qty, entry: entrada || null, current_price: px || entrada || null };
+        }
       }
       Object.assign(row, { strategy: "livre", status: "open", entry_type: "market", alloc_pct: 0, added_at: date, ret_pct: 0 });
       const btn = $("#ffSave"); btn.disabled = true;
@@ -2413,7 +2481,8 @@
       if (error) return say(/column|asset_class|strategy|check constraint/i.test(error.message || "") ? "pf.fMig" : "sig.addErr");
       try { sessionStorage.setItem("s7-ff", "null"); } catch (e) { /* navegador sem storage */ }     // salvo: descarta o rascunho
       track("pos_add", { tipo: row.asset_class, ccy: row.currency, preco: row.entry ? (kind === "rf" ? "rf" : $("#ffOwn").checked ? "meu" : "mercado") : "depois" });
-      say("pf.fOk", true); renderPortfolio();
+      if (VAL_MSG) { const m = VAL_MSG; VAL_MSG = null; msg.textContent = interp(t(m.k), m.v); msg.className = "add-msg ok"; } else say("pf.fOk", true);
+      renderPortfolio();
     };
   }
   let PF_FORM_OPEN = false;
@@ -2819,7 +2888,8 @@
           const free = p.strategy === "livre", rf = free && /^rf_/.test(p.asset_class || "");
           if (free) { stcls = "flat"; stl = t("pf.noSignal"); retc = p.ret_pct > 0 ? "pos" : p.ret_pct < 0 ? "neg" : ""; }
           const size = !free ? `${nf(p.alloc_pct, 1)}%` : rf ? ccyM(p, p.invested) : `${Number(p.quantity || 0).toLocaleString(locale(), { maximumFractionDigits: 8 })} un`;
-          const entryC = rf ? `${nf(p.rf_rate, 2)}${p.rf_index === "CDI" || p.rf_index === "SELIC" ? "% " + p.rf_index : p.rf_index === "IPCA" ? "% + IPCA" : "% a.a."}` : free ? ccyM(p, p.entry) : fmtNum(p.entry);
+          const th = rf ? taxaHoje(p) : null;
+          const entryC = rf ? `${nf(p.rf_rate, 2)}${p.rf_index === "CDI" || p.rf_index === "SELIC" ? "% " + p.rf_index : p.rf_index === "IPCA" ? "% + IPCA" : "% a.a."}${th != null && (p.rf_index === "CDI" || p.rf_index === "SELIC" || p.rf_index === "IPCA") ? `<br><small class="rf-hoje" title="${t("pf.rfHojeT")}">≈ ${nf(th, 2)}% ${t("pf.rfHoje")}</small>` : ""}` : free ? ccyM(p, p.entry) : fmtNum(p.entry);
           const curC = rf ? ccyM(p, p.current_price) : free ? ccyM(p, p.current_price ?? p.entry) : fmtNum(p.current_price ?? p.entry);
           return `<tr class="${pi >= PF_N() ? "pf-extra" : ""}"><td class="tk-cell">${esc(p.ticker)} <span class="mkt">${esc(p.market)}</span>${stag(p)}</td>
             <td>${p.added_at}</td><td class="num">${size}</td>

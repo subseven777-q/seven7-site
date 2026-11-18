@@ -1747,3 +1747,6 @@ iframe{color-scheme:normal}
 .q-corr-n .q-cc.forte{color:#fff;font-weight:700}
 .q-corr-n .q-cl{display:flex;align-items:center}
 .q-corr-n .q-ch{align-self:end}
+
+.ff-modo{margin:0 0 10px}
+.rf-hoje{color:var(--muted);font-size:12px;white-space:nowrap}
