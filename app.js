@@ -23,7 +23,7 @@
   const SUPABASE_URL = "https://ehqxuveyprrmjfcqmkhs.supabase.co";
   // Cloudflare Turnstile (anti-robô no login/cadastro). Chave PÚBLICA do site; vazia = desligado.
   // A chave secreta fica só no painel do Supabase (Auth > Bot and Abuse Protection).
-  const TURNSTILE_SITEKEY = "";
+  const TURNSTILE_SITEKEY = "0x4AAAAAAGHnxCNEO8-rp817";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocXh1dmV5cHJybWpmY3Fta2hzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1ODcwNDgsImV4cCI6MjEwMTE2MzA0OH0.KB2mXvqiFgc7SgKDLQU4uvplC-UGcFgE9SaauCQDAhU";
   let sb = null, USER = null, PROFILE = null, PREVIEW = false;
   const trialEnd = () => (PROFILE && PROFILE.status === "trial" && PROFILE.trial_end) ? new Date(PROFILE.trial_end) : null;
