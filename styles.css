@@ -1737,3 +1737,13 @@ iframe{color-scheme:normal}
 .q-todos{margin-top:10px}
 #qHrpTodos.confirma{background:var(--accent);color:#fff;border-color:var(--accent)}
 #qHrpMsg{display:block;margin-bottom:6px}
+
+/* correlação com números + janela 2 anos / 3 meses */
+.q-corr-top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin-bottom:10px}
+.q-corr-med{font-size:14px;color:var(--muted)}.q-corr-med b{color:var(--text)}.q-corr-med b.neg{color:var(--neg)}.q-corr-med b.pos{color:var(--pos)}
+.q-corr-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.q-corr-n{min-width:max-content}
+.q-corr-n .q-cc{display:flex;align-items:center;justify-content:center;min-height:30px;font-size:11px;font-variant-numeric:tabular-nums;color:var(--text)}
+.q-corr-n .q-cc.forte{color:#fff;font-weight:700}
+.q-corr-n .q-cl{display:flex;align-items:center}
+.q-corr-n .q-ch{align-self:end}

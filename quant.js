@@ -253,15 +253,28 @@
   }
 
   // ---------------- correlação ----------------
+  let CORR_JAN = "2a";                                 // janela da correlação: "2a" (2 anos) | "3m" (últimos 3 meses)
   function corr(host, A, o) {
     set(A, o); if (empty(host, A)) return;
-    const C = A.corr || {}, lb = C.labels || [], M = C.m || [];
+    const C = A.corr || {}, lb = C.labels || [];
     if (lb.length < 2) { host.innerHTML = ""; return; }
+    const tem3m = Array.isArray(C.m3m) && C.m3m.length === lb.length;
+    if (!tem3m) CORR_JAN = "2a";
+    const M = CORR_JAN === "3m" ? C.m3m : (C.m || []);
+    const media = X => { let sm = 0, n = 0; X.forEach((r, a) => r.forEach((v, b) => { if (a !== b) { sm += v; n++; } })); return n ? sm / n : null; };
     const col = v => v >= 0 ? `rgba(255,77,94,${Math.min(1, v).toFixed(2)})` : `rgba(38,208,124,${Math.min(1, -v).toFixed(2)})`;
-    host.innerHTML = `<div class="q-corr" style="grid-template-columns:90px repeat(${lb.length},minmax(18px,1fr))">
+    const num = v => (v >= 0.995 ? "1" : (v < 0 ? "−" : "") + nf(Math.abs(v), 2).replace(/^0/, ""));   // ",45" / "−,12" — cabe na célula
+    const quando = A.asof ? new Date(A.asof).toLocaleDateString(loc(), { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
+    const m2 = media(C.m || []), m3 = tem3m ? media(C.m3m) : null;
+    host.innerHTML = `<div class="q-corr-top">
+        ${tem3m ? `<div class="seg q-corr-jan" role="tablist">${[["2a", tx("2 anos", "2 years")], ["3m", tx("Últimos 3 meses", "Last 3 months")]].map(([k, l]) => `<button role="tab" aria-selected="${CORR_JAN === k}" class="${CORR_JAN === k ? "on" : ""}" data-j="${k}">${l}</button>`).join("")}</div>` : ""}
+        <span class="q-corr-med">${tx("Correlação média", "Average correlation")}: <b>${nf(m2, 2)}</b>${m3 != null ? ` ${tx("em 2 anos", "over 2 years")} · <b class="${m3 > m2 + 0.05 ? "neg" : m3 < m2 - 0.05 ? "pos" : ""}">${nf(m3, 2)}</b> ${tx("nos últimos 3 meses", "in the last 3 months")}` : ""}</span></div>
+      <div class="q-corr-wrap"><div class="q-corr q-corr-n" style="grid-template-columns:84px repeat(${lb.length},minmax(36px,1fr))">
       <span></span>${lb.map(l => `<span class="q-ch">${esc(l)}</span>`).join("")}
-      ${M.map((r, i) => `<span class="q-cl">${esc(lb[i])}</span>${r.map((v, j) => `<span class="q-cc" style="background:${col(v)}" title="${esc(lb[i])} × ${esc(lb[j])}: ${nf(v, 2)}"></span>`).join("")}`).join("")}</div>
-      <div class="q-note">${tx("Vermelho = andam juntos (diversificam pouco) · verde = andam em direções opostas (protegem).", "Red = move together (little diversification) · green = move oppositely (hedge).")}</div>`;
+      ${M.map((r, i) => `<span class="q-cl">${esc(lb[i])}</span>${r.map((v, j) => `<span class="q-cc ${Math.abs(v) >= 0.55 ? "forte" : ""}" style="background:${col(v)}" title="${esc(lb[i])} × ${esc(lb[j])}: ${nf(v, 2)}">${i === j ? "" : num(v)}</span>`).join("")}`).join("")}</div></div>
+      <div class="q-note">${tx("De −1 a +1. Vermelho = andam juntos (diversificam pouco) · verde = andam em direções opostas (protegem). ", "From −1 to +1. Red = move together (little diversification) · green = move oppositely (hedge). ")}
+        ${tx(`Medida com retornos diários e recalculada todo dia (última: ${quando}). Se a média dos últimos 3 meses sobe, seus ativos passaram a cair juntos — comum em crises.`, `Measured on daily returns and recalculated every day (latest: ${quando}). If the 3-month average rises, your assets started falling together — common in crises.`)}</div>`;
+    host.querySelectorAll(".q-corr-jan button").forEach(b => b.onclick = () => { CORR_JAN = b.dataset.j; corr(host, A, o); });
   }
 
   function formulas(host) {
