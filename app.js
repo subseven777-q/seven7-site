@@ -506,7 +506,7 @@
     "sig.riskHint": { en: "Sized by <b>risk</b>: each trade risks this % of your deposit and the stop caps the loss. We compute how many shares to buy from the stop distance. 0.15% is the default; higher levels are open to you — see what each did below. Fractional shares/lots work on MT5 brokers (e.g. Exness, from 0.01).", pt: "Dimensionado por <b>risco</b>: cada operação arrisca essa % do seu depósito e o stop limita a perda. Calculamos quantas ações comprar a partir da distância do stop. 0,15% é o padrão; níveis maiores estão liberados — veja abaixo o que cada um fez. Frações de ação/lote funcionam em corretoras MT5 (ex.: Exness, a partir de 0,01)." },
     "sig.buyCalc": { en: "Buy ≈ <b>{shares}</b> shares · {notional} ({consumed}% of portfolio) · <b>risk {risk} ({riskpct}% of deposit)</b>, capped by the stop", pt: "Comprar ≈ <b>{shares}</b> ações · {notional} ({consumed}% do portfólio) · <b>risco {risk} ({riskpct}% do depósito)</b>, limitado pelo stop" },
     "sig.buyCalcBR": { en: "Buy <b>{shares}</b> whole share(s) · {notional} ({consumed}% of portfolio) · <b>risk {risk} ({riskpct}%)</b>, capped by the stop. B3 trades whole shares only.", pt: "Comprar <b>{shares}</b> ação(ões) inteira(s) · {notional} ({consumed}% do portfólio) · <b>risco {risk} ({riskpct}%)</b>, limitado pelo stop. A B3 negocia só ações inteiras." },
-    "sig.buyNoDep": { en: "Set your initial deposit on the Portfolio page to see exactly how much to buy.", pt: "Defina seu depósito inicial na página Portfólio para ver exatamente quanto comprar." },
+    "sig.buyNoDep": { en: "Add your assets in My desk to see exactly how much to buy.", pt: "Adicione seus ativos em Minha mesa para ver exatamente quanto comprar." },
 
     "div.kicker": { en: "DIVIDENDS · INCOME-FIRST", pt: "DIVIDENDOS · INCOME-FIRST" },
     "div.h1": { en: "Your growing dividend salary", pt: "Seu salário de dividendos crescente" },
@@ -702,6 +702,16 @@
     "kmlm.onTarget": { en: "On target — your hedge matches the current regime.", pt: "No alvo — seu hedge acompanha o regime atual." },
     "kmlm.desc": { en: "KMLM rises when stocks fall. We hold 15% normally, 30% when the market turns defensive — cutting drawdowns without killing returns.", pt: "O KMLM sobe quando as ações caem. Mantemos 15% no normal e 30% quando o mercado fica defensivo — cortando o drawdown sem matar o retorno." },
     "kmlm.addBtn": { en: "Add {tk} at {rec}%", pt: "Adicionar {tk} a {rec}%" },
+    "hg.alvoHoje": { en: "Should have today", pt: "Deveria ter hoje" },
+    "hg.deCarteira": { en: "of your portfolio", pt: "da sua carteira de" },
+    "hg.voceTem": { en: "You have", pt: "Você tem" },
+    "hg.falta": { en: "Still to buy", pt: "Falta comprar" },
+    "hg.sobra": { en: "Above target", pt: "Acima do alvo" },
+    "hg.cotas": { en: "shares of", pt: "cotas de" },
+    "hg.a": { en: "at", pt: "a" },
+    "hg.addCotas": { en: "Add {q} shares of {tk} to my portfolio", pt: "Adicionar {q} cotas de {tk} na minha carteira" },
+    "hg.added": { en: "{q} shares of {tk} added. Score recalculated within 15 minutes. Place the order at your broker.", pt: "{q} cotas de {tk} adicionadas. A nota é recalculada em até 15 minutos. Faça a compra na sua corretora." },
+    "hg.semCarteira": { en: "Add your assets to My desk to see how much this should be in dollars and reais.", pt: "Adicione seus ativos em Minha mesa para ver quanto isso dá em dólares e reais." },
     "kmlm.added": { en: "Added to your portfolio.", pt: "Adicionado ao seu portfólio." },
     "mcc.kicker": { en: "COVERED CALL · ELITE", pt: "COVERED CALL · ELITE" },
     "mcc.h": { en: "The income layer — covered calls", pt: "A camada de renda — covered calls" },
@@ -743,6 +753,9 @@
     "sig.addErr": { en: "Couldn't add.", pt: "Não deu para adicionar." },
     "pf.needLoginSub": { en: "Log in to build and track your portfolio.", pt: "Entre para montar e acompanhar seu portfólio." },
     "pf.deposit": { en: "Initial deposit", pt: "Depósito inicial" },
+    "pf.valAuto": { en: "Portfolio value", pt: "Valor da carteira" },
+    "pf.valAutoS": { en: "automatic: the sum of the assets you added", pt: "automático: a soma dos ativos que você adicionou" },
+    "pf.curSaved": { en: "Currency saved. Values are converted within 15 minutes.", pt: "Moeda salva. Os valores são convertidos em até 15 minutos." },
     "pf.currency": { en: "Portfolio currency", pt: "Moeda do portfólio" },
     "pf.freeAdd": { en: "Add an asset", pt: "Adicionar ativo" },
     "pf.kAtivo": { en: "Stock, REIT, ETF or crypto", pt: "Ação, FII, ETF ou cripto" },
@@ -842,14 +855,14 @@
     "beta.onTarget": { en: "Already at target.", pt: "Já está no alvo." },
     "beta.aggressive": { en: "Aggressive: this {tk} weight heavily dilutes the strategy's return.", pt: "Agressivo: esse peso de {tk} dilui muito o retorno da estratégia." },
     "beta.apply": { en: "Set {tk} to {pct}%", pt: "Definir {tk} em {pct}%" },
-    "beta.applyConfirm": { en: "Set your {tk} position to {pct}% of the deposit? (Trim your equity positions to make room.)", pt: "Definir a posição de {tk} em {pct}% do depósito? (Reduza as posições de ações para abrir espaço.)" },
+    "beta.applyConfirm": { en: "Set your {tk} position to {pct}% of the portfolio? (Trim your equity positions to make room.)", pt: "Definir a posição de {tk} em {pct}% da carteira? (Reduza as posições de ações para abrir espaço.)" },
     "beta.applied": { en: "{tk} updated.", pt: "{tk} atualizado." },
     "beta.noPrice": { en: "{tk} price unavailable. Try again after the daily update.", pt: "Preço do {tk} indisponível. Tente de novo depois da atualização diária." },
     "pf.open": { en: "Open positions", pt: "Posições abertas" },
     "pf.you": { en: "You", pt: "Você" },
     "pf.chart": { en: "You vs Buy & Hold (SPY · BOVA11)", pt: "Você vs Buy & Hold (SPY · BOVA11)" },
     "pf.added": { en: "Added", pt: "Adicionado" },
-    "pf.alloc": { en: "% deposit", pt: "% depósito" },
+    "pf.alloc": { en: "% portfolio", pt: "% carteira" },
     "pf.current": { en: "Current", pt: "Atual" },
     "pf.pl": { en: "P&L", pt: "Resultado" },
     "pf.won": { en: "WON", pt: "GANHOU" },
@@ -861,7 +874,7 @@
     "pf.more": { en: "More options", pt: "Mais opções" },
     "pf.clearPosD": { en: "Removes every position; keeps your deposit and history.", pt: "Remove todas as posições; mantém o depósito e o histórico." },
     "pf.resetAllD": { en: "Starts from scratch: positions, history and deposit.", pt: "Começa do zero: posições, histórico e depósito." },
-    "pf.valueH": { en: "deposit + result", pt: "depósito + resultado" },
+    "pf.valueH": { en: "value today", pt: "valor de hoje" },
     "pf.returnH": { en: "since your first trade", pt: "desde a primeira operação" },
     "pf.winH": { en: "of trades closed in profit", pt: "das operações fecharam no lucro" },
     "pf.ddH": { en: "biggest fall from a peak", pt: "maior queda a partir de um topo" },
@@ -2822,10 +2835,9 @@
         </div></details>` : "";
     let html = `<div class="pf-toolbar">
       <div class="pf-deposit">
-        <label for="pfDeposit">${ic("wallet")}${t("pf.deposit")}</label>
-        <div class="pf-dep-in"><span>${sym}</span><input id="pfDeposit" type="number" value="${deposit}" min="0" step="100"></div>
+        <span class="pf-auto">${ic("wallet")}<span>${t("pf.valAuto")}</span> <b>${sym} ${Number((d && d.analytics && d.analytics.valor_total) || deposit).toLocaleString(locale(), { maximumFractionDigits: 0 })}</b>
+          <small>${t("pf.valAutoS")}</small></span>
         <select id="pfCur" class="pf-cur" title="${t("pf.currency")}" aria-label="${t("pf.currency")}">${["BRL", "USD"].map(c => `<option ${c === cur ? "selected" : ""}>${c}</option>`).join("")}</select>
-        <button class="btn btn-primary" id="pfSaveDep">${t("pf.save")}</button>
         ${isEliteNow && positions.length ? `<button class="btn btn-ghost" id="pfExport">${ic("down")}${t("pf.export")}</button>` : ""}
         <span role="status" aria-live="polite" class="add-msg" id="pfDepMsg"></span>
       </div>
@@ -2911,14 +2923,12 @@
 
     const seg = $("#pfStratSeg");
     if (seg) seg.querySelectorAll("button").forEach(b => b.onclick = () => { PF_STRAT = b.dataset.s; renderPortfolio(); });
-    const save = $("#pfSaveDep");
-    if (save) save.onclick = async () => {
-      const val = Math.max(0, parseFloat($("#pfDeposit").value) || 0);
-      const nc = ($("#pfCur") || {}).value || cur;
-      let { error } = await sb.from("profiles").update({ portfolio_deposit: val, portfolio_currency: nc }).eq("id", USER.id);
-      if (error && nc === cur) ({ error } = await sb.from("profiles").update({ portfolio_deposit: val }).eq("id", USER.id));  // banco sem a migração da moeda
-      const m = $("#pfDepMsg"); m.textContent = error ? t("sig.addErr") : t("pf.saved"); m.className = "add-msg " + (error ? "err" : "ok");
-      if (!error && nc !== cur) renderPortfolio();
+    const curSel = $("#pfCur");                       // moeda de exibição: salva ao trocar (o valor da carteira é automático)
+    if (curSel) curSel.onchange = async () => {
+      if (!sb || !USER || USER.id === "preview") return;
+      const { error } = await sb.from("profiles").update({ portfolio_currency: curSel.value }).eq("id", USER.id);
+      const m = $("#pfDepMsg"); m.textContent = error ? t("sig.addErr") : t("pf.curSaved"); m.className = "add-msg " + (error ? "err" : "ok");
+      if (!error) renderPortfolio();
     };
     wireFreePositionForm();
     renderPortfolioQuant(d);
@@ -3580,46 +3590,63 @@
   async function renderKmlmCard() {
     const host = $("#kmlmHost"); if (!host) return;
     if (!sb || !USER || !hasHedge()) { host.innerHTML = ""; return; }
-    let rows = [], positions = [];
-    try {
-      const [hg, po] = await Promise.all([
+    let rows = [], positions = [], A = null;
+    if (USER.id === "preview") {                       // prévia local: sinais de exemplo + a carteira de demonstração
+      rows = [{ ticker: "__HEDGE__", state: "STRESS", pct_in_range: 30, price: 29.65 }, { ticker: "__HEDGE_BR__", state: "STRESS", pct_in_range: 30, price: 11.55 }];
+      try { A = await (await fetch("data/pf_analytics_preview.json")).json(); } catch (e) { A = null; }
+    } else try {
+      const [hg, po, st] = await Promise.all([
         sb.from("signals").select("*").in("ticker", ["__HEDGE__", "__HEDGE_BR__"]),
         sb.from("portfolio_positions").select("ticker,alloc_pct"),
+        sb.from("portfolio_stats").select("data").eq("user_id", USER.id).maybeSingle(),
       ]);
-      rows = hg.data || []; positions = po.data || [];
+      rows = hg.data || []; positions = po.data || []; A = st.data && st.data.data && st.data.data.analytics;
     } catch (e) { rows = []; }
+    if (!JUROS) { try { JUROS = await (await fetch(`data/juros.json?t=${Math.floor(Date.now() / 3600000)}`)).json(); } catch (e) { JUROS = null; } }
+    const fx = JUROS && JUROS.usdbrl && JUROS.usdbrl.valor;          // R$ por US$ (Banco Central)
+    const tot = A && !A.vazio ? Number(A.valor_total) || 0 : 0, base = (A && A.base) || "USD";
+    const emBRL = v => (base === "BRL" ? v : fx ? v * fx : null), emUSD = v => (base === "USD" ? v : fx ? v / fx : null);
+    const R = v => v == null ? "—" : "R$ " + Math.round(v).toLocaleString(locale()), U = v => v == null ? "—" : "US$ " + Math.round(v).toLocaleString(locale());
     const itens = ["US", "BR"].map(m => ({ m, c: HEDGE_CFG[m], hedge: rows.find(r => r.ticker === HEDGE_CFG[m].sig) })).filter(x => x.hedge);
     if (!itens.length) { host.innerHTML = ""; return; }
     host.innerHTML = itens.map(({ m, c, hedge }) => {
       const stress = hedge.state === "STRESS";
       const rec = Number(hedge.pct_in_range) || 0;
-      const cur = positions.filter(p => p.ticker === c.tk).reduce((sm, p) => sm + (Number(p.alloc_pct) || 0), 0);
-      const under = cur < rec - 0.5;
+      // quanto o usuário já tem desse ativo (pela análise da carteira, em moeda base)
+      const ativo = A && (A.assets || []).find(a => a.id === (m === "BR" ? "DOLA11.SA" : "KMLM"));
+      const tem = ativo ? Number(ativo.valor) || 0 : 0, alvo = tot * rec / 100, falta = alvo - tem;
+      const curPct = tot > 0 ? tem / tot * 100 : 0, under = curPct < rec - 0.5;
+      const px = Number(hedge.price) || 0;                                     // KMLM em US$, DOLA11 em R$
+      const naMoeda = v => (m === "US" ? emUSD(v) : emBRL(v));
+      const cotas = px > 0 && naMoeda(Math.abs(falta)) != null ? Math.floor(naMoeda(Math.abs(falta)) / px) : null;
+      const prim = v => (m === "US" ? `${U(emUSD(v))} <small>(${R(emBRL(v))})</small>` : `${R(emBRL(v))} <small>(${U(emUSD(v))})</small>`);
+      const valores = tot > 0 ? `<div class="kmlm-money">
+          <div><span>${t("hg.alvoHoje")}</span><b>${prim(alvo)}</b><small>${nf(rec, 0)}% ${t("hg.deCarteira")} ${base === "BRL" ? R(tot) : U(tot)}</small></div>
+          <div><span>${t("hg.voceTem")}</span><b>${prim(tem)}</b><small>${nf(curPct, 1)}%</small></div>
+          <div class="${Math.abs(falta) < 1 ? "" : falta > 0 ? "pos" : "neg"}"><span>${falta >= 0 ? t("hg.falta") : t("hg.sobra")}</span><b>${prim(Math.abs(falta))}</b>${cotas ? `<small>≈ ${cotas.toLocaleString(locale())} ${t("hg.cotas")} ${c.tk} ${t("hg.a")} ${m === "US" ? "US$" : "R$"} ${nf(px, 2)}</small>` : ""}</div>
+        </div>` : `<p class="kmlm-desc">${t("hg.semCarteira")}</p>`;
       return `<div class="kmlm-card ${stress ? "stress" : ""}" data-mkt="${m}">
       <div class="kmlm-top">
         <div class="kmlm-id"><span class="kmlm-badge">🛡 ${c.tk}</span><span class="kmlm-sub">${t(m === "BR" ? "dola.sub" : "kmlm.sub")}</span></div>
         <span class="dsig-badge ${stress ? "watch" : "buy"}">${stress ? t("mem.hedgeStress") : t("mem.hedgeNormal")}</span>
       </div>
-      <div class="kmlm-grid">
-        <div class="kmlm-metric"><div class="kmlm-v accent">${nf(rec, 0)}%</div><div class="kmlm-l">${t("kmlm.recommended")}</div></div>
-        <div class="kmlm-metric"><div class="kmlm-v ${under ? "neg" : "pos"}">${nf(cur, 0)}%</div><div class="kmlm-l">${t("kmlm.current")}</div></div>
-      </div>
+      ${valores}
       <div class="${under ? "kmlm-alert" : "kmlm-ok"}">${under ? interp(t("kmlm.under"), { tk: c.tk, rec: nf(rec, 0) }) : t("kmlm.onTarget")}</div>
       <div class="kmlm-desc">${t(m === "BR" ? "dola.desc" : "kmlm.desc")}</div>
-      ${hedge.price ? `<button class="btn btn-primary" id="kmlmAdd${m}">${interp(t("kmlm.addBtn"), { tk: c.tk, rec: nf(rec, 0) })}</button><span role="status" aria-live="polite" class="add-msg" id="kmlmMsg${m}"></span>` : ""}
+      ${px > 0 && cotas && falta > 0 ? `<button class="btn btn-primary" id="kmlmAdd${m}" data-q="${cotas}">${interp(t("hg.addCotas"), { q: cotas.toLocaleString(locale()), tk: c.tk })}</button><span role="status" aria-live="polite" class="add-msg" id="kmlmMsg${m}"></span>` : ""}
     </div>`;
     }).join("");
     itens.forEach(({ m, c, hedge }) => {
       const add = $("#kmlmAdd" + m); if (!add) return;
-      const rec = Number(hedge.pct_in_range) || 0;
       add.onclick = async () => {
         add.disabled = true;
-        const error = await insertPosition({
-          ticker: c.tk, tv_symbol: c.tv, market: m,
-          entry: hedge.price, stop: null, tp: null, alloc_pct: rec, status: "open", entry_type: "market",
-        });
-        const msg = $("#kmlmMsg" + m); if (msg) { msg.textContent = error ? t("sig.addErr") : t("kmlm.added"); msg.className = "add-msg " + (error ? "err" : "ok"); }
-        renderKmlmCard(); if (document.body.dataset.page === "members") renderPortfolio();
+        const q = Number(add.dataset.q) || 0, today = new Date().toISOString().slice(0, 10);
+        const { error } = await sb.from("portfolio_positions").insert({
+          ticker: c.tk, tv_symbol: c.tv, market: m, currency: m === "US" ? "USD" : "BRL", price_symbol: m === "US" ? "KMLM" : "DOLA11.SA",
+          asset_class: m === "US" ? "etf_us" : "etf_br", strategy: "livre", status: "open", entry_type: "market", alloc_pct: 0,
+          quantity: q, entry: Number(hedge.price), current_price: Number(hedge.price), added_at: today, ret_pct: 0 });
+        const msg = $("#kmlmMsg" + m); if (msg) { msg.textContent = error ? t("sig.addErr") : interp(t("hg.added"), { q: q.toLocaleString(locale()), tk: c.tk }); msg.className = "add-msg " + (error ? "err" : "ok"); }
+        if (!error && document.body.dataset.page === "members") renderPortfolio();
       };
     });
   }

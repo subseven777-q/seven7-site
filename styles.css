@@ -1750,3 +1750,11 @@ iframe{color-scheme:normal}
 
 .ff-modo{margin:0 0 10px}
 .rf-hoje{color:var(--muted);font-size:12px;white-space:nowrap}
+
+/* carteira sem depósito manual + hedge em dinheiro */
+.pf-auto{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.pf-auto b{font-size:18px}.pf-auto small{color:var(--muted);flex-basis:100%;font-size:12px}
+.kmlm-money{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.kmlm-money>div{border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.kmlm-money span{font-size:13px;color:var(--muted)}.kmlm-money b{font-size:18px;font-variant-numeric:tabular-nums}
+.kmlm-money b small{font-size:13px;color:var(--muted);font-weight:500}.kmlm-money>div>small{font-size:12px;color:var(--muted)}
+.kmlm-money .pos b{color:var(--pos)}.kmlm-money .neg b{color:var(--neg)}
