@@ -823,9 +823,23 @@
     "pf.fBad": { en: "Fill in the fields correctly.", pt: "Preencha os campos corretamente." },
     "pf.fMig": { en: "This type of asset is not enabled yet (database update pending).", pt: "Este tipo de ativo ainda não está habilitado (atualização do banco pendente)." },
     "hrp.working": { en: "Adjusting…", pt: "Ajustando…" },
-    "hrp.doneOne": { en: "{a} adjusted to the HRP weight and score recalculated. Now place the trade at your broker.", pt: "{a} ajustado ao peso do HRP e nota recalculada. Agora faça a operação na sua corretora." },
-    "hrp.doneOneLater": { en: "{a} adjusted to the HRP weight. The new score arrives within 15 minutes.", pt: "{a} ajustado ao peso do HRP. A nota nova chega em até 15 minutos." },
-    "hrp.done": { en: "Done: {n} positions adjusted and the score recalculated. Now place the trades at your broker.", pt: "Pronto: {n} posições ajustadas e a nota recalculada. Agora faça as compras e vendas na sua corretora." },
+    "hrp.adjust": { en: "Adjust", pt: "Ajustar" },
+    "hg.opCapT": { en: "With the money already in the portfolio", pt: "Com o dinheiro que já está na carteira" },
+    "hg.opCapS": { en: "Moves {v} from your stocks in this market into {tk}, at today's prices. The portfolio total does not change.", pt: "Passa {v} das suas ações deste mercado para o {tk}, ao preço de hoje. O total da carteira não muda." },
+    "hg.opCapRed": { en: "Moves {v} from {tk} back to your stocks in this market, at today's prices. The total does not change.", pt: "Devolve {v} do {tk} para as suas ações deste mercado, ao preço de hoje. O total não muda." },
+    "hg.opCapS2": { en: "Moves {v} from your other assets into {tk}, in proportion, so {tk} becomes {pct}% of the total. The total does not change.", pt: "Passa {v} dos seus outros ativos para o {tk}, na proporção de cada um, para o {tk} virar {pct}% do total. O total não muda." },
+    "hg.opCapRed2": { en: "Sells {v} of {tk} and spreads it over your other assets, so {tk} returns to {pct}%. The total does not change.", pt: "Vende {v} do {tk} e distribui entre os seus outros ativos, para o {tk} voltar a {pct}%. O total não muda." },
+    "hg.opNovoT": { en: "Adding new money", pt: "Colocando dinheiro novo" },
+    "hg.opNovoS": { en: "Buys {v} of {tk} with new money; nothing is sold.", pt: "Compra {v} de {tk} com dinheiro novo; nada é vendido." },
+    "hg.opNovoS2": { en: "Buys {v} of {tk} with new money; nothing is sold. With the new total, {tk} becomes {pct}%.", pt: "Compra {v} de {tk} com dinheiro novo; nada é vendido. Com o total novo, o {tk} vira {pct}%." },
+    "hg.btnCap": { en: "Adjust {tk} to {pct}% with current capital", pt: "Ajustar {tk} para {pct}% com o capital atual" },
+    "hg.btnNovo": { en: "Buy {v} with new money", pt: "Comprar {v} com dinheiro novo" },
+    "hg.feito": { en: "{tk} adjusted. Place the trades at your broker.", pt: "{tk} ajustado. Agora faça as operações na sua corretora." },
+    "hg.feitoNota": { en: "{tk} adjusted. Score {n0} → {n1}. Place the trades at your broker.", pt: "{tk} ajustado. Nota {n0} → {n1}. Agora faça as operações na sua corretora." },
+    "hg.semGrupo": { en: "There are no other assets to fund this adjustment. Use the new-money option.", pt: "Não há outros ativos para financiar o ajuste. Use a opção com dinheiro novo." },
+    "hrp.doneOne": { en: "{a} adjusted to the HRP weight using money already in the portfolio. Score {n0} → {n1}. Now place the trades at your broker.", pt: "{a} ajustado ao peso do HRP com o dinheiro que já está na carteira. Nota {n0} → {n1}. Agora faça as operações na sua corretora." },
+    "hrp.doneOneLater": { en: "{a} adjusted to the HRP weight using money already in the portfolio. The new score arrives within 15 minutes.", pt: "{a} ajustado ao peso do HRP com o dinheiro que já está na carteira. A nota nova chega em até 15 minutos." },
+    "hrp.done": { en: "Done: portfolio on the HRP weights, same total. Score {n0} → {n1}. Now place the trades at your broker.", pt: "Pronto: carteira nos pesos do HRP, com o mesmo total. Nota {n0} → {n1}. Agora faça as compras e vendas na sua corretora." },
     "hrp.doneLater": { en: "Done: {n} positions adjusted. Some asset is outside the instant engine, so the new score arrives within 15 minutes.", pt: "Pronto: {n} posições ajustadas. Algum ativo está fora do cálculo instantâneo, então a nota nova chega em até 15 minutos." },
     "hrp.preview": { en: "Sign in to apply it to your portfolio.", pt: "Entre na sua conta para aplicar na sua carteira." },
     "pf.fOk": { en: "Added ✓ — your score is recalculated within 15 minutes on weekdays (weekends: at 7 pm).", pt: "Adicionado ✓ — a nota é recalculada em até 15 minutos nos dias úteis (fim de semana: às 19:00)." },
@@ -2601,7 +2615,16 @@
   let PF_FORM_OPEN = false;
   const PF_N = () => (innerWidth < 768 ? 4 : 8);   // no celular cada posição é um cartão alto
   let PF_ALL = false;          // tabela de posições: mostra só as 8 primeiras até pedir "ver todas"
-  let PF_QUANT_PREVIEW = null;
+  let PF_QUANT_PREVIEW = null, PF_POS = [];
+  // valor de UMA cota/unidade de cada ativo, na moeda da análise (o HRP não pede ajuste menor que meia cota)
+  function unidadeDe(A) {
+    const fx = JUROS && JUROS.usdbrl ? Number(JUROS.usdbrl.valor) : null, base = (A && A.base) || "USD", u = {};
+    PF_POS.filter(x => x.status === "open" && ehLivre(x) && !ehRF(x)).forEach(x => {
+      const px = Number(x.current_price ?? x.entry) || 0, f = fxPara(x.currency || (x.market === "BR" ? "BRL" : "USD"), base, fx);
+      if (px > 0 && f) u[chaveAtivo(x)] = Math.max(u[chaveAtivo(x)] || 0, px * f);
+    });
+    return id => u[id] || 0;
+  }
   async function renderPortfolioQuant(d) {
     const host = $("#pfQuant"); if (!host) return;
     if (!window.S7Quant) { window.__s7QuantPending = () => renderPortfolioQuant(d); return; }   // quant.js ainda chegando
@@ -2611,71 +2634,189 @@
       A = PF_QUANT_PREVIEW || null;
     }
     host.innerHTML = `<div class="section-head"><h2>${t("pf.quantH")}</h2><p class="sub">${t("pf.quantSub")}</p></div><div class="qq-share qq-img" id="pfShare"></div><div id="pfQuantBody"></div>`;
-    window.S7Quant.full($("#pfQuantBody"), A, { lang: LANG, onApply: applyHrp });
+    window.S7Quant.full($("#pfQuantBody"), A, { lang: LANG, onApply: applyHrp, unit: unidadeDe(A) });
     try {                                                 // mensagem do último ajuste do HRP (a tela foi redesenhada)
       const m = JSON.parse(sessionStorage.getItem("s7-hrp-msg") || "null"); sessionStorage.removeItem("s7-hrp-msg");
       const el = $("#qHrpMsg"); if (m && el) { el.textContent = interp(t(m.k), m.v || {}); el.className = "add-msg ok"; el.scrollIntoView({ block: "center" }); }
     } catch (e) { /* sem storage */ }
     if (A && !A.vazio) window.S7Quant.shareButtons($("#pfShare"), A, { lang: LANG, onUse: (f, m) => track("share", { via: "imagem_" + f, modo: m, de: "mesa" }) });
   }
-  // ---- seguir o HRP com um clique: ajusta quantidades/pesos das posições e recalcula a nota NA HORA (Edge Function grava;
-  //      o pipeline confirma o cálculo oficial em até 15 min). Não envia ordem a corretora nenhuma.
+  // ================= CONTABILIDADE DA MINHA MESA (uma regra só para tudo) =================
+  // Cada posição aberta tem VALOR de hoje (V) e CUSTO (C), na moeda dela; "realized" guarda o lucro já realizado em ajustes.
+  //  - livre (ação/ETF/FII/cripto/moeda): V = quantidade × preço de hoje; C = quantidade × preço médio (entry)
+  //  - livre renda fixa: V = valor atualizado (current_price); C = valor aplicado (invested)
+  //  - estratégia (Markov 3 / Dividendos): V = base × alloc% × (1 + ret); C = base × alloc%   (moeda da carteira)
+  //    base = "valor automático" (soma das posições livres), ou o depósito de quem só tem posições de estratégia.
+  // Resultado = Σ(V − C) + Σ realizado. Os ajustes (HRP e proteção) trocam ativos AO PREÇO DE HOJE, com o dinheiro que já
+  // está na carteira: não mudam o total nem o resultado. Compra entra no preço médio; venda realiza o lucro daquela parte.
+  const ehLivre = x => (x.strategy || "po3") === "livre";
+  const ehRF = x => /^rf_/.test(x.asset_class || "");
+  const r2 = v => Math.round(v * 100) / 100, r4 = v => Math.round(v * 1e4) / 1e4, r6 = v => Math.round(v * 1e6) / 1e6;
+  function chaveAtivo(x) {                                // mesma chave do portfolio_analytics.py (símbolo / FX: / id da renda fixa)
+    const livre = ehLivre(x), cls = x.asset_class || "";
+    if (livre && /^rf_/.test(cls)) return x.id;
+    if (livre && cls === "moeda") return "FX:" + x.ticker;
+    if (!livre) return x.market === "BR" ? x.ticker + ".SA" : x.ticker;
+    return x.price_symbol || x.ticker;
+  }
+  const cotaInteira = x => x.market === "BR" && !/cripto|moeda|outro|^rf_/.test(x.asset_class || "");   // B3: só cota inteira
+  function vcNativo(x, dep) {
+    if (!ehLivre(x)) { const N = dep * (Number(x.alloc_pct) || 0) / 100; return { V: N * (1 + (Number(x.ret_pct) || 0) / 100), C: N, moeda: null }; }
+    if (ehRF(x)) return { V: Number(x.current_price ?? x.invested) || 0, C: Number(x.invested) || 0, moeda: x.currency || "BRL" };
+    const q = Number(x.quantity) || 0, px = Number(x.current_price ?? x.entry) || 0, e = Number(x.entry ?? px) || 0;
+    return { V: q * px, C: q * e, moeda: x.currency || (x.market === "BR" ? "BRL" : "USD") };
+  }
+  function fxPara(moeda, base, fx) {
+    if (!moeda || moeda === base) return 1;
+    if (!fx) return null;
+    if (moeda === "USD" && base === "BRL") return fx;
+    if (moeda === "BRL" && base === "USD") return 1 / fx;
+    return null;                                           // outras moedas: usa a proporção da análise (abaixo)
+  }
+  // fator "moeda da posição -> moeda da carteira"; sem câmbio direto, deduz da análise (valor do ativo ÷ valor nativo)
+  function fatorBase(x, pos, dep, base, fx, A) {
+    const m = vcNativo(x, dep).moeda, f = m ? fxPara(m, base, fx) : 1;
+    if (f != null) return f;
+    const k = chaveAtivo(x), a = A && (A.assets || []).find(z => z.id === k);
+    const nat = pos.filter(y => y.status === "open" && ehLivre(y) && chaveAtivo(y) === k).reduce((t, y) => t + vcNativo(y, dep).V, 0);
+    return a && nat > 0 ? Number(a.valor) / nat : 1;
+  }
+  // números do topo da Minha mesa (valor, resultado, acertos) — mesma conta para todas as visões
+  function pfContabil(pos, dep, base, fx, A) {
+    const temLivre = pos.some(x => ehLivre(x) && x.status === "open");
+    let V = 0, C = 0, R = 0, fech = 0, won = 0, lost = 0, open = 0;
+    pos.forEach(x => {
+      const f = fatorBase(x, pos, dep, base, fx, A);
+      R += (Number(x.realized) || 0) * f;
+      if (x.status === "won") won++; else if (x.status === "lost") lost++;
+      if (x.status === "open") { const v = vcNativo(x, dep); V += v.V * f; C += v.C * f; open++; }
+      else if ((x.status === "won" || x.status === "lost" || x.status === "closed") && !ehLivre(x))
+        fech += dep * (Number(x.alloc_pct) || 0) / 100 * (Number(x.ret_pct) || 0) / 100;     // operação encerrada da estratégia
+    });
+    const res = V - C + R + fech, closed = won + lost;
+    let value, total_return;
+    if (temLivre) { value = V + fech; const K = C - R; total_return = K > 0 ? res / K * 100 : null; }   // K = capital aplicado
+    else { value = dep + res; total_return = dep > 0 ? res / dep * 100 : null; }                      // só estratégias: sobre o depósito
+    return { value, total_return, resultado: res, win_rate: closed ? won / closed * 100 : null, n_open: open };
+  }
+
+  // ---- MOTOR DE AJUSTE (HRP e proteção): leva cada ativo ao valor-alvo, ao preço de hoje.
+  //  alvo:  { chave do ativo: valor-alvo na moeda da carteira }   (ativos fora do alvo ficam como estão)
+  //  novas: [{ k, vb, px, livre:{...linha}, estr:{...linha} }]   posição nova (ex.: proteção que o usuário ainda não tem)
+  // Livres primeiro (definem o novo valor automático); depois as de estratégia, reescaladas para manter o valor em dinheiro.
+  let PF_A_OVR = null;                                    // análise instantânea quando o motor não pôde gravar
+  async function rebalancear(A, alvo, novas) {
+    const base = A.base || "USD", fx = await cambioHoje();
+    const [po, pr] = await Promise.all([
+      sb.from("portfolio_positions").select("*"),
+      sb.from("profiles").select("portfolio_deposit").eq("id", USER.id).maybeSingle(),
+    ]);
+    if (po.error || !po.data) return { erro: true };
+    const todas = po.data, pos = todas.filter(x => x.status === "open");
+    const dep = Number(pr.data && pr.data.portfolio_deposit) || 10000;
+    const valorDe = {}; (A.assets || []).forEach(a => { valorDe[a.id] = Number(a.valor) || 0; });
+    const fatorK = {}; Object.keys(alvo || {}).forEach(k => { if (valorDe[k] > 0) fatorK[k] = Math.max(0, alvo[k]) / valorDe[k]; });
+    const temLivre = pos.some(ehLivre);
+    const upd = [], novoK = {}, ins = [];
+    let dLivre = 0;
+    const soma = (k, v) => { novoK[k] = (novoK[k] || 0) + v; };
+    for (const x of pos.filter(ehLivre)) {
+      const k = chaveAtivo(x), sF = fatorK[k], f = fatorBase(x, pos, dep, base, fx, A), v0 = vcNativo(x, dep);
+      if (sF == null || Math.abs(sF - 1) < 1e-4) { soma(k, v0.V * f); continue; }
+      let patch = null, v1 = v0.V;
+      if (ehRF(x)) {                                      // renda fixa: escala o valor aplicado (o rendimento segue a mesma taxa)
+        const inv = Number(x.invested) || 0, cp = Number(x.current_price ?? inv) || 0;
+        patch = { invested: r2(inv * sF), current_price: r2(cp * sF), entry: r6(Number(x.entry ?? inv) * sF),
+                  realized: r6((Number(x.realized) || 0) + (1 - sF) * (cp - inv)) };
+        v1 = cp * sF;
+      } else {
+        const q = Number(x.quantity) || 0, px = Number(x.current_price ?? x.entry) || 0, e = Number(x.entry ?? px) || px;
+        if (q > 0 && px > 0) {
+          let q1 = q * sF;
+          q1 = cotaInteira(x) ? Math.max(1, Math.round(q1)) : Math.max(1e-6, r6(q1));
+          if (q1 > q) { const e1 = (q * e + (q1 - q) * px) / q1; patch = { quantity: q1, entry: r6(e1), ret_pct: r2((px / e1 - 1) * 100) }; }
+          else if (q1 < q) patch = { quantity: q1, realized: r6((Number(x.realized) || 0) + (q - q1) * (px - e)) };
+          v1 = q1 * px;
+        }
+      }
+      if (patch) upd.push({ id: x.id, patch });
+      dLivre += (v1 - v0.V) * f; soma(k, v1 * f);
+    }
+    for (const n of novas || []) {                        // posição nova comprada ao preço de hoje
+      const f = fxPara(n.moeda, base, fx) || 1, natV = n.vb / f;
+      if (temLivre) {
+        const q = n.inteira ? Math.floor(natV / n.px) : r6(natV / n.px);
+        if (!(q > 0)) continue;
+        ins.push({ ...n.livre, quantity: q, entry: n.px, current_price: n.px, alloc_pct: 0, ret_pct: 0, added_at: new Date().toISOString().slice(0, 10) });
+        dLivre += q * n.px * f; soma(n.k, q * n.px * f);
+      } else {
+        ins.push({ ...n.estr, entry: n.px, alloc_pct: r4(Math.min(100, n.vb / dep * 100)) });
+        soma(n.k, n.vb);
+      }
+    }
+    const dep1 = temLivre ? Math.max(1, dep + dLivre) : dep;
+    for (const x of todas.filter(y => !ehLivre(y))) {
+      const k = chaveAtivo(x), aberta = x.status === "open", sF = aberta ? fatorK[k] : null;
+      const N = dep * (Number(x.alloc_pct) || 0) / 100, r = (Number(x.ret_pct) || 0) / 100, V = N * (1 + r);
+      let N1 = N, r1 = r, real = Number(x.realized) || 0, mudou = false;
+      if (sF != null && Math.abs(sF - 1) >= 1e-4 && N > 0) {
+        const V1 = V * sF;
+        if (sF > 1) { N1 = N + (V1 - V); r1 = V1 / N1 - 1; }         // compra: custo novo no preço de hoje
+        else { N1 = N * sF; real += (V - V1) - (N - N1); }          // venda: realiza o lucro da parte vendida
+        mudou = true; if (aberta) soma(k, V1);
+      } else if (aberta) soma(k, V);
+      if (mudou || Math.abs(dep1 - dep) > 0.005) {                   // base mudou: mantém o valor em dinheiro de cada posição
+        const patch = { alloc_pct: r4(Math.min(100, N1 / dep1 * 100)) };
+        if (mudou) {
+          patch.realized = r6(real);
+          const px = Number(x.current_price ?? x.entry) || 0;
+          if (sF > 1 && px > 0) { patch.entry = r6(px / (1 + r1)); patch.ret_pct = r2(r1 * 100); }
+        }
+        upd.push({ id: x.id, patch });
+      }
+    }
+    const rs = await Promise.all([
+      ...upd.map(u => sb.from("portfolio_positions").update(u.patch).eq("id", u.id)),
+      ...ins.map(r => insertPosition(r).then(error => ({ error }))),
+      ...(temLivre && Math.abs(dep1 - dep) > 0.005 ? [sb.from("profiles").update({ portfolio_deposit: r2(dep1) }).eq("id", USER.id)] : []),
+    ]);
+    if (rs.some(r => r && r.error)) return { erro: true };
+    // nota NA HORA: a Edge Function analisa os valores novos e grava (o pipeline confirma o cálculo oficial em até 15 min)
+    let salvo = false, nota1 = null;
+    try {
+      const rfPos = {}; pos.forEach(x => { if (ehLivre(x) && ehRF(x)) rfPos[x.id] = x; });
+      const rot = {}; (A.assets || []).forEach(a => { rot[a.id] = a.label; });
+      const lista = Object.keys(novoK).filter(k => novoK[k] > 0.005).map(k => {
+        const v = r2(novoK[k]);
+        if (rfPos[k]) { const x = rfPos[k]; return { s: "RF:" + String(x.rf_index || (x.asset_class === "rf_us" ? "UST" : "PRE")).toUpperCase(), taxa: Number(x.rf_rate || 0), v, label: rot[k] }; }
+        return { s: k, v, label: rot[k] };
+      });
+      const { data } = await sb.auth.getSession(), tk = data && data.session && data.session.access_token;
+      if (tk && lista.length) {
+        const res = await (await fetch(`${SUPABASE_URL}/functions/v1/hyper-function`, { method: "POST",
+          headers: { "content-type": "application/json", authorization: "Bearer " + tk, apikey: SUPABASE_ANON_KEY },
+          body: JSON.stringify({ base, pos: lista, salvar: true }) })).json();
+        salvo = !!(res && res.salvo); nota1 = res && res.nota != null ? res.nota : null;
+        PF_A_OVR = !salvo && res && res.assets ? { at: Date.now(), A: res } : null;   // sem gravar: mostra a análise nova mesmo assim
+      }
+    } catch (e) { salvo = false; }
+    return { erro: false, salvo, nota0: A.nota, nota1, n: upd.length + ins.length };
+  }
+  // ---- seguir o HRP: ajusta um ativo (ou todos) ao peso do HRP, sem dinheiro novo; a nota sai na hora.
   async function applyHrp(A, ids, msg, btn) {          // ids = ativos escolhidos (null = todos)
     const say = (k, ok, v) => { if (msg) { msg.textContent = interp(t(k), v || {}); msg.className = "add-msg " + (ok ? "ok" : "err"); } };
     if (!sb || !USER || USER.id === "preview") return say("hrp.preview");
-    const todos = (A.assets || []).filter(a => a.w > 0 && a.w_hrp != null);
-    const alvo = todos.filter(a => (ids ? ids.includes(a.id) : Math.abs(a.delta_hrp) >= 1));
-    if (!alvo.length) return;
+    if (!window.S7Quant || !window.S7Quant.hrpPlan) return;
+    const { alvo } = window.S7Quant.hrpPlan(A, ids);
     if (btn) { btn.disabled = true; btn.textContent = t("hrp.working"); }
-    const { data: pos, error } = await sb.from("portfolio_positions")
-      .select("id,ticker,market,strategy,status,quantity,alloc_pct,invested,entry,current_price,price_symbol,asset_class,rf_index,rf_rate").eq("status", "open");
-    if (error || !pos) { if (btn) btn.disabled = false; return say("sig.addErr"); }
-    // mesma chave do portfolio_analytics.py (simbolo / FX: / id da renda fixa)
-    const chave = x => {
-      const livre = (x.strategy || "po3") === "livre", cls = x.asset_class || "";
-      if (livre && /^rf_/.test(cls)) return x.id;
-      if (livre && cls === "moeda") return "FX:" + x.ticker;
-      if (!livre) return x.market === "BR" ? x.ticker + ".SA" : x.ticker;
-      return x.price_symbol || x.ticker;
-    };
-    const porChave = {}; alvo.forEach(a => { porChave[a.id] = a; });
-    const upd = [];
-    pos.forEach(x => {
-      const a = porChave[chave(x)]; if (!a) return;
-      const f = a.w_hrp / a.w; if (!isFinite(f) || Math.abs(f - 1) < 0.005) return;
-      const livre = (x.strategy || "po3") === "livre", cls = x.asset_class || "";
-      let patch;
-      if (!livre) patch = { alloc_pct: Math.round(Number(x.alloc_pct || 0) * f * 100) / 100 };
-      else if (/^rf_/.test(cls)) patch = { invested: Math.round(Number(x.invested || 0) * f * 100) / 100, entry: Number(x.entry || 0) * f, current_price: Number(x.current_price || 0) * f };
-      else {
-        const q = Number(x.quantity || 0) * f;
-        patch = { quantity: /cripto|moeda|outro/.test(cls) ? Math.round(q * 1e6) / 1e6 : Math.max(1, Math.round(q)) };   // ações, FIIs e ETFs: cota inteira
-      }
-      upd.push(sb.from("portfolio_positions").update(patch).eq("id", x.id));
-    });
-    const rs = await Promise.all(upd);
-    if (rs.some(r => r.error)) { if (btn) btn.disabled = false; return say("sig.addErr"); }
-    track("hrp_aplicar", { n: alvo.length, todos: !ids });
-    // nota na hora: valores de hoje, com o(s) ativo(s) ajustado(s) no peso do HRP
-    let salvo = false;
-    try {
-      const rfPos = {}; pos.forEach(x => { rfPos[x.id] = x; });
-      const lista = todos.map(a => {
-        const v = Math.round((porChave[a.id] ? a.w_hrp * A.valor_total : a.valor) * 100) / 100;
-        if (rfPos[a.id]) { const x = rfPos[a.id]; return { s: "RF:" + String(x.rf_index || (x.asset_class === "rf_us" ? "UST" : "PRE")).toUpperCase(), taxa: Number(x.rf_rate || 0), v, label: a.label }; }
-        return { s: a.id, v, label: a.label };
-      });
-      const { data } = await sb.auth.getSession(), tk = data && data.session && data.session.access_token;
-      if (tk) {
-        const res = await (await fetch(`${SUPABASE_URL}/functions/v1/hyper-function`, { method: "POST",
-          headers: { "content-type": "application/json", authorization: "Bearer " + tk, apikey: SUPABASE_ANON_KEY },
-          body: JSON.stringify({ base: A.base, pos: lista, salvar: true }) })).json();
-        salvo = !!(res && res.salvo);
-      }
-    } catch (e) { salvo = false; }
-    const nome = alvo.length === 1 ? alvo[0].label : null;
-    try { sessionStorage.setItem("s7-hrp-msg", JSON.stringify({ k: salvo ? (nome ? "hrp.doneOne" : "hrp.done") : (nome ? "hrp.doneOneLater" : "hrp.doneLater"), v: { n: alvo.length, a: nome } })); } catch (e) { /* sem storage */ }
-    renderPortfolio();
+    const r = await rebalancear(A, alvo, []);
+    if (r.erro) { if (btn) { btn.disabled = false; btn.textContent = t("hrp.adjust"); } return say("sig.addErr"); }
+    track("hrp_aplicar", { n: ids ? ids.length : (A.assets || []).length, todos: !ids });
+    const nome = ids && ids.length === 1 ? ((A.assets || []).find(a => a.id === ids[0]) || {}).label : null;
+    const temNota = r.nota1 != null && r.nota0 != null;
+    try { sessionStorage.setItem("s7-hrp-msg", JSON.stringify({ k: temNota ? (nome ? "hrp.doneOne" : "hrp.done") : (nome ? "hrp.doneOneLater" : "hrp.doneLater"),
+      v: { n: r.n, a: nome, n0: r.nota0, n1: r.nota1 } })); } catch (e) { /* sem storage */ }
+    renderPortfolio(true);
   }
   async function addPosition(sig, allocPct, entryType = "stop", fillPx = null) {
     if (!sb || !USER) return "no-auth";
@@ -2710,17 +2851,6 @@
 
   /* ---- portfolio page ---- */
   let PF_STRAT = "all";
-  function pfClientStats(pos, deposit) {
-    let curPnl = 0, won = 0, lost = 0, open = 0, alloc = 0;
-    pos.forEach(p => {
-      alloc += Number(p.alloc_pct) || 0;
-      const s = p.status;
-      if (s === "won") won++; else if (s === "lost") lost++; else if (s !== "pending") open++;
-      curPnl += deposit * ((Number(p.alloc_pct) || 0) / 100) * ((Number(p.ret_pct) || 0) / 100);
-    });
-    const closed = won + lost, value = deposit + curPnl;
-    return { value, total_return: (value / deposit - 1) * 100, win_rate: closed ? won / closed * 100 : null, n_open: open, alloc };
-  }
   function previewPortfolio() {
     const mkCurve = g => { const a = []; for (let i = 0; i <= 24; i++) { const f = i / 24, yr = 2024 + Math.floor(i / 12), mo = (i % 12) + 1; a.push({ d: yr + "-" + String(mo).padStart(2, "0") + "-01", p: 1 + g * f + 0.015 * Math.sin(i), spy: 1 + 0.10 * f, bova: 1 + 0.05 * f }); } return a; };
     const positions = [
@@ -2755,24 +2885,75 @@
     if (st.mode === "custom" && st.custom != null) return st.custom;
     return betaL / 2;   // "metade" (padrão)
   }
-  async function renderBetaControl(positions, deposit) {
+  // mercado de um ativo da análise: B3 (.SA) = BR; ação/ETF em dólar = US; renda fixa, câmbio e cripto ficam de fora
+  function mercadoDoAtivo(a) {
+    const id = String(a.id || "");
+    if (id.startsWith("FX:") || id.startsWith("RF:") || /^[0-9a-f-]{36}$/.test(id) || /cripto/i.test(a.cls || "")) return null;
+    if (id.endsWith(".SA")) return "BR";
+    return a.ccy === "USD" ? "US" : null;
+  }
+  const chaveHedge = m => (m === "BR" ? "DOLA11.SA" : "KMLM");
+  // linha de posição nova da proteção (livre, ou de estratégia para quem só tem posições de estratégia)
+  function novaHedge(m, vb, px) {
+    const c = HEDGE_CFG[m];
+    return { k: chaveHedge(m), vb, px, moeda: m === "US" ? "USD" : "BRL", inteira: true,
+      livre: { ticker: c.tk, tv_symbol: c.tv, market: m, currency: m === "US" ? "USD" : "BRL", price_symbol: m === "US" ? "KMLM" : "DOLA11.SA",
+               asset_class: m === "US" ? "etf_us" : "etf_br", strategy: "livre", status: "open", entry_type: "market" },
+      estr: { ticker: c.tk, tv_symbol: c.tv, market: m, stop: null, tp: null, status: "open", entry_type: "market" } };
+  }
+  // proteção com o CAPITAL ATUAL: a proteção vai ao valor-alvo e o grupo `grupo` (ids) é reescalado para o total não mudar
+  function alvoHedgeCapital(A, m, alvoH, grupo) {
+    const k = chaveHedge(m), val = {}; (A.assets || []).forEach(a => { val[a.id] = Number(a.valor) || 0; });
+    const H = val[k] || 0, G = grupo.reduce((t, id) => t + (val[id] || 0), 0);
+    if (!(G > 0)) return null;
+    const sG = (G + H - alvoH) / G;                       // o dinheiro que entra na proteção sai do grupo (ou volta para ele)
+    if (sG < 0) return null;
+    const alvo = {}; grupo.forEach(id => { alvo[id] = val[id] * sG; });
+    if (H > 0) alvo[k] = alvoH;
+    return { alvo, novaVb: H > 0 ? 0 : alvoH };
+  }
+  async function precoHedge(m) {
+    try { const { data } = await sb.from("signals").select("price").eq("ticker", HEDGE_CFG[m].sig).maybeSingle(); return data && Number(data.price) || null; } catch (e) { return null; }
+  }
+  // aplica a proteção: modo "novo" (compra com dinheiro novo) ou "capital" (com o dinheiro que já está na carteira)
+  async function aplicaHedge(A, m, modo, alvoH, grupo, msg, btn) {
+    if (!sb || !USER || USER.id === "preview") { if (msg) { msg.textContent = t("hrp.preview"); msg.className = "add-msg err"; } return; }
+    const px = await precoHedge(m), tk = HEDGE_CFG[m].tk;
+    if (!px) { if (msg) { msg.textContent = interp(t("beta.noPrice"), { tk }); msg.className = "add-msg err"; } return; }
+    if (btn) btn.disabled = true;
+    let r;
+    if (modo === "novo") {
+      const H = Number(((A.assets || []).find(a => a.id === chaveHedge(m)) || {}).valor) || 0;
+      const x = Math.max(0, alvoH - H);
+      r = await rebalancear(A, {}, [novaHedge(m, x, px)]);
+    } else {
+      const pl = alvoHedgeCapital(A, m, alvoH, grupo);
+      if (!pl) { if (btn) btn.disabled = false; if (msg) { msg.textContent = t("hg.semGrupo"); msg.className = "add-msg err"; } return; }
+      r = await rebalancear(A, pl.alvo, pl.novaVb > 0 ? [novaHedge(m, pl.novaVb, px)] : []);
+    }
+    if (btn) btn.disabled = false;
+    if (r.erro) { if (msg) { msg.textContent = t("sig.addErr"); msg.className = "add-msg err"; } return; }
+    track("hedge_aplicar", { m, modo });
+    const temNota = r.nota1 != null && r.nota0 != null;
+    if (msg) { msg.textContent = temNota ? interp(t("hg.feitoNota"), { tk, n0: r.nota0, n1: r.nota1 }) : interp(t("hg.feito"), { tk }); msg.className = "add-msg ok"; }
+    if (document.body.dataset.page === "members") { renderPortfolio(true); renderKmlmCard(); }
+  }
+  function renderBetaControl(A) {
     const host = $("#betaCtrlHost"); if (!host) return;
-    await new Promise(res => loadBetas(res));
+    if (!A || A.vazio) { host.innerHTML = ""; return; }
     const cards = [], ctx = {};
     for (const m of ["US", "BR"]) {
-      const c = HEDGE_CFG[m];
+      const c = HEDGE_CFG[m], k = chaveHedge(m);
       const bK = betaOf(m, c.tk); const betaK = bK != null ? bK : c.fb;
-      const eq = positions.filter(p => p.market === m && !HEDGE_TKS.includes(p.ticker));
-      const hp = positions.filter(p => p.ticker === c.tk);
-      let we = 0, wbe = 0;
-      eq.forEach(p => { const b = betaOf(p.market, p.ticker); const a = Number(p.alloc_pct) || 0; if (b != null) { we += a; wbe += a * b; } });
+      // ações do mercado m, pesadas pelo VALOR em dinheiro (posições livres e de estratégia)
+      const eq = (A.assets || []).filter(a => a.id !== k && mercadoDoAtivo(a) === m && betaOf(m, String(a.id).replace(/\.SA$/, "")) != null);
+      const we = eq.reduce((t, a) => t + Number(a.valor), 0);
       if (we <= 0) continue;
+      const wbe = eq.reduce((t, a) => t + Number(a.valor) * betaOf(m, String(a.id).replace(/\.SA$/, "")), 0);
       const betaL = wbe / we;
-      const kAlloc = hp.reduce((sm, p) => sm + (Number(p.alloc_pct) || 0), 0);
-      const sleeve = we + kAlloc;
-      const betaNet = (wbe + kAlloc * betaK) / sleeve;
-      const curPct = sleeve > 0 ? kAlloc / sleeve * 100 : 0;
-      ctx[m] = { betaL, betaK, curPct };
+      const H = Number(((A.assets || []).find(a => a.id === k) || {}).valor) || 0;
+      const sleeve = we + H, betaNet = (wbe + H * betaK) / sleeve, curPct = H / sleeve * 100;
+      ctx[m] = { betaL, betaK, curPct, sleeve, H, grupo: eq.map(a => a.id) };
       const st = BETA_ST[m];
       const presets = [["neutro", t("beta.neutro")], ["half", t("beta.half")], ["moderate", t("beta.moderate")], ["custom", t("beta.custom")]];
       cards.push(`<div class="chart-card beta-card" data-mkt="${m}">
@@ -2795,8 +2976,8 @@
     }
     host.innerHTML = cards.join("");
     for (const m of Object.keys(ctx)) {
-      const { betaL, betaK, curPct } = ctx[m]; const st = BETA_ST[m];
-      const rec = () => paintBetaRec(m, betaL, betaK, curPct);
+      const st = BETA_ST[m];
+      const rec = () => paintBetaRec(A, m, ctx[m]);
       const pres = $("#betaPresets" + m);
       (pres?.querySelectorAll("button") || []).forEach(b => b.onclick = () => {
         st.mode = b.dataset.m;
@@ -2813,38 +2994,33 @@
       rec();
     }
   }
-  function paintBetaRec(m, betaL, betaK, curPct) {
+  function paintBetaRec(A, m, cx) {
     const host = $("#betaRec" + m); if (!host) return;
-    const tk = HEDGE_CFG[m].tk;
+    const { betaL, betaK, curPct, sleeve, H, grupo } = cx;
+    const tk = HEDGE_CFG[m].tk, sym = (A.base || "USD") === "BRL" ? "R$" : "US$";
+    const din = v => sym + " " + Math.round(v).toLocaleString(locale());
     const tgt = Math.max(betaK, Math.min(betaL, betaTargetVal(m, betaL)));
-    const w = betaL > betaK ? (betaL - tgt) / (betaL - betaK) : 0;   // fração do sleeve no ativo de proteção
-    const hPct = Math.max(0, Math.min(100, w * 100));
+    const w = betaL > betaK ? (betaL - tgt) / (betaL - betaK) : 0;   // fração do bloco (ações do mercado + proteção) na proteção
+    const hPct = Math.max(0, Math.min(100, w * 100)), h = hPct / 100;
     const delta = hPct - curPct;
+    const alvoCap = h * sleeve;                                     // com o capital atual: o bloco não muda de tamanho
+    const novo = h < 1 ? Math.max(0, (h * sleeve - H) / (1 - h)) : 0;   // com dinheiro novo: compra até a proteção ser h do bloco
     const sv = $("#betaSliderV" + m); if (sv) sv.textContent = t("beta.target") + " " + nf(tgt, 2);
     host.innerHTML = `<div class="beta-rec">
       <div class="br-line">${interp(t("beta.recLine"), { tk, pct: nf(hPct, 0), eq: nf(100 - hPct, 0), b: nf(tgt, 2) })}</div>
-      ${Math.abs(delta) < 1 ? `<div class="br-ok">${t("beta.onTarget")}</div>`
-        : delta > 0 ? `<div class="br-add">${interp(t("beta.addLine"), { tk, d: nf(delta, 0) })}</div>`
-          : `<div class="br-add">${interp(t("beta.trimLine"), { tk, d: nf(-delta, 0) })}</div>`}
-      ${hPct > 55 ? `<div class="br-warn">⚠ ${interp(t("beta.aggressive"), { tk })}</div>` : ""}
-      <button class="btn btn-primary" id="betaApply${m}">${interp(t("beta.apply"), { tk, pct: nf(hPct, 0) })}</button>
+      ${Math.abs(delta) < 1 ? `<div class="br-ok">${t("beta.onTarget")}</div>` : `
+        ${hPct > 55 ? `<div class="br-warn">⚠ ${interp(t("beta.aggressive"), { tk })}</div>` : ""}
+        <div class="hg-opcoes">
+          <div class="hg-op"><b>${t("hg.opCapT")}</b><small>${interp(t(delta > 0 ? "hg.opCapS" : "hg.opCapRed"), { tk, v: din(Math.abs(alvoCap - H)) })}</small>
+            <button class="btn btn-primary" id="betaCap${m}">${interp(t("hg.btnCap"), { tk, pct: nf(hPct, 0) })}</button></div>
+          ${delta > 0 && novo > 0 ? `<div class="hg-op"><b>${t("hg.opNovoT")}</b><small>${interp(t("hg.opNovoS"), { tk, v: din(novo) })}</small>
+            <button class="btn btn-ghost" id="betaNovo${m}">${interp(t("hg.btnNovo"), { v: din(novo) })}</button></div>` : ""}
+        </div>`}
       <span role="status" aria-live="polite" class="add-msg" id="betaMsg${m}"></span>
     </div>`;
-    const apply = $("#betaApply" + m);
-    if (apply) apply.onclick = () => applyBetaHedge(m, hPct);
-  }
-  async function applyBetaHedge(m, hPct) {
-    if (!sb || !USER || USER.id === "preview") return;
-    const c = HEDGE_CFG[m];
-    if (!confirm(interp(t("beta.applyConfirm"), { tk: c.tk, pct: nf(hPct, 0) }))) return;
-    const msg = $("#betaMsg" + m); const apply = $("#betaApply" + m); if (apply) apply.disabled = true;
-    let price = null;
-    try { const { data } = await sb.from("signals").select("price").eq("ticker", c.sig).maybeSingle(); price = data && data.price; } catch (e) {}
-    if (!price) { if (msg) { msg.textContent = interp(t("beta.noPrice"), { tk: c.tk }); msg.className = "add-msg err"; } if (apply) apply.disabled = false; return; }
-    await sb.from("portfolio_positions").delete().eq("user_id", USER.id).eq("ticker", c.tk);
-    const error = await insertPosition({ ticker: c.tk, tv_symbol: c.tv, market: m, entry: price, stop: null, tp: null, alloc_pct: Math.round(hPct * 10) / 10, status: "open", entry_type: "market" });
-    if (msg) { msg.textContent = error ? t("sig.addErr") : interp(t("beta.applied"), { tk: c.tk }); msg.className = "add-msg " + (error ? "err" : "ok"); }
-    if (!error) renderPortfolio();
+    const msg = $("#betaMsg" + m), bc = $("#betaCap" + m), bn = $("#betaNovo" + m);
+    if (bc) bc.onclick = () => aplicaHedge(A, m, "capital", alvoCap, grupo, msg, bc);
+    if (bn) bn.onclick = () => aplicaHedge(A, m, "novo", H + novo, grupo, msg, bn);
   }
   // ---- Minha mesa ao vivo: o pipeline marca as posições a cada 15 min; a página confere a cada 5 min (e ao voltar para a aba)
   //      se há números novos e redesenha SEM a tela de "carregando". O formulário em edição volta pelo rascunho (s7-ff).
@@ -2894,7 +3070,11 @@
     const deposit = (pr.data && pr.data.portfolio_deposit) || 10000;
     const cur = (pr.data && pr.data.portfolio_currency) || "USD";
     const positions = po.data || [];
-    const d = (st.data && st.data.data) || null;
+    let d = (st.data && st.data.data) || null;
+    if (PF_A_OVR && Date.now() - PF_A_OVR.at < 20 * 60 * 1000 && !(d && d.analytics && Date.parse(d.analytics.asof) > PF_A_OVR.at))
+      d = { ...(d || {}), analytics: PF_A_OVR.A };
+    else PF_A_OVR = null;
+    PF_POS = positions;
     setHeld(positions);
     if (DIV_ROWS && DIV_ROWS.length && $("#divSignals")) { paintDivSignals(); drawDivHeat(); }
     const sym = cur === "BRL" ? "R$" : "$";
@@ -2913,13 +3093,17 @@
     const viewPos = PF_STRAT === "all" ? positions : positions.filter(p => p.strategy === PF_STRAT);
     const eng = PF_STRAT === "all" ? d : (d && d.by_strategy && d.by_strategy[PF_STRAT]) || null;
     await new Promise(res => loadBetas(res));
-    const cs = pfClientStats(viewPos, deposit);
+    const baseA = (d && d.analytics && d.analytics.base) || cur, fxHoje = await cambioHoje();
+    const cs = pfContabil(viewPos, deposit, baseA, fxHoje, d && d.analytics);
+    if (baseA !== cur && fxHoje) { const k = cur === "BRL" ? fxHoje : 1 / fxHoje; cs.value *= k; }     // exibe na moeda escolhida
     const you = viewPos.length ? cs.total_return : null;
     const spy = eng ? eng.spy_return : null, bova = eng ? eng.bova_return : null;
     const curve = eng && eng.curve;
     // beta do portfólio (ponderado por alocação) da visão atual, betas 5a por ativo
     let bW = 0, bA = 0;
-    viewPos.forEach(p => { const bt = betaOf(p.market, p.ticker); if (bt != null) { const a = Number(p.alloc_pct) || 0; bA += a; bW += a * bt; } });
+    viewPos.filter(p => p.status === "open").forEach(p => {          // pesos pelo valor em dinheiro (livres e estratégias)
+      const bt = betaOf(p.market, p.ticker); if (bt == null) return;
+      const a = vcNativo(p, deposit).V * fatorBase(p, viewPos, deposit, baseA, fxHoje, d && d.analytics); bA += a; bW += a * bt; });
     const pfBeta = bA > 0 ? bW / bA : null;
     // posições zeradas, mas métricas do motor mantidas ("Zerar posições" preserva o histórico)
     const frozen = positions.length === 0 && d && d.value != null;
@@ -3020,7 +3204,7 @@
     host.innerHTML = html;
     const tg = $("#pfToggle"); if (tg) tg.onclick = () => { PF_ALL = !PF_ALL; renderPortfolio(); };
     cardify(host.querySelector(".blotter-scroll table"));
-    if (!frozen && positions.length && hasHedge()) renderBetaControl(positions, deposit);
+    if (!frozen && positions.length && hasHedge()) { await new Promise(res => loadBetas(res)); renderBetaControl(d && d.analytics); }
 
     const seg = $("#pfStratSeg");
     if (seg) seg.querySelectorAll("button").forEach(b => b.onclick = () => { PF_STRAT = b.dataset.s; renderPortfolio(); });
@@ -3701,6 +3885,7 @@
     const api = { sb, user: USER, plan: (PROFILE && PROFILE.plan) || "", member: isMember(), lang: LANG, preview: PREVIEW, payload: fetchMemberPayload };
     if (window.S7Terminal) window.S7Terminal.boot(api); else window.__S7_TERM_API = api;
   }
+  const CARD_HG = {};
   async function renderKmlmCard() {
     const host = $("#kmlmHost"); if (!host) return;
     if (!sb || !USER || !hasHedge()) { host.innerHTML = ""; return; }
@@ -3747,21 +3932,24 @@
       ${valores}
       <div class="${under ? "kmlm-alert" : "kmlm-ok"}">${under ? interp(t("kmlm.under"), { tk: c.tk, rec: nf(rec, 0) }) : t("kmlm.onTarget")}</div>
       <div class="kmlm-desc">${t(m === "BR" ? "dola.desc" : "kmlm.desc")}</div>
-      ${px > 0 && cotas && falta > 0 ? `<button class="btn btn-primary" id="kmlmAdd${m}" data-q="${cotas}">${interp(t("hg.addCotas"), { q: cotas.toLocaleString(locale()), tk: c.tk })}</button><span role="status" aria-live="polite" class="add-msg" id="kmlmMsg${m}"></span>` : ""}
+      ${tot > 0 && px > 0 && Math.abs(curPct - rec) >= 0.5 ? (() => {
+        const grupo = (A.assets || []).filter(a => a.id !== chaveHedge(m)).map(a => a.id);
+        const novo = rec < 100 ? Math.max(0, (rec / 100 * tot - tem) / (1 - rec / 100)) : 0;
+        CARD_HG[m] = { A, grupo, alvoCap: alvo, alvoNovo: tem + novo };
+        return `<div class="hg-opcoes">
+          <div class="hg-op"><b>${t("hg.opCapT")}</b><small>${interp(t(falta > 0 ? "hg.opCapS2" : "hg.opCapRed2"), { tk: c.tk, v: prim(Math.abs(falta)), pct: nf(rec, 0) })}</small>
+            <button class="btn btn-primary" id="kmlmCap${m}">${interp(t("hg.btnCap"), { tk: c.tk, pct: nf(rec, 0) })}</button></div>
+          ${falta > 0 && novo > 0 ? `<div class="hg-op"><b>${t("hg.opNovoT")}</b><small>${interp(t("hg.opNovoS2"), { tk: c.tk, v: prim(novo), pct: nf(rec, 0) })}</small>
+            <button class="btn btn-ghost" id="kmlmNovo${m}">${interp(t("hg.btnNovo"), { v: m === "US" ? U(emUSD(novo)) : R(emBRL(novo)) })}</button></div>` : ""}
+        </div><span role="status" aria-live="polite" class="add-msg" id="kmlmMsg${m}"></span>`;
+      })() : ""}
     </div>`;
     }).join("");
-    itens.forEach(({ m, c, hedge }) => {
-      const add = $("#kmlmAdd" + m); if (!add) return;
-      add.onclick = async () => {
-        add.disabled = true;
-        const q = Number(add.dataset.q) || 0, today = new Date().toISOString().slice(0, 10);
-        const { error } = await sb.from("portfolio_positions").insert({
-          ticker: c.tk, tv_symbol: c.tv, market: m, currency: m === "US" ? "USD" : "BRL", price_symbol: m === "US" ? "KMLM" : "DOLA11.SA",
-          asset_class: m === "US" ? "etf_us" : "etf_br", strategy: "livre", status: "open", entry_type: "market", alloc_pct: 0,
-          quantity: q, entry: Number(hedge.price), current_price: Number(hedge.price), added_at: today, ret_pct: 0 });
-        const msg = $("#kmlmMsg" + m); if (msg) { msg.textContent = error ? t("sig.addErr") : interp(t("hg.added"), { q: q.toLocaleString(locale()), tk: c.tk }); msg.className = "add-msg " + (error ? "err" : "ok"); }
-        if (!error && document.body.dataset.page === "members") renderPortfolio();
-      };
+    itens.forEach(({ m }) => {
+      const cfg = CARD_HG[m]; if (!cfg) return;
+      const msg = $("#kmlmMsg" + m), bc = $("#kmlmCap" + m), bn = $("#kmlmNovo" + m);
+      if (bc) bc.onclick = () => aplicaHedge(cfg.A, m, "capital", cfg.alvoCap, cfg.grupo, msg, bc);
+      if (bn) bn.onclick = () => aplicaHedge(cfg.A, m, "novo", cfg.alvoNovo, cfg.grupo, msg, bn);
     });
   }
   function renderCoveredCallMembers() {

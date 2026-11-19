@@ -1776,3 +1776,10 @@ iframe{color-scheme:normal}
 /* verificação anti-robô (Turnstile) no login/cadastro */
 .cf-ts{margin:6px 0 10px;min-height:0}
 .cf-ts:empty{display:none}
+
+/* proteção: duas opções (capital atual | dinheiro novo) */
+.hg-opcoes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:12px 0 6px}
+.hg-op{display:flex;flex-direction:column;gap:6px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface)}
+.hg-op b{font-size:14px}.hg-op small{color:var(--muted);font-size:13px;line-height:1.45}.hg-op .btn{margin-top:auto;align-self:flex-start}
+
+.q-nota-aj{display:block;margin:0 0 14px;padding:12px 14px;border-radius:10px;font-size:15px;background:color-mix(in srgb,var(--pos) 10%,transparent)}

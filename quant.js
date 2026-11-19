@@ -212,6 +212,41 @@
   }
 
   // ---------------- sugestão HRP ----------------
+  // PLANO DE AJUSTE (autofinanciado): devolve o valor-alvo de cada ativo SEM mudar o total da carteira.
+  //  - todos (ids = null): cada ativo vai ao peso HRP.
+  //  - um ativo: ele vai ao peso HRP e o dinheiro sai dos ativos que estão ACIMA do peso HRP (ou, se ele for vendido, vai
+  //    para os que estão ABAIXO), na proporção da distância de cada um até o HRP. Todo movimento aproxima a carteira do HRP.
+  function hrpPlan(A, ids) {
+    const as = (A.assets || []).filter(a => a.valor > 0 && a.w_hrp != null && a.delta_hrp != null);
+    const atual = {}, alvoHrp = {};
+    as.forEach(a => { atual[a.id] = Number(a.valor); alvoHrp[a.id] = Math.max(0, Number(a.valor) + Number(a.delta_hrp)); });
+    const T = as.reduce((t, a) => t + atual[a.id], 0), TH = as.reduce((t, a) => t + alvoHrp[a.id], 0);
+    if (TH > 0) as.forEach(a => { alvoHrp[a.id] *= T / TH; });            // garante soma = total de hoje
+    const alvo = { ...atual };
+    if (!ids) { as.forEach(a => { alvo[a.id] = alvoHrp[a.id]; }); return { alvo, atual, T }; }
+    for (const id of ids) {
+      if (!(id in alvo)) continue;
+      const d = alvoHrp[id] - alvo[id];
+      if (Math.abs(d) < 0.01) continue;
+      const sinal = d > 0 ? -1 : 1;                                     // contrapartes vendem (d>0) ou compram (d<0)
+      const cps = as.filter(a => a.id !== id).map(a => ({ id: a.id, gap: (alvoHrp[a.id] - alvo[a.id]) * (d > 0 ? -1 : 1) })).filter(x => x.gap > 1e-9);
+      const tot = cps.reduce((t, x) => t + x.gap, 0);
+      let feito = 0;
+      if (tot > 0) {
+        const usa = Math.min(Math.abs(d), tot);
+        cps.forEach(x => { alvo[x.id] += sinal * usa * x.gap / tot; });
+        feito = usa;
+      }
+      const resto = Math.abs(d) - feito;                                // (não acontece se a soma dos ajustes do HRP for zero)
+      if (resto > 0.01) {
+        const outros = as.filter(a => a.id !== id), S = outros.reduce((t, a) => t + alvo[a.id], 0);
+        if (S > 0) outros.forEach(a => { alvo[a.id] += sinal * resto * alvo[a.id] / S; });
+      }
+      alvo[id] = alvoHrp[id];
+    }
+    return { alvo, atual, T };
+  }
+
   let HRP_TODOS = false;
   function hrpView(host, A, o) {
     set(A, o); if (empty(host, A)) return;
@@ -220,12 +255,14 @@
     const todas = (A.assets || []).slice().sort((x, y) => Math.abs(y.delta_hrp) - Math.abs(x.delta_hrp));
     const rows = HRP_TODOS ? todas : todas.slice(0, 15);
     const cmp = (l, x, y) => `<tr><td>${l}</td><td class="num">${x}</td><td class="num"><b>${y}</b></td></tr>`;
-    const ajusta = r => Math.abs(r.delta_hrp) >= 1 && r.w > 0;
+    // "no peso": diferença menor que 0,5% da carteira ou que meia cota do ativo (não dá para comprar fração de cota na B3)
+    const tot = Number(A.valor_total) || 0, unid = id => (o && typeof o.unit === "function" ? Number(o.unit(id)) || 0 : 0);
+    const ajusta = r => r.w > 0 && Math.abs(r.delta_hrp) >= Math.max(1, 0.005 * tot, 0.5 * unid(r.id));
     const nAj = todas.filter(ajusta).length;
     host.innerHTML = `<table class="q-tbl q-cmp"><thead><tr><th></th><th class="num">${tx("Hoje", "Today")}</th><th class="num">HRP</th></tr></thead><tbody>
       ${cmp(tx("Volatilidade", "Volatility"), pc(a.vol), pc(h.vol))}${cmp(tx("Pior queda (2a)", "Max drawdown"), pc(a.max_dd), pc(h.max_dd))}
       ${cmp("ES 97,5%", pc(a.es975, 2), pc(h.es975, 2))}${cmp(tx("Fontes de risco independentes", "Independent bets"), nf(a.enb), nf(h.enb))}</tbody></table>
-      ${pode ? `<p class="q-adj-hint">${tx("Escolha o que seguir: o botão <b>Ajustar</b> de cada ativo atualiza só aquela posição na sua carteira e recalcula a nota. Não envia ordens: a compra ou venda você faz na sua corretora.", "Pick what to follow: each asset's <b>Adjust</b> button updates only that position and recalculates the score. No orders are sent: you trade at your broker.")}</p>
+      ${pode ? `<p class="q-adj-hint">${tx("Escolha o que seguir. O ajuste usa só o dinheiro que já está na carteira, ao preço de hoje: o total não muda. Ao ajustar um ativo, o valor sai dos ativos que estão acima do peso do HRP (ou vai para os que estão abaixo). A nota é recalculada na hora. Não envia ordens: a compra e a venda você faz na sua corretora.", "Pick what to follow. Adjusting only uses the money already in the portfolio, at today's price: the total does not change. Adjusting one asset takes the money from assets above their HRP weight (or sends it to those below). The score is recalculated at once. No orders are sent: you trade at your broker.")}</p>
         <span role="status" aria-live="polite" class="add-msg" id="qHrpMsg"></span>` : ""}
       <table class="q-tbl q-hrp"><thead><tr><th>${tx("Ativo", "Asset")}</th><th class="num">${tx("Hoje", "Today")}</th><th class="num">HRP</th><th class="num">${tx("Ajuste", "Change")}</th></tr></thead><tbody>
       ${rows.map(r => `<tr><td><b>${esc(r.label)}</b>${r.sinal ? ` <small class="q-sig">${tx("sinal Seven7", "Seven7 signal")}</small>` : ""}</td><td class="num">${pc(r.w)}</td><td class="num">${pc(r.w_hrp)}</td>
@@ -387,6 +424,6 @@
     });
   }
 
-  window.S7Quant = { full, laudo, health, dividends, metrics, risk, dd, frontier, hrp: hrpView, corr, formulas, scoreCanvas, shareImage, shareButtons };
+  window.S7Quant = { full, laudo, health, dividends, metrics, risk, dd, frontier, hrp: hrpView, hrpPlan, corr, formulas, scoreCanvas, shareImage, shareButtons };
   if (window.__s7QuantPending) { const f = window.__s7QuantPending; delete window.__s7QuantPending; f(); }
 })();

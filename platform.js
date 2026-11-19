@@ -96,6 +96,31 @@
     // home nova: o laudo sai em largura total, abaixo da abertura (#qqResult); guias: logo abaixo do formulário
     const fora = $("#qqResult"); if (fora) fora.innerHTML = `<div id="qqOut"></div>`;
     const rows = $("#qqRows", host), out = $("#qqOut");
+    // "Ajustar" do HRP no check-up: muda os VALORES do pedido (mesmo total, ao preço de hoje) e refaz o laudo na hora
+    let NOTA_ANTES = null;
+    const rotulo = p => {                                     // mesmo rótulo que o motor dá a cada ativo
+      if (p.s.startsWith("RF:")) { const ind = p.s.slice(3), t = p.taxa; return ind === "CDI" || ind === "SELIC" ? `${t}% ${ind}` : ind === "IPCA" ? `IPCA+${t}%` : `${ind} ${t}%`; }
+      return p.s.toUpperCase().slice(0, 16);
+    };
+    const ajustaForm = (A, ids, msg, btn) => {
+      if (!window.S7Quant || !window.S7Quant.hrpPlan) return;
+      const { alvo } = window.S7Quant.hrpPlan(A, ids), porRot = {};
+      (A.assets || []).forEach(a => { porRot[a.label] = a; });
+      const dolar = (A.assets || []).find(a => a.id === "FX:USD");
+      $$(".qq-row", host).forEach(r => {
+        const rf = $(".qq-rf", r), inp = $(".qq-val input", r), v = Number(inp.value) || 0;
+        if (!(v > 0)) return;
+        const p = rf ? { s: rf.dataset.s, taxa: Number($(".qq-taxa input", r).value) || 0 } : { s: $(".qq-sym", r).value.trim().toUpperCase() };
+        let a = porRot[rotulo(p)];
+        if (!a && !rf && dolar && /^(USD|US\$|DOLAR|DÓLAR|DOL)$/.test(p.s)) a = dolar;
+        if (!a || !(a.valor > 0) || alvo[a.id] == null) return;
+        inp.value = Math.round(v * alvo[a.id] / a.valor * 100) / 100;
+      });
+      if (btn) { btn.disabled = true; btn.textContent = tx("Ajustando…", "Adjusting…"); }
+      NOTA_ANTES = A.nota;
+      track("hrp_aplicar_home", { n: ids ? ids.length : (A.assets || []).length, todos: !ids });
+      $(".qq-go", host).click();
+    };
     const sync = () => {
       $$(".qq-cur", host).forEach(e => { e.textContent = base === "BRL" ? "R$" : "US$"; });
       const n = $$(".qq-row", host).length;
@@ -123,7 +148,10 @@
         const cta = A().user && A().user.id !== "preview"
           ? `<a class="btn btn-primary" href="members.html">${tx("Salvar na Minha mesa", "Save to My desk")}</a>`
           : `<a class="btn btn-primary" href="register.html">${tx("Criar conta grátis", "Create free account")}</a>`;
-        out.innerHTML = `<div class="qq-cta"><div><b>${tx("Gostou? Salve a carteira e acompanhe todo dia.", "Like it? Save the portfolio and track it daily.")}</b>
+        const ajuste = NOTA_ANTES != null && d.nota != null
+          ? `<div class="add-msg ok q-nota-aj">${tx(`Ajuste feito com o mesmo total da carteira, ao preço de hoje. Nota ${NOTA_ANTES} → <b>${d.nota}</b>. Os valores do pedido acima já foram atualizados.`, `Adjusted with the same portfolio total, at today's prices. Score ${NOTA_ANTES} → <b>${d.nota}</b>. The amounts above were updated.`)}</div>` : "";
+        NOTA_ANTES = null;
+        out.innerHTML = ajuste + `<div class="qq-cta"><div><b>${tx("Gostou? Salve a carteira e acompanhe todo dia.", "Like it? Save the portfolio and track it daily.")}</b>
           <small>${tx("Conta grátis: carteira salva, quantificação diária, Terminal e Ferramentas.", "Free account: saved portfolio, daily quant, Terminal and Tools.")}</small></div>${cta}</div>
           ${d.nota != null ? `<div class="qq-share"><span>${tx("Desafie um amigo:", "Challenge a friend:")}</span>
             <a class="btn btn-ghost" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(shareTxt(d.nota))}">WhatsApp</a>
@@ -133,7 +161,7 @@
         const cp = $(".qq-copy", out);
         if (cp) cp.onclick = async () => { try { await navigator.clipboard.writeText(shareTxt(d.nota)); cp.textContent = tx("Copiado ✓", "Copied ✓"); track("share", { via: "copiar" }); } catch (e) { /* sem permissão */ } };
         const draw = () => {
-          window.S7Quant.full($("#qqQuant", out), d, { lang: A().lang });
+          window.S7Quant.full($("#qqQuant", out), d, { lang: A().lang, onApply: ajustaForm });
           window.S7Quant.shareButtons($("#qqImg", out), d, { lang: A().lang, onUse: (f, m) => track("share", { via: "imagem_" + f, modo: m }) });
         };
         if (window.S7Quant) draw(); else window.__s7QuantPending = draw;
