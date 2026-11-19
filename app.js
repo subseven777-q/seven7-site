@@ -2711,7 +2711,7 @@
   //  novas: [{ k, vb, px, livre:{...linha}, estr:{...linha} }]   posição nova (ex.: proteção que o usuário ainda não tem)
   // Livres primeiro (definem o novo valor automático); depois as de estratégia, reescaladas para manter o valor em dinheiro.
   let PF_A_OVR = null;                                    // análise instantânea quando o motor não pôde gravar
-  async function rebalancear(A, alvo, novas) {
+  async function rebalancear(A, alvo, novas, origem = "outro") {
     const base = A.base || "USD", fx = await cambioHoje();
     const [po, pr] = await Promise.all([
       sb.from("portfolio_positions").select("*"),
@@ -2727,7 +2727,8 @@
       if (resto > 0.01) fatorK[k] = Math.max(0, alvo[k] - m3De[k]) / resto;
     });
     const temLivre = pos.some(ehLivre);
-    const upd = [], novoK = {}, novoM3 = {}, ins = [];
+    const upd = [], novoK = {}, novoM3 = {}, ins = [], hist = [];        // hist: o que mudou de tamanho (curva do passado)
+    const marca = (x, k, v0, v1) => { if (v0 > 0 && Math.abs(v1 / v0 - 1) > 1e-6) hist.push({ position_id: x.id, chave: String(k).slice(0, 60), origem, fator: r6(v1 / v0), v_antes: r2(v0), v_depois: r2(v1) }); };
     let dLivre = 0;
     const soma = (k, v) => { novoK[k] = (novoK[k] || 0) + v; };
     for (const x of pos.filter(ehLivre)) {
@@ -2749,7 +2750,7 @@
           v1 = q1 * px;
         }
       }
-      if (patch) upd.push({ id: x.id, patch });
+      if (patch) { upd.push({ id: x.id, patch }); marca(x, k, v0.V * f, v1 * f); }
       dLivre += (v1 - v0.V) * f; soma(k, v1 * f);
     }
     for (const n of novas || []) {                        // posição nova comprada ao preço de hoje
@@ -2773,7 +2774,7 @@
         const V1 = V * sF;
         if (sF > 1) { N1 = N + (V1 - V); r1 = V1 / N1 - 1; }         // compra: custo novo no preço de hoje
         else { N1 = N * sF; real += (V - V1) - (N - N1); }          // venda: realiza o lucro da parte vendida
-        mudou = true; if (aberta) soma(k, V1);
+        mudou = true; if (aberta) soma(k, V1); marca(x, k, V, V1);
       } else if (aberta) { soma(k, V); if (m3) novoM3[k] = (novoM3[k] || 0) + V; }
       if (mudou || Math.abs(dep1 - dep) > 0.005) {                   // base mudou: mantém o valor em dinheiro de cada posição
         const patch = { alloc_pct: r4(Math.min(100, N1 / dep1 * 100)) };
@@ -2791,6 +2792,7 @@
       ...(temLivre && Math.abs(dep1 - dep) > 0.005 ? [sb.from("profiles").update({ portfolio_deposit: r2(dep1) }).eq("id", USER.id)] : []),
     ]);
     if (rs.some(r => r && r.error)) return { erro: true };
+    if (hist.length) { try { await sb.from("portfolio_moves").insert(hist); } catch (e) { /* histórico nunca bloqueia o ajuste */ } }
     // nota NA HORA: a Edge Function analisa os valores novos e grava (o pipeline confirma o cálculo oficial em até 15 min)
     let salvo = false, nota1 = null;
     try {
@@ -2821,7 +2823,7 @@
     if (!window.S7Quant || !window.S7Quant.hrpPlan) return;
     const { alvo } = window.S7Quant.hrpPlan(A, ids);
     if (btn) { btn.disabled = true; btn.textContent = t("hrp.working"); }
-    const r = await rebalancear(A, alvo, []);
+    const r = await rebalancear(A, alvo, [], "hrp");
     if (r.erro) { if (btn) { btn.disabled = false; btn.textContent = t("hrp.adjust"); } return say("sig.addErr"); }
     track("hrp_aplicar", { n: ids ? ids.length : (A.assets || []).length, todos: !ids });
     const nome = ids && ids.length === 1 ? ((A.assets || []).find(a => a.id === ids[0]) || {}).label : null;
@@ -2938,11 +2940,11 @@
     if (modo === "novo") {
       const H = Number(((A.assets || []).find(a => a.id === chaveHedge(m)) || {}).valor) || 0;
       const x = Math.max(0, alvoH - H);
-      r = await rebalancear(A, {}, [novaHedge(m, x, px)]);
+      r = await rebalancear(A, {}, [novaHedge(m, x, px)], "protecao");
     } else {
       const pl = alvoHedgeCapital(A, m, alvoH, grupo);
       if (!pl) { if (btn) btn.disabled = false; if (msg) { msg.textContent = t("hg.semGrupo"); msg.className = "add-msg err"; } return; }
-      r = await rebalancear(A, pl.alvo, pl.novaVb > 0 ? [novaHedge(m, pl.novaVb, px)] : []);
+      r = await rebalancear(A, pl.alvo, pl.novaVb > 0 ? [novaHedge(m, pl.novaVb, px)] : [], "protecao");
     }
     if (btn) btn.disabled = false;
     if (r.erro) { if (msg) { msg.textContent = t("sig.addErr"); msg.className = "add-msg err"; } return; }
