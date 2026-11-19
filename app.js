@@ -3173,9 +3173,10 @@
           <span title="${t("pf.dragH")}">${t("pf.drag")} <b>${eng && eng.vol_drag != null ? nf(eng.vol_drag, 2) + "%" : "—"}</b></span>
           <span title="${t("pf.betaH")}">${t("pf.beta")} <b>${pfBeta != null ? nf(pfBeta, 2) : "—"}</b> <small>(${t("pf.betaH")})</small></span>
         </div>`;
-      // benchmark headline + chart
+      // benchmark headline + chart: mesma janela da curva (desde a 1ª compra), retorno ponderado pelo tempo — comparável com os índices
+      const vsRet = eng && eng.curve_return != null ? eng.curve_return : dispRet;
       html += `<div class="pf-vs">
-        <span class="pf-vs-you">${t("pf.you")}: <b class="${dispRet >= 0 ? "pos" : "neg"}">${dispRet == null ? "—" : fmtPct(dispRet)}</b></span>
+        <span class="pf-vs-you">${t("pf.you")}: <b class="${vsRet >= 0 ? "pos" : "neg"}">${vsRet == null ? "—" : fmtPct(vsRet)}</b></span>
         <span>SPY: <b>${spy == null ? "—" : fmtPct(spy)}</b></span>
         <span>BOVA11: <b>${bova == null ? "—" : fmtPct(bova)}</b></span></div>`;
       if (curve && curve.length > 1) {
