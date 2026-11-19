@@ -827,11 +827,15 @@
     "hg.opCapT": { en: "With the money already in the portfolio", pt: "Com o dinheiro que já está na carteira" },
     "hg.opCapS": { en: "Moves {v} from your stocks in this market into {tk}, at today's prices. The portfolio total does not change.", pt: "Passa {v} das suas ações deste mercado para o {tk}, ao preço de hoje. O total da carteira não muda." },
     "hg.opCapRed": { en: "Moves {v} from {tk} back to your stocks in this market, at today's prices. The total does not change.", pt: "Devolve {v} do {tk} para as suas ações deste mercado, ao preço de hoje. O total não muda." },
-    "hg.opCapS2": { en: "Moves {v} from your other assets into {tk}, in proportion, so {tk} becomes {pct}% of the total. The total does not change.", pt: "Passa {v} dos seus outros ativos para o {tk}, na proporção de cada um, para o {tk} virar {pct}% do total. O total não muda." },
-    "hg.opCapRed2": { en: "Sells {v} of {tk} and spreads it over your other assets, so {tk} returns to {pct}%. The total does not change.", pt: "Vende {v} do {tk} e distribui entre os seus outros ativos, para o {tk} voltar a {pct}%. O total não muda." },
+    "hg.opCapS2": { en: "Moves {v} from your {mkt} stocks (not the Markov 3 ones) into {tk}, so {tk} becomes {pct}% of your {mkt} part. The total does not change.", pt: "Passa {v} das suas ações {mkt} (menos as do Markov 3) para o {tk}, para o {tk} virar {pct}% da sua parte {mkt}. O total não muda." },
+    "hg.opCapRed2": { en: "Sells {v} of {tk} and returns it to your {mkt} stocks, so {tk} goes back to {pct}% of your {mkt} part. The total does not change.", pt: "Vende {v} do {tk} e devolve para as suas ações {mkt}, para o {tk} voltar a {pct}% da sua parte {mkt}. O total não muda." },
     "hg.opNovoT": { en: "Adding new money", pt: "Colocando dinheiro novo" },
     "hg.opNovoS": { en: "Buys {v} of {tk} with new money; nothing is sold.", pt: "Compra {v} de {tk} com dinheiro novo; nada é vendido." },
-    "hg.opNovoS2": { en: "Buys {v} of {tk} with new money; nothing is sold. With the new total, {tk} becomes {pct}%.", pt: "Compra {v} de {tk} com dinheiro novo; nada é vendido. Com o total novo, o {tk} vira {pct}%." },
+    "hg.opNovoS2": { en: "Buys {v} of {tk} with new money; nothing is sold. Then {tk} becomes {pct}% of your {mkt} part.", pt: "Compra {v} de {tk} com dinheiro novo; nada é vendido. Assim o {tk} vira {pct}% da sua parte {mkt}." },
+    "hg.daParte": { en: "{pct}% of your {mkt} part ({v})", pt: "{pct}% da sua parte {mkt} ({v})" },
+    "hg.parteUS": { en: "US", pt: "EUA" },
+    "hg.parteBR": { en: "Brazil", pt: "Brasil" },
+    "hg.semMercado": { en: "You have no {mkt} stocks or ETFs: {tk} protects only that part of the portfolio.", pt: "Você não tem ações nem ETFs {mkt}: o {tk} protege só essa parte da carteira." },
     "hg.btnCap": { en: "Adjust {tk} to {pct}% with current capital", pt: "Ajustar {tk} para {pct}% com o capital atual" },
     "hg.btnNovo": { en: "Buy {v} with new money", pt: "Comprar {v} com dinheiro novo" },
     "hg.feito": { en: "{tk} adjusted. Place the trades at your broker.", pt: "{tk} ajustado. Agora faça as operações na sua corretora." },
@@ -1675,7 +1679,7 @@
       ];
       const body = rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td class="col-h ${r[3] ? "hc-better" : ""}">${r[2]}</td></tr>`).join("");
       const desde = h.period && h.period.start ? h.period.start.slice(5, 7) + "/" + h.period.start.slice(0, 4) : "";
-      return `${blocos.length > 1 ? `<h3 class="hedge-mkt">${t("hg.mkt" + m)}</h3>` : ""}
+      return `${blocos.length > 1 ? `<h3 class="hedge-mkt">${t("hg.parte" + m)}</h3>` : ""}
       <div class="hedge-head">${hero.map(x => `<div class="hedge-hero"><div class="v ${x.good ? "good" : ""}">${x.v}</div><div class="l">${x.l}</div></div>`).join("")}</div>
       <div class="hedge-wrap">
         <div class="hedge-table-card"><table class="hedge-table">
@@ -2659,6 +2663,8 @@
     if (!livre) return x.market === "BR" ? x.ticker + ".SA" : x.ticker;
     return x.price_symbol || x.ticker;
   }
+  // posição da estratégia Markov 3 (tamanho dado pela regra de risco dela): o HRP não mexe. KMLM/DOLA11 são proteção, não Markov 3.
+  const ehM3 = x => (x.strategy || "po3") === "po3" && !["KMLM", "DOLA11"].includes(String(x.ticker || "").toUpperCase());
   const cotaInteira = x => x.market === "BR" && !/cripto|moeda|outro|^rf_/.test(x.asset_class || "");   // B3: só cota inteira
   function vcNativo(x, dep) {
     if (!ehLivre(x)) { const N = dep * (Number(x.alloc_pct) || 0) / 100; return { V: N * (1 + (Number(x.ret_pct) || 0) / 100), C: N, moeda: null }; }
@@ -2714,10 +2720,14 @@
     if (po.error || !po.data) return { erro: true };
     const todas = po.data, pos = todas.filter(x => x.status === "open");
     const dep = Number(pr.data && pr.data.portfolio_deposit) || 10000;
-    const valorDe = {}; (A.assets || []).forEach(a => { valorDe[a.id] = Number(a.valor) || 0; });
-    const fatorK = {}; Object.keys(alvo || {}).forEach(k => { if (valorDe[k] > 0) fatorK[k] = Math.max(0, alvo[k]) / valorDe[k]; });
+    const valorDe = {}, m3De = {}; (A.assets || []).forEach(a => { valorDe[a.id] = Number(a.valor) || 0; m3De[a.id] = Number(a.m3) || 0; });
+    // o alvo vale para o ativo inteiro, mas a parte Markov 3 fica parada: o fator incide só sobre o resto
+    const fatorK = {}; Object.keys(alvo || {}).forEach(k => {
+      const resto = valorDe[k] - m3De[k];
+      if (resto > 0.01) fatorK[k] = Math.max(0, alvo[k] - m3De[k]) / resto;
+    });
     const temLivre = pos.some(ehLivre);
-    const upd = [], novoK = {}, ins = [];
+    const upd = [], novoK = {}, novoM3 = {}, ins = [];
     let dLivre = 0;
     const soma = (k, v) => { novoK[k] = (novoK[k] || 0) + v; };
     for (const x of pos.filter(ehLivre)) {
@@ -2756,7 +2766,7 @@
     }
     const dep1 = temLivre ? Math.max(1, dep + dLivre) : dep;
     for (const x of todas.filter(y => !ehLivre(y))) {
-      const k = chaveAtivo(x), aberta = x.status === "open", sF = aberta ? fatorK[k] : null;
+      const k = chaveAtivo(x), aberta = x.status === "open", m3 = ehM3(x), sF = aberta && !m3 ? fatorK[k] : null;
       const N = dep * (Number(x.alloc_pct) || 0) / 100, r = (Number(x.ret_pct) || 0) / 100, V = N * (1 + r);
       let N1 = N, r1 = r, real = Number(x.realized) || 0, mudou = false;
       if (sF != null && Math.abs(sF - 1) >= 1e-4 && N > 0) {
@@ -2764,7 +2774,7 @@
         if (sF > 1) { N1 = N + (V1 - V); r1 = V1 / N1 - 1; }         // compra: custo novo no preço de hoje
         else { N1 = N * sF; real += (V - V1) - (N - N1); }          // venda: realiza o lucro da parte vendida
         mudou = true; if (aberta) soma(k, V1);
-      } else if (aberta) soma(k, V);
+      } else if (aberta) { soma(k, V); if (m3) novoM3[k] = (novoM3[k] || 0) + V; }
       if (mudou || Math.abs(dep1 - dep) > 0.005) {                   // base mudou: mantém o valor em dinheiro de cada posição
         const patch = { alloc_pct: r4(Math.min(100, N1 / dep1 * 100)) };
         if (mudou) {
@@ -2786,10 +2796,12 @@
     try {
       const rfPos = {}; pos.forEach(x => { if (ehLivre(x) && ehRF(x)) rfPos[x.id] = x; });
       const rot = {}; (A.assets || []).forEach(a => { rot[a.id] = a.label; });
-      const lista = Object.keys(novoK).filter(k => novoK[k] > 0.005).map(k => {
-        const v = r2(novoK[k]);
-        if (rfPos[k]) { const x = rfPos[k]; return { s: "RF:" + String(x.rf_index || (x.asset_class === "rf_us" ? "UST" : "PRE")).toUpperCase(), taxa: Number(x.rf_rate || 0), v, label: rot[k] }; }
-        return { s: k, v, label: rot[k] };
+      const lista = [];
+      Object.keys(novoK).forEach(k => {
+        const m3v = novoM3[k] || 0, v = r2(novoK[k] - m3v);
+        if (rfPos[k]) { const x = rfPos[k]; if (v > 0.005) lista.push({ s: "RF:" + String(x.rf_index || (x.asset_class === "rf_us" ? "UST" : "PRE")).toUpperCase(), taxa: Number(x.rf_rate || 0), v, label: rot[k] }); return; }
+        if (v > 0.005) lista.push({ s: k, v, label: rot[k] });
+        if (m3v > 0.005) lista.push({ s: k, v: r2(m3v), label: rot[k], m3: true });       // parcela Markov 3: o motor não mexe
       });
       const { data } = await sb.auth.getSession(), tk = data && data.session && data.session.access_token;
       if (tk && lista.length) {
@@ -2903,12 +2915,13 @@
   }
   // proteção com o CAPITAL ATUAL: a proteção vai ao valor-alvo e o grupo `grupo` (ids) é reescalado para o total não mudar
   function alvoHedgeCapital(A, m, alvoH, grupo) {
-    const k = chaveHedge(m), val = {}; (A.assets || []).forEach(a => { val[a.id] = Number(a.valor) || 0; });
-    const H = val[k] || 0, G = grupo.reduce((t, id) => t + (val[id] || 0), 0);
+    const k = chaveHedge(m), val = {}, m3 = {}; (A.assets || []).forEach(a => { val[a.id] = Number(a.valor) || 0; m3[a.id] = Number(a.m3) || 0; });
+    const H = val[k] || 0, livre = id => Math.max(0, (val[id] || 0) - (m3[id] || 0));
+    const G = grupo.reduce((t, id) => t + livre(id), 0);          // só a parte que não é Markov 3 financia a proteção
     if (!(G > 0)) return null;
     const sG = (G + H - alvoH) / G;                       // o dinheiro que entra na proteção sai do grupo (ou volta para ele)
     if (sG < 0) return null;
-    const alvo = {}; grupo.forEach(id => { alvo[id] = val[id] * sG; });
+    const alvo = {}; grupo.forEach(id => { alvo[id] = (m3[id] || 0) + livre(id) * sG; });
     if (H > 0) alvo[k] = alvoH;
     return { alvo, novaVb: H > 0 ? 0 : alvoH };
   }
@@ -3912,34 +3925,37 @@
       const stress = hedge.state === "STRESS";
       const rec = Number(hedge.pct_in_range) || 0;
       // quanto o usuário já tem desse ativo (pela análise da carteira, em moeda base)
-      const ativo = A && (A.assets || []).find(a => a.id === (m === "BR" ? "DOLA11.SA" : "KMLM"));
-      const tem = ativo ? Number(ativo.valor) || 0 : 0, alvo = tot * rec / 100, falta = alvo - tem;
-      const curPct = tot > 0 ? tem / tot * 100 : 0, under = curPct < rec - 0.5;
+      const ativo = A && (A.assets || []).find(a => a.id === chaveHedge(m));
+      // a proteção vale sobre a PARTE da carteira daquele mercado: ações/ETFs de lá + a própria proteção
+      const doMercado = A && !A.vazio ? (A.assets || []).filter(a => a.id !== chaveHedge(m) && mercadoDoAtivo(a) === m) : [];
+      const tem = ativo ? Number(ativo.valor) || 0 : 0, parte = doMercado.reduce((t, a) => t + Number(a.valor), 0) + tem;
+      const alvo = parte * rec / 100, falta = alvo - tem;
+      const curPct = parte > 0 ? tem / parte * 100 : 0, under = parte > 0 && curPct < rec - 0.5;
       const px = Number(hedge.price) || 0;                                     // KMLM em US$, DOLA11 em R$
       const naMoeda = v => (m === "US" ? emUSD(v) : emBRL(v));
       const cotas = px > 0 && naMoeda(Math.abs(falta)) != null ? Math.floor(naMoeda(Math.abs(falta)) / px) : null;
       const prim = v => (m === "US" ? `${U(emUSD(v))} <small>(${R(emBRL(v))})</small>` : `${R(emBRL(v))} <small>(${U(emUSD(v))})</small>`);
-      const valores = tot > 0 ? `<div class="kmlm-money">
-          <div><span>${t("hg.alvoHoje")}</span><b>${prim(alvo)}</b><small>${nf(rec, 0)}% ${t("hg.deCarteira")} ${base === "BRL" ? R(tot) : U(tot)}</small></div>
+      const valores = parte > 0 ? `<div class="kmlm-money">
+          <div><span>${t("hg.alvoHoje")}</span><b>${prim(alvo)}</b><small>${interp(t("hg.daParte"), { pct: nf(rec, 0), mkt: t("hg.parte" + m), v: base === "BRL" ? R(parte) : U(parte) })}</small></div>
           <div><span>${t("hg.voceTem")}</span><b>${prim(tem)}</b><small>${nf(curPct, 1)}%</small></div>
           <div class="${Math.abs(falta) < 1 ? "" : falta > 0 ? "pos" : "neg"}"><span>${falta >= 0 ? t("hg.falta") : t("hg.sobra")}</span><b>${prim(Math.abs(falta))}</b>${cotas ? `<small>≈ ${cotas.toLocaleString(locale())} ${t("hg.cotas")} ${c.tk} ${t("hg.a")} ${m === "US" ? "US$" : "R$"} ${nf(px, 2)}</small>` : ""}</div>
-        </div>` : `<p class="kmlm-desc">${t("hg.semCarteira")}</p>`;
+        </div>` : `<p class="kmlm-desc">${tot > 0 ? interp(t("hg.semMercado"), { mkt: t("hg.parte" + m), tk: c.tk }) : t("hg.semCarteira")}</p>`;
       return `<div class="kmlm-card ${stress ? "stress" : ""}" data-mkt="${m}">
       <div class="kmlm-top">
         <div class="kmlm-id"><span class="kmlm-badge">🛡 ${c.tk}</span><span class="kmlm-sub">${t(m === "BR" ? "dola.sub" : "kmlm.sub")}</span></div>
         <span class="dsig-badge ${stress ? "watch" : "buy"}">${stress ? t("mem.hedgeStress") : t("mem.hedgeNormal")}</span>
       </div>
       ${valores}
-      <div class="${under ? "kmlm-alert" : "kmlm-ok"}">${under ? interp(t("kmlm.under"), { tk: c.tk, rec: nf(rec, 0) }) : t("kmlm.onTarget")}</div>
+      ${parte > 0 ? "" : "<!--sem mercado-->"}<div class="${under ? "kmlm-alert" : "kmlm-ok"}" ${parte > 0 ? "" : "hidden"}>${under ? interp(t("kmlm.under"), { tk: c.tk, rec: nf(rec, 0) }) : t("kmlm.onTarget")}</div>
       <div class="kmlm-desc">${t(m === "BR" ? "dola.desc" : "kmlm.desc")}</div>
-      ${tot > 0 && px > 0 && Math.abs(curPct - rec) >= 0.5 ? (() => {
-        const grupo = (A.assets || []).filter(a => a.id !== chaveHedge(m)).map(a => a.id);
-        const novo = rec < 100 ? Math.max(0, (rec / 100 * tot - tem) / (1 - rec / 100)) : 0;
+      ${parte > 0 && px > 0 && Math.abs(curPct - rec) >= 0.5 ? (() => {
+        const grupo = doMercado.map(a => a.id);
+        const novo = rec < 100 ? Math.max(0, (rec / 100 * parte - tem) / (1 - rec / 100)) : 0;
         CARD_HG[m] = { A, grupo, alvoCap: alvo, alvoNovo: tem + novo };
         return `<div class="hg-opcoes">
-          <div class="hg-op"><b>${t("hg.opCapT")}</b><small>${interp(t(falta > 0 ? "hg.opCapS2" : "hg.opCapRed2"), { tk: c.tk, v: prim(Math.abs(falta)), pct: nf(rec, 0) })}</small>
+          <div class="hg-op"><b>${t("hg.opCapT")}</b><small>${interp(t(falta > 0 ? "hg.opCapS2" : "hg.opCapRed2"), { tk: c.tk, v: prim(Math.abs(falta)), pct: nf(rec, 0), mkt: t("hg.parte" + m) })}</small>
             <button class="btn btn-primary" id="kmlmCap${m}">${interp(t("hg.btnCap"), { tk: c.tk, pct: nf(rec, 0) })}</button></div>
-          ${falta > 0 && novo > 0 ? `<div class="hg-op"><b>${t("hg.opNovoT")}</b><small>${interp(t("hg.opNovoS2"), { tk: c.tk, v: prim(novo), pct: nf(rec, 0) })}</small>
+          ${falta > 0 && novo > 0 ? `<div class="hg-op"><b>${t("hg.opNovoT")}</b><small>${interp(t("hg.opNovoS2"), { tk: c.tk, v: prim(novo), pct: nf(rec, 0), mkt: t("hg.parte" + m) })}</small>
             <button class="btn btn-ghost" id="kmlmNovo${m}">${interp(t("hg.btnNovo"), { v: m === "US" ? U(emUSD(novo)) : R(emBRL(novo)) })}</button></div>` : ""}
         </div><span role="status" aria-live="polite" class="add-msg" id="kmlmMsg${m}"></span>`;
       })() : ""}

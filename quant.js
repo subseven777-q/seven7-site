@@ -257,7 +257,8 @@
     const cmp = (l, x, y) => `<tr><td>${l}</td><td class="num">${x}</td><td class="num"><b>${y}</b></td></tr>`;
     // "no peso": diferença menor que 0,5% da carteira ou que meia cota do ativo (não dá para comprar fração de cota na B3)
     const tot = Number(A.valor_total) || 0, unid = id => (o && typeof o.unit === "function" ? Number(o.unit(id)) || 0 : 0);
-    const ajusta = r => r.w > 0 && Math.abs(r.delta_hrp) >= Math.max(1, 0.005 * tot, 0.5 * unid(r.id));
+    const soM3 = r => r.m3 != null && r.m3 >= r.valor - 0.01;      // posição 100% Markov 3: fora do HRP
+    const ajusta = r => r.w > 0 && !soM3(r) && Math.abs(r.delta_hrp) >= Math.max(1, 0.005 * tot, 0.5 * unid(r.id));
     const nAj = todas.filter(ajusta).length;
     host.innerHTML = `<table class="q-tbl q-cmp"><thead><tr><th></th><th class="num">${tx("Hoje", "Today")}</th><th class="num">HRP</th></tr></thead><tbody>
       ${cmp(tx("Volatilidade", "Volatility"), pc(a.vol), pc(h.vol))}${cmp(tx("Pior queda (2a)", "Max drawdown"), pc(a.max_dd), pc(h.max_dd))}
@@ -266,14 +267,14 @@
         <span role="status" aria-live="polite" class="add-msg" id="qHrpMsg"></span>` : ""}
       <table class="q-tbl q-hrp"><thead><tr><th>${tx("Ativo", "Asset")}</th><th class="num">${tx("Hoje", "Today")}</th><th class="num">HRP</th><th class="num">${tx("Ajuste", "Change")}</th></tr></thead><tbody>
       ${rows.map(r => `<tr><td><b>${esc(r.label)}</b>${r.sinal ? ` <small class="q-sig">${tx("sinal Seven7", "Seven7 signal")}</small>` : ""}</td><td class="num">${pc(r.w)}</td><td class="num">${pc(r.w_hrp)}</td>
-        <td class="num ${r.delta_hrp > 0 ? "pos" : "neg"}">${r.delta_hrp > 0 ? tx("+ comprar ", "+ buy ") : tx("− vender ", "− sell ")}${money(Math.abs(r.delta_hrp))}
-        ${pode ? `<div class="q-adj-c">${ajusta(r) ? `<button class="btn btn-ghost q-adj" data-id="${esc(r.id)}" aria-label="${tx("Ajustar", "Adjust")} ${esc(r.label)}">${tx("Ajustar", "Adjust")}</button>` : `<span class="q-ok">${tx("no peso", "on weight")}</span>`}</div>` : ""}</td></tr>`).join("")}</tbody></table>
+        ${soM3(r) ? `<td class="num"><span class="q-ok q-m3">${tx("Markov 3: fora do HRP", "Markov 3: outside HRP")}</span></td></tr>` : `<td class="num ${r.delta_hrp > 0 ? "pos" : "neg"}">${r.delta_hrp > 0 ? tx("+ comprar ", "+ buy ") : tx("− vender ", "− sell ")}${money(Math.abs(r.delta_hrp))}
+        ${pode ? `<div class="q-adj-c">${ajusta(r) ? `<button class="btn btn-ghost q-adj" data-id="${esc(r.id)}" aria-label="${tx("Ajustar", "Adjust")} ${esc(r.label)}">${tx("Ajustar", "Adjust")}</button>` : `<span class="q-ok">${tx("no peso", "on weight")}</span>`}</div>` : ""}</td></tr>`}`).join("")}</tbody></table>
       ${todas.length > 15 ? `<button class="btn btn-ghost q-mais" id="qHrpMais">${HRP_TODOS ? tx("Mostrar só os 15 maiores ajustes", "Show the 15 largest changes") : tx(`Ver todos os ${todas.length} ativos`, `See all ${todas.length} assets`)}</button>` : ""}
       ${pode && nAj > 1 ? `<div class="q-todos"><button class="btn btn-ghost" id="qHrpTodos">${tx(`Ajustar todos (${nAj} ativos)`, `Adjust all (${nAj} assets)`)}</button></div>` : ""}
       ${h.vol > a.vol * 1.03 ? `<div class="q-alert">${tx(`<b>Atenção:</b> aqui o HRP <b>aumentaria</b> a volatilidade (${pc(a.vol)} → ${pc(h.vol)}). Ele espalha o risco entre mais fontes independentes (${nf(a.enb)} → ${nf(h.enb)}), mas seu portfólio de hoje já é menos volátil — normalmente porque um ativo de baixa volatilidade e baixa correlação (como o hedge) pesa muito. Se a sua prioridade é oscilar menos, mantenha; se é não depender de poucos ativos, siga o HRP.`,
         `<b>Note:</b> here HRP would <b>raise</b> volatility (${pc(a.vol)} → ${pc(h.vol)}). It spreads risk across more bets (${nf(a.enb)} → ${nf(h.enb)}), but today's portfolio is already less volatile — usually because a low-vol, low-correlation asset (like the hedge) weighs a lot. If your priority is lower swings, keep it; if it is not depending on few assets, follow HRP.`)}</div>` : ""}
-      <div class="q-note">${tx("HRP (López de Prado): agrupa ativos parecidos e divide o risco entre os grupos — não usa previsão de retorno, por isso é estável. Posições com sinal Seven7 já têm tamanho pela regra de risco da estratégia; o HRP olha o portfólio inteiro. É uma sugestão, não uma recomendação individual.",
-        "HRP (López de Prado): clusters similar assets and splits risk across clusters — no return forecast, hence stable. Seven7-signal positions are already sized by the strategy's risk rule; HRP looks at the whole portfolio. A suggestion, not individual advice.")}</div>`;
+      <div class="q-note">${tx("HRP (López de Prado): agrupa ativos parecidos e divide o risco entre os grupos — não usa previsão de retorno, por isso é estável. As posições da estratégia Markov 3 ficam de fora: o tamanho delas vem da regra de risco da própria estratégia, e o HRP redistribui só o resto. É uma sugestão, não uma recomendação individual.",
+        "HRP (López de Prado): clusters similar assets and splits risk across clusters — no return forecast, hence stable. Markov 3 positions stay out: their size comes from the strategy's own risk rule, and HRP only redistributes the rest. A suggestion, not individual advice.")}</div>`;
     const msg = host.querySelector("#qHrpMsg");
     const mais = host.querySelector("#qHrpMais");
     if (mais) mais.onclick = () => { HRP_TODOS = !HRP_TODOS; hrpView(host, A, o); };
