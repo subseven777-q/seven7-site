@@ -1783,3 +1783,10 @@ iframe{color-scheme:normal}
 .hg-op b{font-size:14px}.hg-op small{color:var(--muted);font-size:13px;line-height:1.45}.hg-op .btn{margin-top:auto;align-self:flex-start}
 
 .q-nota-aj{display:block;margin:0 0 14px;padding:12px 14px;border-radius:10px;font-size:15px;background:color-mix(in srgb,var(--pos) 10%,transparent)}
+
+/* Minha conta: assinatura no cartão (ver e cancelar) */
+.sub-item{display:flex;flex-direction:column;gap:8px;padding:14px;border:1px solid var(--border);border-radius:10px;margin:10px 0}
+.sub-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}.sub-top span{color:var(--muted);font-variant-numeric:tabular-nums}
+.sub-linha{margin:0;font-size:14px}.sub-cancelada{color:var(--muted)}
+.sub-item .btn{align-self:flex-start}.sub-cancela.confirma{outline:2px solid currentColor;outline-offset:2px}
+.sub-portal{display:inline-block;margin-top:4px;font-size:13px}

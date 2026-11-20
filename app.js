@@ -774,6 +774,22 @@
     "pf.kRf": { en: "Fixed income", pt: "Renda fixa" },
     "add.btn": { en: "Add to portfolio", pt: "Adicionar à carteira" },
     "add.cancel": { en: "Cancel", pt: "Cancelar" },
+    "sub.h": { en: "Your card subscription", pt: "Sua assinatura no cartão" },
+    "sub.loading": { en: "Checking your subscription…", pt: "Verificando sua assinatura…" },
+    "sub.err": { en: "Couldn't check your subscription right now. Try again in a minute, or manage it in the Stripe portal.", pt: "Não deu para verificar sua assinatura agora. Tente de novo em instantes ou use o portal do Stripe." },
+    "sub.none": { en: "No card subscription found for {e}.", pt: "Nenhuma assinatura no cartão encontrada para {e}." },
+    "sub.portalOutro": { en: "Paid with another e-mail? Open the Stripe portal", pt: "Pagou com outro e-mail? Abrir o portal do Stripe" },
+    "sub.portal": { en: "Change card or see invoices (Stripe portal)", pt: "Trocar cartão ou ver faturas (portal do Stripe)" },
+    "sub.mes": { en: "month", pt: "mês" },
+    "sub.ano": { en: "year", pt: "ano" },
+    "sub.proxima": { en: "Active. Next charge on {d}.", pt: "Ativa. Próxima cobrança em {d}." },
+    "sub.teste": { en: "Free trial. The first charge is on {d} — cancel before that and you won't be charged.", pt: "Teste grátis. A primeira cobrança é em {d}: cancele antes e você não paga nada." },
+    "sub.atraso": { en: "Payment failed. Update your card in the Stripe portal.", pt: "O pagamento falhou. Atualize o cartão no portal do Stripe." },
+    "sub.canceladaFim": { en: "Cancelled: no new charges. You keep access until {d}.", pt: "Cancelada: sem novas cobranças. Você mantém o acesso até {d}." },
+    "sub.cancelar": { en: "Cancel subscription", pt: "Cancelar assinatura" },
+    "sub.confirma": { en: "Confirm: cancel (no new charges; access until {d})", pt: "Confirmar: cancelar (sem novas cobranças; acesso até {d})" },
+    "sub.reativar": { en: "Undo cancellation", pt: "Desfazer o cancelamento" },
+    "sub.aguarde": { en: "One moment…", pt: "Um instante…" },
     "add.titulo": { en: "Add {tk} to your portfolio", pt: "Adicionar {tk} à sua carteira" },
     "add.modoVal": { en: "By amount", pt: "Por valor" },
     "add.qtd": { en: "Shares", pt: "Quantidade de ações/cotas" },
@@ -3316,6 +3332,74 @@
     history.replaceState(null, "", location.pathname);
     renderAccount();
   }
+  // ---- ASSINATURA no cartão (Stripe): ver e CANCELAR dentro do site. A função "assinatura" (servidor) acha a assinatura
+  //      pelo cliente ligado à conta ou pelo e-mail confirmado; cancelar = sem novas cobranças, acesso até o fim do período pago.
+  async function chamaAssinatura(corpo) {
+    const { data } = await sb.auth.getSession(), tk = data && data.session && data.session.access_token;
+    if (!tk) throw new Error("sem sessão");
+    const r = await fetch(`${SUPABASE_URL}/functions/v1/assinatura`, { method: "POST",
+      headers: { "content-type": "application/json", authorization: "Bearer " + tk, apikey: SUPABASE_ANON_KEY }, body: JSON.stringify(corpo) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || "erro");
+    return j;
+  }
+  async function renderAssinatura(dados) {
+    const host = $("#acctSub"); if (!host) return;
+    const dt = v => v ? new Date(v).toLocaleDateString(locale()) : "—";
+    const portal = () => { const u = new URL(STRIPE_PORTAL); if (USER && USER.email) u.searchParams.set("prefilled_email", USER.email); return u.toString(); };
+    let lista;
+    if (PREVIEW || !sb || !USER || String(USER.id).startsWith("preview")) {
+      lista = [{ id: "sub_exemplo", status: "trialing", plano: "elite", valor: 40000, moeda: "brl", intervalo: "month",
+        proxima: new Date(Date.now() + 6 * 864e5).toISOString(), teste_ate: new Date(Date.now() + 6 * 864e5).toISOString(), cancela_no_fim: false }];
+    } else if (dados) lista = dados.assinaturas || [];
+    else {
+      try { lista = (await chamaAssinatura({ acao: "status" })).assinaturas || []; }
+      catch (e) { host.innerHTML = `<h3>${t("sub.h")}</h3><p class="acct-redeem-sub">${t("sub.err")}</p><a class="btn btn-ghost btn-block" target="_blank" rel="noopener" href="${portal()}">${t("sub.portal")}</a>`; return; }
+    }
+    if (!lista.length) {
+      host.innerHTML = `<h3>${t("sub.h")}</h3><p class="acct-redeem-sub">${interp(t("sub.none"), { e: esc(USER.email || "") })}</p>
+        <a class="btn btn-ghost btn-block" target="_blank" rel="noopener" href="${portal()}">${t("sub.portalOutro")}</a>`;
+      return;
+    }
+    const preco = a => a.valor == null ? "" : `${(a.moeda || "").toUpperCase() === "BRL" ? "R$" : "US$"} ${(a.valor / 100).toLocaleString(locale(), { maximumFractionDigits: 2 })}/${t(a.intervalo === "year" ? "sub.ano" : "sub.mes")}`;
+    host.innerHTML = `<h3>${t("sub.h")}</h3>` + lista.map(a => {
+      const teste = a.status === "trialing" && a.teste_ate;
+      const linha = a.cancela_no_fim ? interp(t("sub.canceladaFim"), { d: dt(a.proxima) })
+        : teste ? interp(t("sub.teste"), { d: dt(a.teste_ate) })
+        : a.status === "past_due" || a.status === "unpaid" ? t("sub.atraso")
+        : interp(t("sub.proxima"), { d: dt(a.proxima) });
+      return `<div class="sub-item" data-id="${esc(a.id)}">
+        <div class="sub-top"><b>${esc((a.plano || "").toUpperCase())}</b><span>${preco(a)}</span></div>
+        <p class="sub-linha ${a.cancela_no_fim ? "sub-cancelada" : ""}">${linha}</p>
+        ${a.cancela_no_fim
+          ? `<button class="btn btn-ghost sub-reativa">${t("sub.reativar")}</button>`
+          : `<button class="btn btn-danger sub-cancela">${t("sub.cancelar")}</button>`}
+        <span role="status" aria-live="polite" class="add-msg sub-msg"></span></div>`;
+    }).join("") + `<a class="sub-portal" target="_blank" rel="noopener" href="${portal()}">${t("sub.portal")}</a>`;
+    host.querySelectorAll(".sub-item").forEach(it => {
+      const id = it.dataset.id, msg = it.querySelector(".sub-msg"), a = lista.find(x => x.id === id);
+      const age = async (acao, btn) => {
+        if (PREVIEW || String(USER.id).startsWith("preview")) { msg.textContent = t("hrp.preview"); msg.className = "add-msg sub-msg err"; return; }
+        btn.disabled = true; btn.textContent = t("sub.aguarde");
+        try {
+          const j = await chamaAssinatura({ acao, id });
+          track(acao === "cancelar" ? "assinatura_cancelada" : "assinatura_reativada", { plano: a && a.plano });
+          await loadProfile(); updateAuthUI();
+          renderAssinatura(j);
+        } catch (e) { btn.disabled = false; btn.textContent = t(acao === "cancelar" ? "sub.cancelar" : "sub.reativar"); msg.textContent = t("sub.err"); msg.className = "add-msg sub-msg err"; }
+      };
+      const bc = it.querySelector(".sub-cancela");
+      if (bc) bc.onclick = () => {                            // confirmação na própria página (dois toques)
+        if (!bc.classList.contains("confirma")) {
+          bc.classList.add("confirma"); bc.textContent = interp(t("sub.confirma"), { d: dt(a && (a.status === "trialing" && a.teste_ate ? a.teste_ate : a.proxima)) });
+          setTimeout(() => { if (bc.isConnected && bc.classList.contains("confirma") && !bc.disabled) { bc.classList.remove("confirma"); bc.textContent = t("sub.cancelar"); } }, 8000);
+          return;
+        }
+        age("cancelar", bc);
+      };
+      const br = it.querySelector(".sub-reativa"); if (br) br.onclick = () => age("reativar", br);
+    });
+  }
   function renderAccount() {
     const host = $("#accountHost"); if (!host) return;
     handleUnsub(); handleVerify();
@@ -3348,11 +3432,12 @@
         ${pu ? `<button class="btn btn-pix btn-block" id="pixRenewAcct">${PIX_SVG}${interp(t("pix.renewAcct"), { p: (p.plan || "").toUpperCase(),
             c: t(p.billing_cycle === "annual" ? "billing.annual" : "billing.monthly") })}</button>
           <p class="pix-sub">${t("pix.renewHint")}</p>`
-        : member && !isTrial()
-        ? `<a class="btn btn-ghost btn-block" href="#" id="manageBtn">${t("acct.manage")}</a>`
+        : member
+        ? ""
         : `<div class="acct-upsell"><p>${t("acct.upsell")}</p><a class="btn btn-primary btn-block" href="plans.html">${t("acct.subscribe")}</a></div>`}
         <button class="btn btn-ghost btn-block" id="acctLogout">${t("auth.logout")}</button>
       </div>
+      <div class="acct-card acct-sub" id="acctSub"><h3>${t("sub.h")}</h3><p class="acct-redeem-sub">${t("sub.loading")}</p></div>
       <div class="acct-card acct-mail">
         <h3>${t("acct.mailH")}</h3>
         <p class="acct-redeem-sub">${t("acct.mailD")}</p>
@@ -3368,6 +3453,7 @@
         <p class="acct-redeem-msg" id="redeemMsg"></p>
       </div>`;
     const lo = $("#acctLogout"); if (lo) lo.onclick = async () => { if (sb) await sb.auth.signOut(); location.href = "index.html"; };
+    renderAssinatura();
     const mw = $("#mailWeekly");
     if (mw) mw.onchange = async () => {
       if (!sb || PREVIEW) return;
