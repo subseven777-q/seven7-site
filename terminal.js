@@ -48,6 +48,11 @@
   const quotes = (host, groups) => tv(host, "market-quotes", { width: "100%", height: "100%", showSymbolLogo: true,
     symbolsGroups: groups.map(([name, syms]) => ({ name, symbols: syms.map(([s, d]) => ({ name: s, displayName: d })) })) });
 
+  // dia/hora do regime: o mais recente entre EUA e Brasil (atualizado a cada 15 min no pregão)
+  function regQuando() {
+    const v = ["US", "BR"].map(k => REGIME[k]).filter(x => x && x.dia && x.hora).sort((a, b) => (a.dia + a.hora < b.dia + b.hora ? 1 : -1))[0];
+    return v ? v.dia.split("-").reverse().join("/") + " " + v.hora : REGIME.asof.split("-").reverse().join("/");
+  }
   // ---------------- dados Seven7 ----------------
   async function loadFeeds(force) {
     if (!API) return;
@@ -57,8 +62,8 @@
       try { const r = await fetch(`data/intraday_${m}.json?t=${Math.floor(Date.now() / 60000)}`); INTRA[m] = r.ok ? await r.json() : null; }
       catch (e) { INTRA[m] = null; }
     }
-    try { const r = await fetch(`data/regime.json?t=${Math.floor(Date.now() / 600000)}`); REGIME = r.ok ? await r.json() : null; } catch (e) { REGIME = null; }
-    try { const r = await fetch(`data/sectors.json?t=${Math.floor(Date.now() / 600000)}`); SECTS = r.ok ? await r.json() : null; } catch (e) { SECTS = null; }
+    try { const r = await fetch(`data/regime.json?t=${Math.floor(Date.now() / 60000)}`); REGIME = r.ok ? await r.json() : null; } catch (e) { REGIME = null; }
+    try { const r = await fetch(`data/sectors.json?t=${Math.floor(Date.now() / 60000)}`); SECTS = r.ok ? await r.json() : null; } catch (e) { SECTS = null; }
     HEDGES = null;
     if (API.sb && API.member && !API.preview) {
       try { const { data } = await API.sb.from("signals").select("ticker,state,pct_in_range,price").in("ticker", ["__HEDGE__", "__HEDGE_BR__"]); HEDGES = data || null; }
@@ -260,7 +265,7 @@
       ].join("");
     };
     el.innerHTML = `<div class="tq-sec"><span class="tq-h">${tx("Sua carteira", "Your portfolio")}${A && A.asof ? ` <em>${ago(A.asof)}</em>` : ""}</span><div class="tq-row">${cart}</div></div>
-      <div class="tq-sec"><span class="tq-h">${tx("Mercado em números", "Market by the numbers")}${REGIME && REGIME.asof ? ` <em>${esc(REGIME.asof.split("-").reverse().join("/"))}</em>` : ""}</span><div class="tq-row">${mk("BR", "BR")}${mk("US", tx("EUA", "US"))}</div></div>`;
+      <div class="tq-sec"><span class="tq-h">${tx("Mercado em números", "Market by the numbers")}${REGIME && REGIME.asof ? ` <em>${esc(regQuando())}</em>` : ""}</span><div class="tq-row">${mk("BR", "BR")}${mk("US", tx("EUA", "US"))}</div></div>`;
   }
   // REG: regime quant do mercado (BR e EUA) — estado, volatilidade, amplitude, sinais e hedge
   async function regFn(host) {
@@ -325,7 +330,7 @@
     }).join("");
     host.innerHTML = `<div class="term-tools">${["BR", "US"].map(m => `<button class="term-chip ${m === k ? "on" : ""}" data-go="SECT ${m}">${m === "BR" ? "Brasil" : tx("EUA", "US")}</button>`).join("")}
         <span class="sx-sep"></span>${PER.map(([c, l]) => `<button class="term-chip sx-per ${c === per ? "on" : ""}" data-per="${c}">${l}</button>`).join("")}
-        <span class="term-asof">${D.universo ? D.universo.n + " " + tx("empresas", "companies") + " · " : ""}${D.setores.length} ${tx("setores", "sectors")} · ${esc(D.data.split("-").reverse().join("/"))}</span></div>
+        <span class="term-asof">${D.universo ? D.universo.n + " " + tx("empresas", "companies") + " · " : ""}${D.setores.length} ${tx("setores", "sectors")} · ${esc(D.data.split("-").reverse().join("/"))}${D.hora ? " " + esc(D.hora) : ""}</span></div>
       <div class="term-scroll">
         <div class="term-sub">${tx("Rotação setorial", "Sector rotation")} · ${PER.find(x => x[0] === per)[1]} · <span class="term-dim">${tx("linha = índice", "line = index")} ${esc(D.indice.tk)} ${pct(idxV, 1)}</span></div>
         <div class="sx-bars">${barras}</div>
