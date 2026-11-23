@@ -1089,10 +1089,10 @@
     "acct.needLogin": { en: "You're not logged in", pt: "Você não está logado" },
     "acct.needLoginSub": { en: "Log in to see your account and subscription.", pt: "Entre para ver sua conta e assinatura." },
     "acct.redeemH": { en: "Redeem a code", pt: "Resgatar um código" },
-    "acct.redeemSub": { en: "Got an Elite code from @seven7_quant on Instagram? Enter it below.", pt: "Recebeu um código Elite do @seven7_quant no Instagram? Digite abaixo." },
+    "acct.redeemSub": { en: "Got a code from @seven7_quant on Instagram? Enter it below.", pt: "Recebeu um código do @seven7_quant no Instagram? Digite abaixo." },
     "acct.redeemPh": { en: "e.g. IG-XXXX-XXXX", pt: "ex.: IG-XXXX-XXXX" },
     "acct.redeemBtn": { en: "Redeem", pt: "Resgatar" },
-    "acct.redeemOkEl": { en: "Done! Your account is now Elite.", pt: "Pronto! Sua conta agora é Elite." },
+    "acct.redeemOkEl": { en: "Done! Your account is now {p}{v}.", pt: "Pronto! Sua conta agora é {p}{v}." },
     "acct.redeemErrInvalid": { en: "That code isn't valid.", pt: "Esse código não é válido." },
     "acct.redeemErrUsed": { en: "This code has already been redeemed.", pt: "Esse código já foi resgatado." },
     "acct.redeemErrUsedYou": { en: "You've already redeemed this code.", pt: "Você já resgatou esse código." },
@@ -3593,7 +3593,7 @@
         const { data, error } = await sb.rpc("redeem_instagram_code", { p_code: code });
         if (error) throw error;
         if (data && data.ok) {
-          rm.className = "acct-redeem-msg ok"; rm.textContent = t("acct.redeemOkEl");
+          rm.className = "acct-redeem-msg ok"; rm.textContent = interp(t("acct.redeemOkEl"), { p: String(data.plan || "elite").replace(/^./, c => c.toUpperCase()), v: data.vitalicio ? (LANG === "pt" ? " vitalício" : " for life") : "" });
           ri.value = ""; ri.disabled = true; rb.disabled = true;
           await loadProfile(); updateAuthUI(); renderAccount();
         } else {
