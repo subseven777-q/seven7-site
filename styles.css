@@ -1790,3 +1790,26 @@ iframe{color-scheme:normal}
 .sub-linha{margin:0;font-size:14px}.sub-cancelada{color:var(--muted)}
 .sub-item .btn{align-self:flex-start}.sub-cancela.confirma{outline:2px solid currentColor;outline-offset:2px}
 .sub-portal{display:inline-block;margin-top:4px;font-size:13px}
+
+/* ===== Black Friday 2026: vitalício ===== */
+.bf-strip{display:flex;align-items:center;justify-content:center;gap:12px;padding:8px 44px 8px 16px;background:#0b1220;color:#fff;font-size:14px;position:relative;text-align:center}
+.bf-strip a{color:#fff;text-decoration:none}.bf-strip a:hover{text-decoration:underline}.bf-strip b{color:#ffcc33;margin-right:4px}
+.bf-x{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:0;color:#fff;font-size:20px;cursor:pointer;padding:4px 8px}
+.bf-wrap{margin:0 0 36px;padding:28px 20px;border-radius:16px;background:#0b1220;color:#f4f6fb}
+.bf-head{text-align:center;max-width:640px;margin:0 auto 22px}
+.bf-kicker{margin:0 0 6px;color:#ffcc33;font-weight:700;letter-spacing:.02em}
+.bf-title{margin:0 0 8px;font-size:clamp(24px,4vw,34px);line-height:1.15;color:#fff}
+.bf-sub{margin:0 0 10px;color:#c9d1e3;font-size:16px}.bf-tempo{margin:0;font-variant-numeric:tabular-nums;color:#ffcc33;font-size:14px}
+.bf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.bf-card{background:#141d33;border:1px solid #26324f;border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:8px}
+.bf-card.bf-top{border-color:#ffcc33}
+.bf-card .price-tier{color:#fff}.bf-de{color:#93a0bb;font-size:13px;text-decoration:line-through}
+.bf-por{font-size:34px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;line-height:1}
+.bf-uma{color:#ffcc33;font-size:13px;margin-bottom:4px}
+.bf-feats{margin:0 0 8px;padding-left:18px;color:#c9d1e3;font-size:14px;line-height:1.5}
+.bf-card .btn-ghost{color:#fff;border-color:#3a4766}
+.bf-nota{margin:16px auto 0;max-width:720px;text-align:center;color:#93a0bb;font-size:12.5px;line-height:1.5}
+.bf-err{margin:4px 0 0;color:#ff8a8a;font-size:13px}
+.bf-ok{border-color:var(--pos)}
+.bf-card .btn-pix{background:#32bcad;border-color:#32bcad;color:#062b27;opacity:1}
+.bf-card .btn-pix:hover{background:#3fd1c1}.bf-card .btn-pix svg{fill:currentColor;color:#062b27}

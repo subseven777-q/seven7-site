@@ -774,6 +774,24 @@
     "pf.kRf": { en: "Fixed income", pt: "Renda fixa" },
     "add.btn": { en: "Add to portfolio", pt: "Adicionar à carteira" },
     "add.cancel": { en: "Cancel", pt: "Cancelar" },
+    "bf.titulo": { en: "Lifetime access for half the annual price", pt: "Acesso vitalício pela metade do plano anual" },
+    "bf.sub": { en: "Pay once and keep the plan forever: no renewal, no monthly fee. Card or Pix.", pt: "Pague uma vez e fique com o plano para sempre: sem renovação e sem mensalidade. Cartão ou Pix." },
+    "bf.faltam": { en: "Ends Nov 30, 11:59 pm (Brasília) · {d}d {h}h {m}min left", pt: "Termina em 30/11 às 23:59 · faltam {d}d {h}h {m}min" },
+    "bf.encerrada": { en: "The Black Friday offer has ended.", pt: "A oferta da Black Friday terminou." },
+    "bf.de": { en: "annual plan: {v}/year", pt: "plano anual: {v}/ano" },
+    "bf.umaVez": { en: "once, for life", pt: "uma vez, para sempre" },
+    "bf.f1": { en: "Everything in {p}, forever", pt: "Tudo do plano {p}, para sempre" },
+    "bf.f2": { en: "No renewal and no automatic charge", pt: "Sem renovação e sem cobrança automática" },
+    "bf.f3": { en: "Includes every update to the plan", pt: "Inclui as atualizações do plano" },
+    "bf.pix": { en: "Pay with Pix", pt: "Pagar com Pix" },
+    "bf.cartao": { en: "Pay by card", pt: "Pagar com cartão" },
+    "bf.abrindo": { en: "Opening payment…", pt: "Abrindo o pagamento…" },
+    "bf.nota": { en: "Single payment processed by Stripe. Lifetime = for as long as Seven7 operates the plan. Already subscribed by card? The renewal is cancelled automatically after the purchase.", pt: "Pagamento único processado pelo Stripe. Vitalício = enquanto a Seven7 oferecer o plano. Já assina no cartão? A renovação é cancelada sozinha depois da compra." },
+    "bf.faixa": { en: "lifetime access for 50% of the annual plan · until Nov 30", pt: "acesso vitalício por 50% do plano anual · até 30/11" },
+    "bf.fechar": { en: "Close", pt: "Fechar" },
+    "bf.statusConta": { en: "Lifetime access (Black Friday)", pt: "Acesso vitalício (Black Friday)" },
+    "bf.ativo": { en: "Payment confirmed: your access is now lifetime.", pt: "Pagamento confirmado: seu acesso agora é vitalício." },
+    "bf.esperando": { en: "Waiting for the payment confirmation (Pix can take 1–2 minutes)…", pt: "Aguardando a confirmação do pagamento (o Pix pode levar 1 a 2 minutos)…" },
     "sub.h": { en: "Your card subscription", pt: "Sua assinatura no cartão" },
     "sub.loading": { en: "Checking your subscription…", pt: "Verificando sua assinatura…" },
     "sub.err": { en: "Couldn't check your subscription right now. Try again in a minute, or manage it in the Stripe portal.", pt: "Não deu para verificar sua assinatura agora. Tente de novo em instantes ou use o portal do Stripe." },
@@ -1420,6 +1438,13 @@
     const sk = n && n.querySelector(".skip-link"); if (sk && alvo) sk.href = "#" + alvo.id;
     const f = $("#footer-root"); if (f) f.innerHTML = FOOTER_HTML;
     const page = document.body.dataset.page;
+    if (n && bfAtiva() && page !== "plans" && !(PROFILE && PROFILE.billing === "vitalicio")) {   // faixa da Black Friday
+      let fechada = false; try { fechada = sessionStorage.getItem("s7-bf-off") === "1"; } catch (e) { /* sem storage */ }
+      if (!fechada) {
+        n.insertAdjacentHTML("afterbegin", `<div class="bf-strip" role="region" aria-label="Black Friday"><a href="plans.html#black-friday"><b>Black Friday</b> ${t("bf.faixa")}</a><button class="bf-x" aria-label="${t("bf.fechar")}">×</button></div>`);
+        const x = n.querySelector(".bf-x"); if (x) x.onclick = () => { try { sessionStorage.setItem("s7-bf-off", "1"); } catch (e) { /* sem storage */ } x.parentNode.remove(); };
+      }
+    }
     $$(".nav-links a[data-page]").forEach(a => a.classList.toggle("active", a.dataset.page === page));
     $$(".nav-drop").forEach(d => d.querySelector(".nav-drop-btn").classList.toggle("active", d.dataset.pages.split(" ").includes(page)));
     const burger = $("#navBurger"), nav = n && n.querySelector(".nav");
@@ -1839,6 +1864,71 @@
     location.href = u.toString();
   }
   const PIX_SVG = `<svg class="ic pix-ic" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.6 9.2 5.4l2.1 2.1a1 1 0 0 0 1.4 0l2.1-2.1L12 2.6Zm6.6 6.6-2.1 2.1a1 1 0 0 0 0 1.4l2.1 2.1 2.8-2.8-2.8-2.8Zm-13.2 0L2.6 12l2.8 2.8 2.1-2.1a1 1 0 0 0 0-1.4L5.4 9.2Zm6.6 6.6a1 1 0 0 0-.7.3l-2.1 2.1 2.8 2.8 2.8-2.8-2.1-2.1a1 1 0 0 0-.7-.3Zm-2.3-6.9a2 2 0 0 1 1.4-.6h1.8a2 2 0 0 1 1.4.6l2.6 2.6a.8.8 0 0 1 0 1.1l-2.6 2.6a2 2 0 0 1-1.4.6h-1.8a2 2 0 0 1-1.4-.6l-2.6-2.6a.8.8 0 0 1 0-1.1l2.6-2.6Z"/></svg>`;
+  // ===== BLACK FRIDAY 2026: acesso VITALÍCIO = pagamento único de 50% do plano anual (cartão ou Pix), até 30/11 23:59 =====
+  // O valor e o prazo valem no servidor (função "vitalicio"); aqui é só a vitrine.
+  const BF_FIM = Date.parse("2026-12-01T02:59:59Z");
+  const bfAtiva = () => Date.now() < BF_FIM;
+  const BF_PRECO = { BRL: { BEGINNER: 225, PRO: 650, ELITE: 1750 }, USD: { BEGINNER: 48, PRO: 138, ELITE: 354 } };
+  const BF_CHEIO = { BRL: { BEGINNER: 450, PRO: 1300, ELITE: 3500 }, USD: { BEGINNER: 96, PRO: 276, ELITE: 708 } };
+  // depois de entrar/criar conta com uma compra pendente: volta para a oferta certa
+  const destinoIntent = () => { let i = null; try { i = localStorage.getItem("seven7-intent"); } catch (e) { /* sem storage */ }
+    return i ? (/:vitalicio$/.test(i) && bfAtiva() ? "plans.html#black-friday" : "plans.html") : null; };
+  async function payVitalicio(tier, metodo, btn) {
+    track("plan_click", { tier, cycle: "vitalicio", via: metodo });
+    if (!USER || PREVIEW) { lsSet("seven7-intent", String(tier).toUpperCase() + ":vitalicio"); location.href = PREVIEW ? "plans.html#black-friday" : "register.html"; return; }
+    if (!sb) return;
+    const { data } = await sb.auth.getSession(), token = data && data.session && data.session.access_token;
+    if (!token) { location.href = "login.html"; return; }
+    const old = btn ? btn.innerHTML : ""; if (btn) { btn.disabled = true; btn.innerHTML = t("bf.abrindo"); }
+    try {
+      const r = await fetch(`${SUPABASE_URL}/functions/v1/vitalicio`, { method: "POST",
+        headers: { "content-type": "application/json", authorization: "Bearer " + token, apikey: SUPABASE_ANON_KEY },
+        body: JSON.stringify({ tier: String(tier).toLowerCase(), metodo, moeda: brlOn() ? "brl" : "usd" }) });
+      const j = await r.json().catch(() => ({}));
+      if (j.url) { location.href = j.url; return; }
+      if (btn) { btn.insertAdjacentHTML("afterend", `<p class="bf-err">${t(j.error === "encerrada" ? "bf.encerrada" : "pix.err")}</p>`); }
+    } catch (e) { if (btn) btn.insertAdjacentHTML("afterend", `<p class="bf-err">${t("pix.err")}</p>`); }
+    if (btn) { btn.disabled = false; btn.innerHTML = old; }
+  }
+  function bfContagem(el) {
+    const tick = () => {
+      if (!el.isConnected) return;
+      const ms = BF_FIM - Date.now();
+      if (ms <= 0) { el.textContent = t("bf.encerrada"); return; }
+      const d = Math.floor(ms / 864e5), h = Math.floor(ms % 864e5 / 36e5), m = Math.floor(ms % 36e5 / 6e4);
+      el.textContent = interp(t("bf.faltam"), { d, h, m });
+      setTimeout(tick, 30000);
+    };
+    tick();
+  }
+  function renderBlackFriday() {
+    const grid = $("#pricingGrid"); if (!grid) return;
+    let host = $("#black-friday");
+    if (!bfAtiva()) { if (host) host.remove(); return; }
+    if (!host) { host = document.createElement("div"); host.id = "black-friday"; host.className = "bf-wrap"; grid.parentNode.insertBefore(host, grid.previousElementSibling && grid.previousElementSibling.id === "billingToggle" ? grid.previousElementSibling : grid); }
+    const moeda = brlOn() ? "BRL" : "USD", sym = moeda === "BRL" ? "R$ " : "US$ ";
+    const num = v => sym + v.toLocaleString(locale());
+    const ui = { BEGINNER: ["sprout", "var(--c-green)"], PRO: ["rocket", "var(--c-cyan)"], ELITE: ["crown", "var(--c-amber)"] };
+    host.innerHTML = `<div class="bf-head">
+        <p class="bf-kicker">Black Friday</p>
+        <h2 class="bf-title">${t("bf.titulo")}</h2>
+        <p class="bf-sub">${t("bf.sub")}</p>
+        <p class="bf-tempo" id="bfTempo"></p>
+      </div>
+      <div class="bf-grid">${["BEGINNER", "PRO", "ELITE"].map(tier => `
+        <div class="bf-card ${tier === "ELITE" ? "bf-top" : ""}" style="--tone:${ui[tier][1]}">
+          <div class="price-tier"><span class="pt-ic">${ic(ui[tier][0])}</span>${tier}</div>
+          <div class="bf-de">${interp(t("bf.de"), { v: num(BF_CHEIO[moeda][tier]) })}</div>
+          <div class="bf-por">${num(BF_PRECO[moeda][tier])}</div>
+          <div class="bf-uma">${t("bf.umaVez")}</div>
+          <ul class="bf-feats"><li>${interp(t("bf.f1"), { p: tier.charAt(0) + tier.slice(1).toLowerCase() })}</li><li>${t("bf.f2")}</li><li>${t("bf.f3")}</li></ul>
+          ${moeda === "BRL" ? `<button class="btn btn-pix btn-block" data-bf="${tier}" data-m="pix">${PIX_SVG}${t("bf.pix")}</button>` : ""}
+          <button class="btn ${tier === "ELITE" ? "btn-primary" : "btn-ghost"} btn-block" data-bf="${tier}" data-m="card">${t("bf.cartao")}</button>
+        </div>`).join("")}</div>
+      <p class="bf-nota">${t("bf.nota")}</p>`;
+    host.querySelectorAll("button[data-bf]").forEach(b => b.onclick = () => payVitalicio(b.dataset.bf, b.dataset.m, b));
+    bfContagem($("#bfTempo"));
+  }
   async function payPix(tier, cycle, btn) {
     track("plan_click", { tier, cycle, via: "pix" });
     if (!USER || PREVIEW) { lsSet("seven7-intent", String(tier).toUpperCase() + ":" + cycle); location.href = PREVIEW ? "plans.html" : "register.html"; return; }
@@ -1903,6 +1993,7 @@
              <div class="pix-sub">${t(CYCLE === "annual" ? "pix.subA" : "pix.subM")}</div>`) : ""}
       </div>`;
     }).join("");
+    renderBlackFriday();
     $$("#pricingGrid a[data-tier]").forEach(a => a.onclick = ev => { ev.preventDefault(); subscribe(a.dataset.tier); });
     $$("#pricingGrid button[data-pix]").forEach(b => b.onclick = () => payPix(b.dataset.pix, CYCLE, b));
   }
@@ -2031,7 +2122,7 @@
             show(t("auth.created"), true);
             USER = su.session.user;
             await reenviaVerif(null, null);
-            setTimeout(() => location.href = localStorage.getItem("seven7-intent") ? "plans.html" : "members.html", 1200);
+            setTimeout(() => location.href = destinoIntent() || "members.html", 1200);
           } else {
             show(t("auth.checkEmail"), true);
           }
@@ -2043,7 +2134,7 @@
           show(t("auth.loginOk"), true);
           const intent = localStorage.getItem("seven7-intent");
           track("login");
-          setTimeout(() => location.href = intent ? "plans.html" : "members.html", 900);
+          setTimeout(() => location.href = intent ? destinoIntent() : "members.html", 900);
         }
       } catch (e) {
         show(interp(t("auth.err"), { msg: (e && e.message) || e }), false);
@@ -3414,7 +3505,7 @@
     const planName = member ? (p.plan || "—").toUpperCase() + (isTrial() ? " · " + t("trial.tag") : "") : t("acct.free");
     const endTxt = trialEnd() ? trialEnd().toLocaleDateString(locale()) : "";
     const pu = pixUntil(), pdl = pixDaysLeft();
-    const statusTxt = pu ? (pixExpired() ? interp(t("pix.statusOff"), { d: pu.toLocaleDateString(locale()) })
+    const statusTxt = p.billing === "vitalicio" ? t("bf.statusConta") : pu ? (pixExpired() ? interp(t("pix.statusOff"), { d: pu.toLocaleDateString(locale()) })
         : interp(t(pdl > 0 ? "pix.statusOn" : "pix.statusGrace"), { d: pu.toLocaleDateString(locale()), n: Math.max(0, pdl),
             c: t(p.billing_cycle === "annual" ? "billing.annual" : "billing.monthly") }))
       : isTrial() ? interp(t("trial.statusOn"), { d: endTxt, n: trialDaysLeft() })
@@ -3429,6 +3520,7 @@
           <div class="acct-row"><span class="acct-k">${t("acct.status")}</span><span class="acct-v">${statusTxt}</span></div>
         </div>
         ${new URLSearchParams(location.search).get("pix") === "ok" && !(pu && pdl > 0) ? `<div class="pix-wait" id="pixWait">${PIX_SVG}<span>${t("pix.waiting")}</span></div>` : ""}
+        ${new URLSearchParams(location.search).get("vitalicio") === "ok" ? (p.billing === "vitalicio" ? `<div class="pix-wait bf-ok"><span>${t("bf.ativo")}</span></div>` : `<div class="pix-wait" id="bfWait"><span>${t("bf.esperando")}</span></div>`) : ""}
         ${pu ? `<button class="btn btn-pix btn-block" id="pixRenewAcct">${PIX_SVG}${interp(t("pix.renewAcct"), { p: (p.plan || "").toUpperCase(),
             c: t(p.billing_cycle === "annual" ? "billing.annual" : "billing.monthly") })}</button>
           <p class="pix-sub">${t("pix.renewHint")}</p>`
@@ -3463,6 +3555,14 @@
       $("#mailMsg").textContent = t("acct.mailSaved"); track("mail_pref", { on: mw.checked });
     };
     const pr = $("#pixRenewAcct"); if (pr) pr.onclick = () => payPix(p.plan, p.billing_cycle || "monthly", pr);
+    // voltou do pagamento do vitalício: o Stripe confirma em segundos (Pix pode levar 1 a 2 min) -> recarrega até aparecer
+    if ($("#bfWait") && !PREVIEW && !window.__bfPoll) {
+      window.__bfPoll = true; let n = 0;
+      const tick = async () => { n++; await loadProfile();
+        if ((PROFILE && PROFILE.billing === "vitalicio") || n >= 36) { window.__bfPoll = false; updateAuthUI(); renderAccount(); return; }
+        setTimeout(tick, 5000); };
+      setTimeout(tick, 4000);
+    }
     // voltou do checkout Pix: o banco confirma em segundos -> recarrega o perfil até o acesso aparecer
     if ($("#pixWait") && !PREVIEW && !window.__pixPoll) {
       window.__pixPoll = true; let tries = 0;
