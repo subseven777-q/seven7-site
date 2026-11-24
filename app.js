@@ -774,6 +774,8 @@
     "pf.kRf": { en: "Fixed income", pt: "Renda fixa" },
     "add.btn": { en: "Add to portfolio", pt: "Adicionar à carteira" },
     "add.cancel": { en: "Cancel", pt: "Cancelar" },
+    "xl.gerando": { en: "Building the spreadsheet…", pt: "Montando a planilha…" },
+    "xl.erro": { en: "Couldn't build the spreadsheet. Try again.", pt: "Não deu para montar a planilha. Tente de novo." },
     "bf.titulo": { en: "Lifetime access for half the annual price", pt: "Acesso vitalício pela metade do plano anual" },
     "bf.sub": { en: "Pay once and keep the plan forever: no renewal, no monthly fee. Card or Pix.", pt: "Pague uma vez e fique com o plano para sempre: sem renovação e sem mensalidade. Cartão ou Pix." },
     "bf.faltam": { en: "Ends Nov 30, 11:59 pm (Brasília) · {d}d {h}h {m}min left", pt: "Termina em 30/11 às 23:59 · faltam {d}d {h}h {m}min" },
@@ -894,7 +896,7 @@
     "pf.quantH": { en: "Quant analysis of your portfolio", pt: "Análise quant do seu portfólio" },
     "pf.quantSub": { en: "Everything you hold — Seven7 strategies and free positions — consolidated in your currency.", pt: "Tudo o que você tem — estratégias Seven7 e posições livres — consolidado na sua moeda." },
     "pf.save": { en: "Save", pt: "Salvar" },
-    "pf.export": { en: "Export CSV", pt: "Exportar CSV" },
+    "pf.export": { en: "Download spreadsheet (Excel)", pt: "Baixar planilha (Excel)" },
     "pf.saved": { en: "Saved ✓ (metrics update at the next daily run)", pt: "Salvo ✓ (as métricas atualizam no próximo ciclo diário)" },
     "pf.value": { en: "Portfolio value", pt: "Valor do portfólio" },
     "pf.return": { en: "Total return", pt: "Retorno total" },
@@ -3349,7 +3351,7 @@
       await sb.from("portfolio_positions").delete().eq("id", b.dataset.id); renderPortfolio();
     });
     const exp = $("#pfExport");
-    if (exp) exp.onclick = () => exportPortfolioCSV(viewPos, eng, deposit, cur);
+    if (exp) exp.onclick = () => exportPlanilha(positions, d, deposit, cur, exp);
     const clearBtn = $("#pfClear");
     if (clearBtn) clearBtn.onclick = async () => {
       if (!sb || !USER || USER.id === "preview") return;
@@ -3376,26 +3378,145 @@
     }
   }
 
-  function exportPortfolioCSV(positions, d, deposit, cur) {
-    const esc = v => { v = (v == null ? "" : String(v)); return /[",\n;]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
-    const L = [];
-    L.push(["Seven7 — Portfolio export", new Date().toISOString().slice(0, 10)]);
-    L.push(["Deposit", deposit, cur]);
-    if (d) {
-      L.push(["Value", d.value]); L.push(["Total return %", d.total_return]);
-      L.push(["Win rate %", d.win_rate]); L.push(["Max drawdown %", d.max_dd]);
-      L.push(["Vol drag %", d.vol_drag]); L.push(["vs SPY %", d.spy_return]); L.push(["vs BOVA11 %", d.bova_return]);
+  // ===== PLANILHA COMPLETA DA CARTEIRA (Excel .xlsx, várias abas) — mesma contabilidade da Minha mesa =====
+  // Abas: Resumo · Posições · Alocação · Risco por ativo · Correlação · Encerradas · Ajustes · Evolução.
+  // Gerada no navegador (SheetJS via esm.sh); nada sai do computador da pessoa.
+  async function exportPlanilha(posicoes, d, deposit, cur, btn) {
+    const old = btn ? btn.innerHTML : "";
+    if (btn) { btn.disabled = true; btn.textContent = t("xl.gerando"); }
+    try {
+      const XLSX = await import("https://esm.sh/xlsx@0.18.5");
+      const A = (d && d.analytics) || null, base = (A && A.base) || cur, fx = await cambioHoje();
+      const SYM = base === "BRL" ? "R$" : "US$", MO = `"${SYM}" #,##0.00`, PC = "0.00%", QT = "#,##0.######", PX = "#,##0.00####";
+      const hoje = new Date().toISOString().slice(0, 10);
+      const ESTR = { livre: "Carteira própria", po3: "Markov 3", dividends: "Dividendos" };
+      const CLS = { acao_br: "Ação BR", acao_us: "Ação EUA", etf_br: "ETF BR", etf_us: "ETF EUA", fii: "FII", cripto: "Cripto",
+                    rf_br: "Renda fixa BR", rf_us: "Renda fixa EUA", moeda: "Moeda estrangeira", outro: "Outro" };
+      const classe = x => ehLivre(x) ? (CLS[x.asset_class] || "Outro") : (HEDGE_TKS.includes(String(x.ticker).toUpperCase()) ? "Proteção (hedge)" : x.market === "BR" ? "Ação BR" : "Ação EUA");
+      const estrategia = x => HEDGE_TKS.includes(String(x.ticker).toUpperCase()) && !ehLivre(x) ? "Proteção (hedge)" : (ESTR[x.strategy || "po3"] || x.strategy);
+      const moedaPos = x => ehLivre(x) ? (x.currency || (x.market === "BR" ? "BRL" : "USD")) : base;
+      const ativos = {}; ((A && A.assets) || []).forEach(a => { ativos[a.id] = a; });
+      const abertas = posicoes.filter(x => x.status === "open");
+      // linhas de posição com a contabilidade única (valor e custo na moeda da posição e na moeda da carteira)
+      const linhas = abertas.map(x => {
+        const v = vcNativo(x, deposit), f = fatorBase(x, posicoes, deposit, base, fx, A), a = ativos[chaveAtivo(x)] || {};
+        const rf = ehLivre(x) && ehRF(x), real = (Number(x.realized) || 0);
+        return { x, v, f, a, rf, real, Vb: v.V * f, Cb: v.C * f, Rb: real * f };
+      });
+      const tot = linhas.reduce((t2, l) => t2 + l.Vb, 0) || 1;
+      const cs = pfContabil(posicoes, deposit, base, fx, A);
+      const wb = XLSX.utils.book_new();
+      // monta uma aba: cabeçalho + linhas; fmt = formato por coluna; largura automática; filtro no cabeçalho
+      const aba = (nome, cab, rows, fmt = {}, filtro = true) => {
+        const ws = XLSX.utils.aoa_to_sheet([cab, ...rows]);
+        const rg = XLSX.utils.decode_range(ws["!ref"] || "A1");
+        for (let R = 1; R <= rg.e.r; R++) for (let C = 0; C <= rg.e.c; C++) {
+          const c = ws[XLSX.utils.encode_cell({ r: R, c: C })];
+          if (c && c.t === "n" && fmt[C]) c.z = fmt[C];
+        }
+        ws["!cols"] = cab.map((h, C) => ({ wch: Math.min(48, Math.max(String(h).length + 2, ...rows.map(r => String(r[C] ?? "").length + 2))) }));
+        if (filtro && rows.length) ws["!autofilter"] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: rows.length, c: cab.length - 1 } }) };
+        XLSX.utils.book_append_sheet(wb, ws, nome);
+      };
+      const num = v => (v == null || v === "" || !isFinite(Number(v)) ? null : Number(v));
+      const pct = v => (num(v) == null ? null : Number(v) / 100);
+
+      // 1) RESUMO
+      const M = (A && A.metricas) || {}, Hr = (A && A.hrp) || {};
+      const res = [
+        ["Seven7: planilha da carteira", ""], ["Gerada em", hoje], ["Moeda da carteira", base],
+        ["Câmbio do dia (R$ por US$, Banco Central)", num(fx)], ["", ""],
+        ["Valor da carteira", num(cs.value)], ["Capital aplicado", num(cs.value - cs.resultado)],
+        ["Resultado (valor − capital aplicado)", num(cs.resultado)], ["Resultado %", pct(cs.total_return)],
+        ["Lucro realizado em ajustes (incluído no resultado)", num(linhas.reduce((t2, l) => t2 + l.Rb, 0))],
+        ["Posições abertas", abertas.length], ["Taxa de acerto das estratégias", pct(cs.win_rate)], ["", ""],
+        ["Nota de saúde (0 a 100)", A ? num(A.nota) : null],
+        ["Volatilidade anual", num(M.vol)], ["Retorno anualizado (2 anos)", num(M.ret_ann)],
+        ["Pior queda em 2 anos", num(M.max_dd)], ["Queda atual (abaixo do topo)", num(M.dd_atual)],
+        ["VaR 95% (1 dia)", num(M.var95)], ["Perda esperada nos 2,5% piores dias (ES 97,5%)", num(M.es975)],
+        ["Beta vs " + (M.bench || "índice"), num(M.beta)], ["Fontes de risco independentes", num(M.enb)],
+        ["Correlação média entre os ativos", num(M.corr_media)], ["", ""],
+        ["Volatilidade com os pesos do HRP", num((Hr.hrp || {}).vol)], ["Pior queda com os pesos do HRP", num((Hr.hrp || {}).max_dd)],
+        ["", ""], ["Evolução desde a 1ª compra: carteira", pct(d && d.curve_return)], ["Evolução no mesmo período: S&P 500 (SPY)", pct(d && d.spy_return)],
+        ["Evolução no mesmo período: Ibovespa (BOVA11)", pct(d && d.bova_return)], ["", ""],
+        ["Conteúdo informativo, não é recomendação de investimento.", ""],
+      ];
+      const wsR = XLSX.utils.aoa_to_sheet(res);
+      const fmtR = { "Câmbio": "#,##0.0000", "Valor": MO, "Capital": MO, "Resultado (": MO, "Lucro": MO, "Resultado %": PC, "Taxa": PC,
+        "Volatilidade": PC, "Retorno": PC, "Pior": PC, "Queda": PC, "VaR": PC, "Perda": PC, "Evolução": PC, "Beta": "0.00", "Fontes": "0.0", "Correlação": "0.00" };
+      res.forEach((r, R) => { const c = wsR[XLSX.utils.encode_cell({ r: R, c: 1 })]; if (!c || c.t !== "n") return;
+        const k = Object.keys(fmtR).find(k2 => String(r[0]).startsWith(k2)); if (k) c.z = fmtR[k]; });
+      wsR["!cols"] = [{ wch: 52 }, { wch: 20 }];
+      XLSX.utils.book_append_sheet(wb, wsR, "Resumo");
+
+      // 2) POSIÇÕES (abertas)
+      const cabP = ["Ativo", "Estratégia", "Classe", "Mercado", "Moeda", "Data da compra", "Quantidade", "Preço médio", "Preço atual",
+        "Custo (moeda do ativo)", "Valor (moeda do ativo)", `Custo (${base})`, `Valor (${base})`, "Peso na carteira", `Resultado (${base})`, "Resultado %",
+        `Lucro realizado (${base})`, "% da base (estratégias)", "Stop", "Alvo", "Indexador (renda fixa)", "Taxa (renda fixa)", "Vencimento",
+        "Volatilidade anual do ativo", "Pior queda do ativo (2a)", "Contribuição ao risco", "Peso sugerido (HRP)", `Ajuste sugerido HRP (${base})`, "Fora do HRP (Markov 3)"];
+      const rowsP = linhas.sort((a2, b2) => b2.Vb - a2.Vb).map(l => {
+        const x = l.x, livre = ehLivre(x), q = livre && !l.rf ? num(x.quantity) : null;
+        return [x.ticker, estrategia(x), classe(x), x.market, moedaPos(x), x.added_at || "",
+          q, l.rf ? null : num(x.entry), l.rf ? null : num(x.current_price ?? x.entry), num(l.v.C), num(l.v.V), num(l.Cb), num(l.Vb), l.Vb / tot,
+          num(l.Vb - l.Cb), l.Cb > 0 ? (l.Vb - l.Cb) / l.Cb : null, num(l.Rb), livre ? null : pct(x.alloc_pct), num(x.stop), num(x.tp),
+          l.rf ? (x.rf_index || "") : "", l.rf ? pct(x.rf_rate) : null, l.rf ? (x.rf_maturity || "") : "",
+          num(l.a.vol), num(l.a.max_dd), num(l.a.rc), num(l.a.w_hrp), num(l.a.delta_hrp), ehM3(x) ? "sim" : ""];
+      });
+      rowsP.push(["TOTAL", "", "", "", base, "", null, null, null, null, null, num(linhas.reduce((t2, l) => t2 + l.Cb, 0)), num(tot), 1,
+        num(linhas.reduce((t2, l) => t2 + l.Vb - l.Cb, 0)), null, num(linhas.reduce((t2, l) => t2 + l.Rb, 0))]);
+      aba("Posições", cabP, rowsP, { 6: QT, 7: PX, 8: PX, 9: "#,##0.00", 10: "#,##0.00", 11: MO, 12: MO, 13: PC, 14: MO, 15: PC, 16: MO, 17: PC,
+        18: PX, 19: PX, 21: PC, 23: PC, 24: PC, 25: PC, 26: PC, 27: MO });
+
+      // 3) ALOCAÇÃO (por classe, moeda, estratégia e mercado)
+      const grupo = fn => { const g = {}; linhas.forEach(l => { const k = fn(l.x); g[k] = (g[k] || 0) + l.Vb; });
+        return Object.entries(g).sort((a2, b2) => b2[1] - a2[1]); };
+      const rowsA = [];
+      [["Classe", x => classe(x)], ["Moeda", x => moedaPos(x)], ["Estratégia", x => estrategia(x)], ["Mercado", x => x.market]]
+        .forEach(([nome, fn]) => grupo(fn).forEach(([k, v]) => rowsA.push([nome, k, num(v), v / tot])));
+      aba("Alocação", ["Agrupado por", "Grupo", `Valor (${base})`, "% da carteira"], rowsA, { 2: MO, 3: PC });
+
+      // 4) RISCO POR ATIVO (análise quant)
+      if (A && A.assets && A.assets.length) {
+        aba("Risco por ativo", ["Ativo", "Classe", "Moeda", `Valor (${base})`, "Peso", "Contribuição ao risco", "Volatilidade anual", "Pior queda (2a)",
+          "Peso HRP", `Ajuste HRP (${base})`, "Peso de mínima variância", "Markov 3 (fora do HRP)"],
+          A.assets.map(a => [a.label, a.cls, a.ccy, num(a.valor), num(a.w), num(a.rc), num(a.vol), num(a.max_dd), num(a.w_hrp), num(a.delta_hrp), num(a.w_minvar), a.m3 ? num(a.m3) : null]),
+          { 3: MO, 4: PC, 5: PC, 6: PC, 7: PC, 8: PC, 9: MO, 10: PC, 11: MO });
+      }
+      // 5) CORRELAÇÃO
+      if (A && A.corr && A.corr.labels && A.corr.labels.length > 1) {
+        aba("Correlação", ["", ...A.corr.labels], A.corr.labels.map((l, i2) => [l, ...A.corr.m[i2].map(num)]),
+          Object.fromEntries(A.corr.labels.map((_, i2) => [i2 + 1, "0.00"])), false);
+      }
+      // 6) ENCERRADAS (operações das estratégias)
+      const fech = posicoes.filter(x => ["won", "lost", "closed"].includes(x.status));
+      if (fech.length) {
+        aba("Encerradas", ["Ativo", "Estratégia", "Mercado", "Entrada em", "Saída em", "Preço de entrada", "Preço de saída", "Resultado %", `Resultado (${base})`, "Situação"],
+          fech.map(x => [x.ticker, estrategia(x), x.market, x.added_at || "", x.exit_at || "", num(x.entry), num(x.exit_price),
+            pct(x.ret_pct), num(deposit * (Number(x.alloc_pct) || 0) / 100 * (Number(x.ret_pct) || 0) / 100),
+            x.status === "won" ? "alvo atingido" : x.status === "lost" ? "stop" : "encerrada"]),
+          { 5: PX, 6: PX, 7: PC, 8: MO });
+      }
+      // 7) AJUSTES (histórico HRP / proteção)
+      try {
+        const { data: mv } = await sb.from("portfolio_moves").select("dia,chave,origem,v_antes,v_depois,fator").order("at", { ascending: true });
+        if (mv && mv.length) aba("Ajustes", ["Data", "Ativo", "Origem", `Valor antes (${base})`, `Valor depois (${base})`, "Variação"],
+          mv.map(m => [m.dia, (ativos[m.chave] || {}).label || m.chave, m.origem === "hrp" ? "HRP" : m.origem === "protecao" ? "Proteção" : "Outro",
+            num(m.v_antes), num(m.v_depois), num(m.fator) != null ? Number(m.fator) - 1 : null]), { 3: MO, 4: MO, 5: PC });
+      } catch (e) { /* sem histórico */ }
+      // 8) EVOLUÇÃO (curva vs índices, base 100)
+      const cv = (d && d.curve) || [];
+      if (cv.length > 1) {
+        aba("Evolução", ["Data", "Carteira (base 100)", "S&P 500 / SPY (base 100)", "Ibovespa / BOVA11 (base 100)"],
+          cv.map(r => [r.d, r.p != null ? r.p * 100 : null, r.spy != null ? r.spy * 100 : null, r.bova != null ? r.bova * 100 : null]),
+          { 1: "0.00", 2: "0.00", 3: "0.00" }, false);
+      }
+      XLSX.writeFile(wb, `seven7-carteira-${hoje}.xlsx`, { compression: true });
+      track("export_planilha", { n: abertas.length });
+    } catch (e) {
+      console.error(e);
+      if (btn) btn.insertAdjacentHTML("afterend", `<span class="add-msg err">${t("xl.erro")}</span>`);
     }
-    L.push([]);
-    L.push(["Ticker", "Market", "Added", "Allocation %", "Entry", "Stop", "TP", "Current", "Status", "Return %", "Return R"]);
-    positions.forEach(p => L.push([p.ticker, p.market, p.added_at, p.alloc_pct, p.entry, p.stop, p.tp,
-      p.current_price ?? p.entry, p.status, p.ret_pct, p.ret_r]));
-    const csv = L.map(r => r.map(esc).join(",")).join("\n");
-    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = "seven7-portfolio-" + new Date().toISOString().slice(0, 10) + ".csv";
-    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    if (btn) { btn.disabled = false; btn.innerHTML = old; }
   }
 
   /* ---- account page ---- */
