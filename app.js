@@ -3188,6 +3188,7 @@
       ]);
     } else if (PREVIEW) {
       const pv = previewPortfolio();
+      try { pv.stats.analytics = await (await fetch("data/pf_analytics_preview.json")).json(); } catch (e) { /* prévia sem análise */ }
       pr = { data: { portfolio_deposit: pv.deposit, portfolio_currency: pv.cur } };
       po = { data: pv.positions }; st = { data: { data: pv.stats } };
     } else { pr = po = st = { data: null }; }
@@ -3378,139 +3379,308 @@
     }
   }
 
-  // ===== PLANILHA COMPLETA DA CARTEIRA (Excel .xlsx, várias abas) — mesma contabilidade da Minha mesa =====
-  // Abas: Resumo · Posições · Alocação · Risco por ativo · Correlação · Encerradas · Ajustes · Evolução.
-  // Gerada no navegador (SheetJS via esm.sh); nada sai do computador da pessoa.
+  // ===== PLANILHA COMPLETA DA CARTEIRA (Excel .xlsx) — painel com gráficos + abas formatadas, identidade "laudo" =====
+  // Abas: Painel (indicadores + 4 gráficos) · Resumo · Posições · Alocação · Risco por ativo · Correlação · Encerradas ·
+  // Ajustes · Evolução. Gerada no navegador (ExcelJS via esm.sh); nada sai do computador da pessoa.
+  const XL = { tinta: "13233A", tinta2: "4A5A70", caneta: "1D4ED8", marca: "0E94BC", ok: "1E8E5A", atencao: "B7790F",
+               alerta: "C2412D", papel: "EEF2F0", folha: "FBFCFB", regua: "C9D4D0", branco: "FFFFFF" };
+  const SERIE = ["#1D4ED8", "#0E94BC", "#1E8E5A", "#B7790F", "#7C5CC4", "#C2412D", "#4A5A70", "#2BB3A3", "#E08A1E", "#8AA0B8"];
+  // ---- gráficos desenhados em canvas (viram imagem dentro da planilha) ----
+  function xlCanvas(w, h, titulo) {
+    const k = 2, c = document.createElement("canvas"); c.width = w * k; c.height = h * k;
+    const g = c.getContext("2d"); g.scale(k, k);
+    g.fillStyle = "#FFFFFF"; g.fillRect(0, 0, w, h);
+    g.strokeStyle = "#C9D4D0"; g.lineWidth = 1; g.strokeRect(0.5, 0.5, w - 1, h - 1);
+    g.fillStyle = "#13233A"; g.font = "600 15px Segoe UI, Arial, sans-serif"; g.fillText(titulo, 16, 26);
+    g.fillStyle = "#0E94BC"; g.fillRect(16, 34, 36, 3);
+    return { c, g, w, h };
+  }
+  const xlFonte = (g, px, peso = 400, cor = "#4A5A70") => { g.font = `${peso} ${px}px Segoe UI, Arial, sans-serif`; g.fillStyle = cor; };
+  function xlLinha(titulo, datas, series, fmt) {
+    const { c, g, w, h } = xlCanvas(760, 330, titulo), L = 58, R = 16, T = 64, B = 44;
+    const todos = series.flatMap(s2 => s2.v).filter(v => v != null && isFinite(v));
+    if (!todos.length) return c.toDataURL("image/png");
+    let lo = Math.min(...todos), hi = Math.max(...todos); const pad = (hi - lo) * 0.08 || 1; lo -= pad; hi += pad;
+    const X = i2 => L + (w - L - R) * (datas.length > 1 ? i2 / (datas.length - 1) : 0), Y = v => T + (h - T - B) * (1 - (v - lo) / (hi - lo));
+    xlFonte(g, 11);
+    for (let k2 = 0; k2 <= 4; k2++) { const v = lo + (hi - lo) * k2 / 4, y = Y(v);
+      g.strokeStyle = "#EEF2F0"; g.beginPath(); g.moveTo(L, y); g.lineTo(w - R, y); g.stroke(); g.fillText(fmt(v), 8, y + 4); }
+    const passo = Math.max(1, Math.floor(datas.length / 6));
+    for (let i2 = 0; i2 < datas.length; i2 += passo) g.fillText(String(datas[i2]).slice(0, 7).split("-").reverse().join("/"), Math.min(X(i2) - 18, w - R - 46), h - 18);
+    series.forEach(s2 => { g.strokeStyle = s2.cor; g.lineWidth = s2.grossa ? 2.6 : 1.6; g.setLineDash(s2.tracejada ? [5, 4] : []); g.beginPath();
+      let ini = false; s2.v.forEach((v, i2) => { if (v == null) return; const x = X(i2), y = Y(v); if (!ini) { g.moveTo(x, y); ini = true; } else g.lineTo(x, y); }); g.stroke(); });
+    g.setLineDash([]);
+    let lx = w - R - 8; series.slice().reverse().forEach(s2 => { xlFonte(g, 12, 600, s2.cor); const tw = g.measureText(s2.nome).width; lx -= tw + 30;
+      g.fillStyle = s2.cor; g.fillRect(lx, 20, 16, 3); xlFonte(g, 12, 600, "#13233A"); g.fillText(s2.nome, lx + 20, 26); });
+    return c.toDataURL("image/png");
+  }
+  function xlRosca(titulo, itens) {
+    const { c, g, w, h } = xlCanvas(460, 330, titulo), tot = itens.reduce((t2, x) => t2 + x.v, 0) || 1;
+    const cx = 130, cy = 190, r = 100; let a0 = -Math.PI / 2;
+    itens.forEach((x, k2) => { const a1 = a0 + 2 * Math.PI * x.v / tot; g.beginPath(); g.moveTo(cx, cy); g.arc(cx, cy, r, a0, a1); g.closePath();
+      g.fillStyle = SERIE[k2 % SERIE.length]; g.fill(); a0 = a1; });
+    g.beginPath(); g.arc(cx, cy, r * 0.58, 0, 2 * Math.PI); g.fillStyle = "#FFFFFF"; g.fill();
+    xlFonte(g, 12, 400); g.textAlign = "center"; g.fillText(itens.length + (itens.length === 1 ? " classe" : " classes"), cx, cy + 5); g.textAlign = "left";
+    itens.slice(0, 9).forEach((x, k2) => { const y = 78 + k2 * 26; g.fillStyle = SERIE[k2 % SERIE.length]; g.fillRect(256, y - 10, 12, 12);
+      xlFonte(g, 12, 600, "#13233A"); g.fillText(String(x.nome).slice(0, 20), 274, y);
+      xlFonte(g, 12, 400); g.fillText((x.v / tot * 100).toFixed(1).replace(".", ",") + "%", 274 + 128, y); });
+    return c.toDataURL("image/png");
+  }
+  function xlBarras(titulo, itens, legenda) {          // itens: [{nome, a, b?}] em fração (0..1); a = azul, b = ciano
+    const { c, g, w, h } = xlCanvas(560, 40 + 80 + Math.max(1, itens.length) * 28, titulo), L = 120, R = 70, T = 80;
+    const mx = Math.max(...itens.flatMap(x => [x.a || 0, x.b || 0]), 0.0001);
+    if (legenda) legenda.forEach((lg, k2) => { const lx = 16 + k2 * 120; g.fillStyle = lg.cor; g.fillRect(lx, 46, 12, 12); xlFonte(g, 12, 600, "#13233A"); g.fillText(lg.nome, lx + 16, 56); });
+    itens.forEach((x, k2) => { const y = T + k2 * 28, bw = w - L - R;
+      xlFonte(g, 12, 600, "#13233A"); g.fillText(String(x.nome).slice(0, 14), 14, y + 13);
+      g.fillStyle = "#1D4ED8"; g.fillRect(L, y, bw * (x.a || 0) / mx, x.b != null ? 9 : 16);
+      if (x.b != null) { g.fillStyle = "#0E94BC"; g.fillRect(L, y + 10, bw * x.b / mx, 9); }
+      xlFonte(g, 11, 400); g.fillText(((x.b != null ? x.b : x.a) * 100).toFixed(1).replace(".", ",") + "%", L + bw * Math.max(x.a || 0, x.b || 0) / mx + 6, y + 13); });
+    return c.toDataURL("image/png");
+  }
+  function xlResultado(titulo, itens, fmt) {            // itens: [{nome, v}] em dinheiro; verde > 0, vermelho < 0
+    const { c, g, w, h } = xlCanvas(560, 40 + 70 + Math.max(1, itens.length) * 28, titulo), L = 120, R = 90, T = 70;
+    const mx = Math.max(...itens.map(x => Math.abs(x.v)), 0.0001), zero = L + (w - L - R) / 2, meia = (w - L - R) / 2;
+    g.strokeStyle = "#C9D4D0"; g.beginPath(); g.moveTo(zero, T - 6); g.lineTo(zero, h - 20); g.stroke();
+    itens.forEach((x, k2) => { const y = T + k2 * 28, bw = meia * Math.abs(x.v) / mx;
+      xlFonte(g, 12, 600, "#13233A"); g.fillText(String(x.nome).slice(0, 14), 14, y + 13);
+      g.fillStyle = x.v >= 0 ? "#1E8E5A" : "#C2412D"; g.fillRect(x.v >= 0 ? zero : zero - bw, y, bw, 16);
+      xlFonte(g, 11, 600, x.v >= 0 ? "#1E8E5A" : "#C2412D"); g.textAlign = x.v >= 0 ? "left" : "right";
+      g.fillText(fmt(x.v), x.v >= 0 ? zero + bw + 6 : zero - bw - 6, y + 13); g.textAlign = "left"; });
+    return c.toDataURL("image/png");
+  }
+
   async function exportPlanilha(posicoes, d, deposit, cur, btn) {
     const old = btn ? btn.innerHTML : "";
     if (btn) { btn.disabled = true; btn.textContent = t("xl.gerando"); }
     try {
-      const XLSX = await import("https://esm.sh/xlsx@0.18.5");
+      const mod = await import("https://esm.sh/exceljs@4.4.0?bundle"), ExcelJS = mod.default || mod;
       const A = (d && d.analytics) || null, base = (A && A.base) || cur, fx = await cambioHoje();
-      const SYM = base === "BRL" ? "R$" : "US$", MO = `"${SYM}" #,##0.00`, PC = "0.00%", QT = "#,##0.######", PX = "#,##0.00####";
-      const hoje = new Date().toISOString().slice(0, 10);
+      const SYM = base === "BRL" ? "R$" : "US$", MO = `"${SYM}" #,##0.00;[Red]-"${SYM}" #,##0.00`, PC = "0.00%;[Red]-0.00%", QT = "#,##0.######", PX = "#,##0.00####";
+      const din = v => SYM + " " + Number(v).toLocaleString("pt-BR", { maximumFractionDigits: 0 });
+      const agora = new Date(), hoje = agora.toISOString().slice(0, 10);
       const ESTR = { livre: "Carteira própria", po3: "Markov 3", dividends: "Dividendos" };
       const CLS = { acao_br: "Ação BR", acao_us: "Ação EUA", etf_br: "ETF BR", etf_us: "ETF EUA", fii: "FII", cripto: "Cripto",
                     rf_br: "Renda fixa BR", rf_us: "Renda fixa EUA", moeda: "Moeda estrangeira", outro: "Outro" };
-      const classe = x => ehLivre(x) ? (CLS[x.asset_class] || "Outro") : (HEDGE_TKS.includes(String(x.ticker).toUpperCase()) ? "Proteção (hedge)" : x.market === "BR" ? "Ação BR" : "Ação EUA");
-      const estrategia = x => HEDGE_TKS.includes(String(x.ticker).toUpperCase()) && !ehLivre(x) ? "Proteção (hedge)" : (ESTR[x.strategy || "po3"] || x.strategy);
+      const hedge = x => HEDGE_TKS.includes(String(x.ticker).toUpperCase());
+      const classe = x => ehLivre(x) ? (CLS[x.asset_class] || "Outro") : (hedge(x) ? "Proteção (hedge)" : x.market === "BR" ? "Ação BR" : "Ação EUA");
+      const estrategia = x => hedge(x) && !ehLivre(x) ? "Proteção (hedge)" : (ESTR[x.strategy || "po3"] || x.strategy);
       const moedaPos = x => ehLivre(x) ? (x.currency || (x.market === "BR" ? "BRL" : "USD")) : base;
       const ativos = {}; ((A && A.assets) || []).forEach(a => { ativos[a.id] = a; });
       const abertas = posicoes.filter(x => x.status === "open");
-      // linhas de posição com a contabilidade única (valor e custo na moeda da posição e na moeda da carteira)
       const linhas = abertas.map(x => {
         const v = vcNativo(x, deposit), f = fatorBase(x, posicoes, deposit, base, fx, A), a = ativos[chaveAtivo(x)] || {};
-        const rf = ehLivre(x) && ehRF(x), real = (Number(x.realized) || 0);
-        return { x, v, f, a, rf, real, Vb: v.V * f, Cb: v.C * f, Rb: real * f };
-      });
+        return { x, v, f, a, rf: ehLivre(x) && ehRF(x), Vb: v.V * f, Cb: v.C * f, Rb: (Number(x.realized) || 0) * f };
+      }).sort((a2, b2) => b2.Vb - a2.Vb);
       const tot = linhas.reduce((t2, l) => t2 + l.Vb, 0) || 1;
-      const cs = pfContabil(posicoes, deposit, base, fx, A);
-      const wb = XLSX.utils.book_new();
-      // monta uma aba: cabeçalho + linhas; fmt = formato por coluna; largura automática; filtro no cabeçalho
-      const aba = (nome, cab, rows, fmt = {}, filtro = true) => {
-        const ws = XLSX.utils.aoa_to_sheet([cab, ...rows]);
-        const rg = XLSX.utils.decode_range(ws["!ref"] || "A1");
-        for (let R = 1; R <= rg.e.r; R++) for (let C = 0; C <= rg.e.c; C++) {
-          const c = ws[XLSX.utils.encode_cell({ r: R, c: C })];
-          if (c && c.t === "n" && fmt[C]) c.z = fmt[C];
-        }
-        ws["!cols"] = cab.map((h, C) => ({ wch: Math.min(48, Math.max(String(h).length + 2, ...rows.map(r => String(r[C] ?? "").length + 2))) }));
-        if (filtro && rows.length) ws["!autofilter"] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: rows.length, c: cab.length - 1 } }) };
-        XLSX.utils.book_append_sheet(wb, ws, nome);
-      };
-      const num = v => (v == null || v === "" || !isFinite(Number(v)) ? null : Number(v));
+      const cs = pfContabil(posicoes, deposit, base, fx, A), M = (A && A.metricas) || {};
+      const num = v => { if (v == null || v === "" || !isFinite(Number(v))) return null; const n = Math.round(Number(v) * 1e8) / 1e8; return n === 0 ? 0 : n; };   // sem "−0,00" vermelho
       const pct = v => (num(v) == null ? null : Number(v) / 100);
 
-      // 1) RESUMO
-      const M = (A && A.metricas) || {}, Hr = (A && A.hrp) || {};
-      const res = [
-        ["Seven7: planilha da carteira", ""], ["Gerada em", hoje], ["Moeda da carteira", base],
-        ["Câmbio do dia (R$ por US$, Banco Central)", num(fx)], ["", ""],
-        ["Valor da carteira", num(cs.value)], ["Capital aplicado", num(cs.value - cs.resultado)],
-        ["Resultado (valor − capital aplicado)", num(cs.resultado)], ["Resultado %", pct(cs.total_return)],
-        ["Lucro realizado em ajustes (incluído no resultado)", num(linhas.reduce((t2, l) => t2 + l.Rb, 0))],
-        ["Posições abertas", abertas.length], ["Taxa de acerto das estratégias", pct(cs.win_rate)], ["", ""],
-        ["Nota de saúde (0 a 100)", A ? num(A.nota) : null],
-        ["Volatilidade anual", num(M.vol)], ["Retorno anualizado (2 anos)", num(M.ret_ann)],
-        ["Pior queda em 2 anos", num(M.max_dd)], ["Queda atual (abaixo do topo)", num(M.dd_atual)],
-        ["VaR 95% (1 dia)", num(M.var95)], ["Perda esperada nos 2,5% piores dias (ES 97,5%)", num(M.es975)],
-        ["Beta vs " + (M.bench || "índice"), num(M.beta)], ["Fontes de risco independentes", num(M.enb)],
-        ["Correlação média entre os ativos", num(M.corr_media)], ["", ""],
-        ["Volatilidade com os pesos do HRP", num((Hr.hrp || {}).vol)], ["Pior queda com os pesos do HRP", num((Hr.hrp || {}).max_dd)],
-        ["", ""], ["Evolução desde a 1ª compra: carteira", pct(d && d.curve_return)], ["Evolução no mesmo período: S&P 500 (SPY)", pct(d && d.spy_return)],
-        ["Evolução no mesmo período: Ibovespa (BOVA11)", pct(d && d.bova_return)], ["", ""],
-        ["Conteúdo informativo, não é recomendação de investimento.", ""],
-      ];
-      const wsR = XLSX.utils.aoa_to_sheet(res);
-      const fmtR = { "Câmbio": "#,##0.0000", "Valor": MO, "Capital": MO, "Resultado (": MO, "Lucro": MO, "Resultado %": PC, "Taxa": PC,
-        "Volatilidade": PC, "Retorno": PC, "Pior": PC, "Queda": PC, "VaR": PC, "Perda": PC, "Evolução": PC, "Beta": "0.00", "Fontes": "0.0", "Correlação": "0.00" };
-      res.forEach((r, R) => { const c = wsR[XLSX.utils.encode_cell({ r: R, c: 1 })]; if (!c || c.t !== "n") return;
-        const k = Object.keys(fmtR).find(k2 => String(r[0]).startsWith(k2)); if (k) c.z = fmtR[k]; });
-      wsR["!cols"] = [{ wch: 52 }, { wch: 20 }];
-      XLSX.utils.book_append_sheet(wb, wsR, "Resumo");
+      const wb = new ExcelJS.Workbook(); wb.creator = "Seven7"; wb.created = agora;
+      const impressao = { orientation: "landscape", fitToPage: true, fitToWidth: 1, fitToHeight: 0, paperSize: 9,
+                          margins: { left: 0.4, right: 0.4, top: 0.5, bottom: 0.5, header: 0.2, footer: 0.2 } };
+      const cor = h => ({ argb: "FF" + h });
+      const fundo = h => ({ type: "pattern", pattern: "solid", fgColor: cor(h) });
+      const fino = { style: "thin", color: cor(XL.regua) };
+      // ---- aba de tabela padrão: cabeçalho escuro, linhas alternadas, filtro, cabeçalho fixo, larguras, formatos ----
+      function tabela(nome, colunas, rows, opt = {}) {
+        const ws = wb.addWorksheet(nome, { views: [{ state: "frozen", ySplit: 3, showGridLines: false }], properties: { tabColor: cor(opt.aba || XL.marca) }, pageSetup: { ...impressao, printTitlesRow: "3:3" } });
+        ws.mergeCells(1, 1, 1, colunas.length);
+        const t1 = ws.getCell(1, 1); t1.value = opt.titulo || nome; t1.font = { name: "Calibri", bold: true, size: 14, color: cor(XL.branco) }; t1.fill = fundo(XL.tinta);
+        t1.alignment = { vertical: "middle", indent: 1 }; ws.getRow(1).height = 30;
+        ws.mergeCells(2, 1, 2, colunas.length);
+        const t2 = ws.getCell(2, 1); t2.value = opt.sub || `Seven7 · gerado em ${agora.toLocaleDateString("pt-BR")} · valores em ${base}`;
+        t2.font = { name: "Calibri", italic: true, size: 9, color: cor(XL.tinta2) }; t2.alignment = { indent: 1 };
+        const cab = ws.getRow(3); cab.height = 34;
+        colunas.forEach((c2, k2) => { const cel = cab.getCell(k2 + 1); cel.value = c2.h; cel.font = { name: "Calibri", bold: true, color: cor(XL.branco), size: 10 };
+          cel.fill = fundo(XL.caneta); cel.alignment = { wrapText: true, vertical: "middle", horizontal: k2 ? "center" : "left" };
+          cel.border = { bottom: { style: "medium", color: cor(XL.marca) } }; ws.getColumn(k2 + 1).width = c2.w || 14; });
+        rows.forEach((r, i2) => {
+          const row = ws.getRow(4 + i2), total = r.__total;
+          colunas.forEach((c2, k2) => { const cel = row.getCell(k2 + 1), v = r[k2]; cel.value = v == null ? null : v;
+            if (c2.f) cel.numFmt = c2.f;
+            cel.font = { name: "Calibri", size: 10, color: cor(XL.tinta), bold: !!total || k2 === 0 };
+            cel.fill = fundo(total ? XL.papel : i2 % 2 ? "F5F8F7" : XL.branco);
+            cel.border = total ? { top: { style: "medium", color: cor(XL.tinta) } } : { bottom: fino };
+            if (c2.sinal && typeof v === "number" && v !== 0) cel.font = { name: "Calibri", ...cel.font, bold: true, color: cor(v > 0 ? XL.ok : XL.alerta) };
+            cel.alignment = { vertical: "middle", horizontal: typeof v === "number" ? "right" : k2 ? "center" : "left" }; });
+          row.height = 20;
+        });
+        const n = rows.filter(r => !r.__total).length;
+        if (n) ws.autoFilter = { from: { row: 3, column: 1 }, to: { row: 3 + n, column: colunas.length } };
+        colunas.forEach((c2, k2) => { if (c2.barra && n) {
+          const L2 = ws.getColumn(k2 + 1).letter;
+          ws.addConditionalFormatting({ ref: `${L2}4:${L2}${3 + n}`, rules: [{ type: "dataBar", cfvo: [{ type: "min" }, { type: "max" }], color: cor(c2.barra) }] });
+        } });
+        return ws;
+      }
 
-      // 2) POSIÇÕES (abertas)
-      const cabP = ["Ativo", "Estratégia", "Classe", "Mercado", "Moeda", "Data da compra", "Quantidade", "Preço médio", "Preço atual",
-        "Custo (moeda do ativo)", "Valor (moeda do ativo)", `Custo (${base})`, `Valor (${base})`, "Peso na carteira", `Resultado (${base})`, "Resultado %",
-        `Lucro realizado (${base})`, "% da base (estratégias)", "Stop", "Alvo", "Indexador (renda fixa)", "Taxa (renda fixa)", "Vencimento",
-        "Volatilidade anual do ativo", "Pior queda do ativo (2a)", "Contribuição ao risco", "Peso sugerido (HRP)", `Ajuste sugerido HRP (${base})`, "Fora do HRP (Markov 3)"];
-      const rowsP = linhas.sort((a2, b2) => b2.Vb - a2.Vb).map(l => {
-        const x = l.x, livre = ehLivre(x), q = livre && !l.rf ? num(x.quantity) : null;
+      // ========== 1) PAINEL ==========
+      const pn = wb.addWorksheet("Painel", { views: [{ showGridLines: false }], properties: { tabColor: cor(XL.caneta) }, pageSetup: impressao });
+      for (let k2 = 1; k2 <= 14; k2++) pn.getColumn(k2).width = 11.5;
+      pn.mergeCells("A1:N2"); const tt = pn.getCell("A1");
+      tt.value = "Seven7 · Laudo da carteira"; tt.font = { name: "Calibri", bold: true, size: 20, color: cor(XL.branco) }; tt.fill = fundo(XL.tinta);
+      tt.alignment = { vertical: "middle", indent: 1 }; pn.getRow(1).height = 26; pn.getRow(2).height = 22;
+      pn.mergeCells("A3:N3"); const st = pn.getCell("A3");
+      st.value = `Gerado em ${agora.toLocaleDateString("pt-BR")} às ${agora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })} · moeda da carteira: ${base} · ${abertas.length} posições abertas`;
+      st.font = { name: "Calibri", size: 10, color: cor(XL.branco) }; st.fill = fundo(XL.caneta); st.alignment = { indent: 1 }; pn.getRow(3).height = 20;
+      // cartões de indicadores (2 colunas cada)
+      const nota = A ? num(A.nota) : null, corNota = nota == null ? XL.tinta2 : nota >= 70 ? XL.ok : nota >= 40 ? XL.atencao : XL.alerta;
+      const cartoes = [
+        ["Valor da carteira", num(cs.value), MO, XL.tinta], ["Resultado", num(cs.resultado), MO, (cs.resultado || 0) >= 0 ? XL.ok : XL.alerta],
+        ["Resultado %", pct(cs.total_return), PC, (cs.total_return || 0) >= 0 ? XL.ok : XL.alerta], ["Nota de saúde", nota, "0\" / 100\"", corNota],
+        ["Volatilidade anual", num(M.vol), "0.0%", XL.tinta], ["Pior queda (2 anos)", num(M.max_dd), "0.0%", XL.alerta],
+        ["Fontes de risco indep.", num(M.enb), "0.0", XL.tinta]];
+      cartoes.forEach(([rot, v, f, c2], k2) => {
+        const c1 = 1 + k2 * 2; pn.mergeCells(5, c1, 5, c1 + 1); pn.mergeCells(6, c1, 7, c1 + 1);
+        const a1 = pn.getCell(5, c1), a2 = pn.getCell(6, c1);
+        a1.value = rot; a1.font = { name: "Calibri", size: 9, bold: true, color: cor(XL.tinta2) }; a1.fill = fundo(XL.papel); a1.alignment = { horizontal: "center", vertical: "middle" };
+        a2.value = v; a2.numFmt = f; a2.font = { name: "Calibri", size: 16, bold: true, color: cor(c2) }; a2.fill = fundo(XL.folha); a2.alignment = { horizontal: "center", vertical: "middle" };
+        for (let rr = 5; rr <= 7; rr++) for (let cc = c1; cc <= c1 + 1; cc++) pn.getCell(rr, cc).border = {
+          top: rr === 5 ? { style: "medium", color: cor(c2) } : undefined, bottom: rr === 7 ? fino : undefined,
+          left: cc === c1 ? fino : undefined, right: cc === c1 + 1 ? fino : undefined };
+      });
+      pn.getRow(5).height = 20; pn.getRow(6).height = 22; pn.getRow(7).height = 22;
+      // gráficos
+      const img = (b64, col, row, w, h) => { const id = wb.addImage({ base64: b64, extension: "png" }); pn.addImage(id, { tl: { col, row }, ext: { width: w, height: h } }); };
+      const cv = (d && d.curve) || [];
+      if (cv.length > 1) img(xlLinha("Evolução desde a 1ª compra (base 100)", cv.map(r => r.d),
+        [{ nome: "Carteira", cor: "#1D4ED8", grossa: true, v: cv.map(r => r.p != null ? r.p * 100 : null) },
+         { nome: "S&P 500", cor: "#B7790F", tracejada: true, v: cv.map(r => r.spy != null ? r.spy * 100 : null) },
+         { nome: "Ibovespa", cor: "#1E8E5A", tracejada: true, v: cv.map(r => r.bova != null ? r.bova * 100 : null) }],
+        v => v.toFixed(0)), 0, 8.4, 760, 330);
+      const porClasse = {}; linhas.forEach(l => { const k2 = classe(l.x); porClasse[k2] = (porClasse[k2] || 0) + l.Vb; });
+      img(xlRosca("Alocação por classe", Object.entries(porClasse).sort((a2, b2) => b2[1] - a2[1]).map(([nome, v]) => ({ nome, v }))),
+        cv.length > 1 ? 9.1 : 0, 8.4, 460, 330);
+      const rowGraf2 = 8.4 + 330 / 20 + 1;
+      const topo = ((A && A.assets) || []).slice().sort((a2, b2) => b2.rc - a2.rc).slice(0, 10);
+      if (topo.length) img(xlBarras("Quanto cada ativo pesa no valor e no risco", topo.map(a => ({ nome: a.label, a: a.w, b: a.rc })),
+        [{ nome: "peso no valor", cor: "#1D4ED8" }, { nome: "peso no risco", cor: "#0E94BC" }]), 0, rowGraf2, 560, 40 + 80 + topo.length * 28);
+      const res = linhas.map(l => ({ nome: l.x.ticker, v: l.Vb - l.Cb + l.Rb })).sort((a2, b2) => b2.v - a2.v).slice(0, 12);
+      if (res.length) img(xlResultado("Resultado por posição", res, din), topo.length ? 7.3 : 0, rowGraf2, 560, 40 + 70 + res.length * 28);
+      const fimPainel = Math.ceil(rowGraf2 + (40 + 70 + Math.max(topo.length, res.length) * 28) / 20) + 2;
+      pn.mergeCells(fimPainel, 1, fimPainel, 14);
+      const av = pn.getCell(fimPainel, 1); av.value = "Conteúdo informativo, não é recomendação de investimento. Dados: Seven7 (seven7invest.com).";
+      av.font = { name: "Calibri", italic: true, size: 9, color: cor(XL.tinta2) };
+
+      // ========== 2) RESUMO ==========
+      const Hr = (A && A.hrp) || {};
+      const secoes = [
+        ["Carteira", [["Valor da carteira", num(cs.value), MO], ["Capital aplicado", num(cs.value - cs.resultado), MO],
+          ["Resultado (valor − capital aplicado)", num(cs.resultado), MO, 1], ["Resultado %", pct(cs.total_return), PC, 1],
+          ["Lucro realizado em ajustes (já no resultado)", num(linhas.reduce((t2, l) => t2 + l.Rb, 0)), MO, 1],
+          ["Posições abertas", abertas.length, "0"], ["Taxa de acerto das estratégias", pct(cs.win_rate), PC],
+          ["Câmbio do dia (R$ por US$, Banco Central)", num(fx), "#,##0.0000"]]],
+        ["Saúde e risco (2 anos de preços diários)", [["Nota de saúde (0 a 100)", nota, "0"], ["Volatilidade anual", num(M.vol), PC],
+          ["Retorno anualizado", num(M.ret_ann), PC, 1], ["Pior queda", num(M.max_dd), PC], ["Queda atual (abaixo do topo)", num(M.dd_atual), PC],
+          ["VaR 95% (1 dia)", num(M.var95), PC], ["Perda esperada nos 2,5% piores dias (ES 97,5%)", num(M.es975), PC],
+          ["Beta vs " + (M.bench || "índice"), num(M.beta), "0.00"], ["Fontes de risco independentes", num(M.enb), "0.0"],
+          ["Correlação média entre os ativos", num(M.corr_media), "0.00"]]],
+        ["Com os pesos sugeridos pelo HRP", [["Volatilidade", num((Hr.hrp || {}).vol), PC], ["Pior queda", num((Hr.hrp || {}).max_dd), PC],
+          ["Fontes de risco independentes", num((Hr.hrp || {}).enb), "0.0"]]],
+        ["Desde a 1ª compra, no mesmo período", [["Carteira", pct(d && d.curve_return), PC, 1], ["S&P 500 (SPY)", pct(d && d.spy_return), PC, 1],
+          ["Ibovespa (BOVA11)", pct(d && d.bova_return), PC, 1]]],
+      ];
+      const rs = wb.addWorksheet("Resumo", { views: [{ showGridLines: false }], properties: { tabColor: cor(XL.marca) }, pageSetup: { ...impressao, orientation: "portrait" } });
+      rs.getColumn(1).width = 52; rs.getColumn(2).width = 22;
+      rs.mergeCells("A1:B1"); const r1 = rs.getCell("A1"); r1.value = "Resumo da carteira"; r1.font = { name: "Calibri", bold: true, size: 14, color: cor(XL.branco) };
+      r1.fill = fundo(XL.tinta); r1.alignment = { vertical: "middle", indent: 1 }; rs.getRow(1).height = 30;
+      let ln = 3;
+      secoes.forEach(([tit, itens]) => {
+        rs.mergeCells(ln, 1, ln, 2); const h2 = rs.getCell(ln, 1); h2.value = tit; h2.font = { name: "Calibri", bold: true, color: cor(XL.branco) }; h2.fill = fundo(XL.caneta);
+        h2.alignment = { indent: 1, vertical: "middle" }; rs.getRow(ln).height = 22; ln++;
+        itens.forEach(([rot, v, f, sinal], k2) => {
+          const a1 = rs.getCell(ln, 1), b1 = rs.getCell(ln, 2); a1.value = rot; b1.value = v; if (f) b1.numFmt = f;
+          a1.font = { name: "Calibri", size: 10, color: cor(XL.tinta) }; b1.font = { name: "Calibri", size: 11, bold: true, color: cor(sinal && typeof v === "number" && v !== 0 ? (v > 0 ? XL.ok : XL.alerta) : XL.tinta) };
+          [a1, b1].forEach(c2 => { c2.fill = fundo(k2 % 2 ? "F5F8F7" : XL.branco); c2.border = { bottom: fino }; });
+          a1.alignment = { indent: 1 }; b1.alignment = { horizontal: "right" }; ln++; });
+        ln++;
+      });
+      rs.getCell(ln, 1).value = "Conteúdo informativo, não é recomendação de investimento."; rs.getCell(ln, 1).font = { name: "Calibri", italic: true, size: 9, color: cor(XL.tinta2) };
+
+      // ========== 3) POSIÇÕES ==========
+      const colP = [
+        { h: "Ativo", w: 12 }, { h: "Estratégia", w: 16 }, { h: "Classe", w: 16 }, { h: "Mercado", w: 9 }, { h: "Moeda", w: 8 }, { h: "Data da compra", w: 12 },
+        { h: "Quantidade", w: 12, f: QT }, { h: "Preço médio", w: 12, f: PX }, { h: "Preço atual", w: 12, f: PX },
+        { h: "Custo (moeda do ativo)", w: 15, f: "#,##0.00" }, { h: "Valor (moeda do ativo)", w: 15, f: "#,##0.00" },
+        { h: `Custo (${base})`, w: 15, f: MO }, { h: `Valor (${base})`, w: 15, f: MO }, { h: "Peso na carteira", w: 13, f: "0.0%", barra: XL.marca },
+        { h: `Resultado (${base})`, w: 15, f: MO, sinal: 1 }, { h: "Resultado %", w: 12, f: PC, sinal: 1 }, { h: `Lucro realizado (${base})`, w: 15, f: MO, sinal: 1 },
+        { h: "% da base (estratégias)", w: 13, f: "0.00%" }, { h: "Stop", w: 10, f: PX }, { h: "Alvo", w: 10, f: PX },
+        { h: "Indexador (renda fixa)", w: 13 }, { h: "Taxa (renda fixa)", w: 12, f: "0.00%" }, { h: "Vencimento", w: 12 },
+        { h: "Volatilidade anual do ativo", w: 13, f: "0.0%" }, { h: "Pior queda do ativo (2a)", w: 13, f: "0.0%" },
+        { h: "Contribuição ao risco", w: 13, f: "0.0%", barra: XL.caneta }, { h: "Peso sugerido (HRP)", w: 13, f: "0.0%" },
+        { h: `Ajuste sugerido HRP (${base})`, w: 15, f: MO, sinal: 1 }, { h: "Fora do HRP (Markov 3)", w: 12 }];
+      const rowsP = linhas.map(l => {
+        const x = l.x, livre = ehLivre(x);
         return [x.ticker, estrategia(x), classe(x), x.market, moedaPos(x), x.added_at || "",
-          q, l.rf ? null : num(x.entry), l.rf ? null : num(x.current_price ?? x.entry), num(l.v.C), num(l.v.V), num(l.Cb), num(l.Vb), l.Vb / tot,
-          num(l.Vb - l.Cb), l.Cb > 0 ? (l.Vb - l.Cb) / l.Cb : null, num(l.Rb), livre ? null : pct(x.alloc_pct), num(x.stop), num(x.tp),
-          l.rf ? (x.rf_index || "") : "", l.rf ? pct(x.rf_rate) : null, l.rf ? (x.rf_maturity || "") : "",
+          livre && !l.rf ? num(x.quantity) : null, l.rf ? null : num(x.entry), l.rf ? null : num(x.current_price ?? x.entry), num(l.v.C), num(l.v.V),
+          num(l.Cb), num(l.Vb), l.Vb / tot, num(l.Vb - l.Cb), l.Cb > 0 ? (l.Vb - l.Cb) / l.Cb : null, num(l.Rb), livre ? null : pct(x.alloc_pct),
+          num(x.stop), num(x.tp), l.rf ? (x.rf_index || "") : "", l.rf ? pct(x.rf_rate) : null, l.rf ? (x.rf_maturity || "") : "",
           num(l.a.vol), num(l.a.max_dd), num(l.a.rc), num(l.a.w_hrp), num(l.a.delta_hrp), ehM3(x) ? "sim" : ""];
       });
-      rowsP.push(["TOTAL", "", "", "", base, "", null, null, null, null, null, num(linhas.reduce((t2, l) => t2 + l.Cb, 0)), num(tot), 1,
-        num(linhas.reduce((t2, l) => t2 + l.Vb - l.Cb, 0)), null, num(linhas.reduce((t2, l) => t2 + l.Rb, 0))]);
-      aba("Posições", cabP, rowsP, { 6: QT, 7: PX, 8: PX, 9: "#,##0.00", 10: "#,##0.00", 11: MO, 12: MO, 13: PC, 14: MO, 15: PC, 16: MO, 17: PC,
-        18: PX, 19: PX, 21: PC, 23: PC, 24: PC, 25: PC, 26: PC, 27: MO });
+      const totP = Object.assign(["TOTAL", "", "", "", base, "", null, null, null, null, null, num(linhas.reduce((t2, l) => t2 + l.Cb, 0)), num(tot), 1,
+        num(linhas.reduce((t2, l) => t2 + l.Vb - l.Cb, 0)), null, num(linhas.reduce((t2, l) => t2 + l.Rb, 0))], { __total: true });
+      tabela("Posições", colP, [...rowsP, totP], { titulo: "Posições abertas", aba: XL.caneta });
 
-      // 3) ALOCAÇÃO (por classe, moeda, estratégia e mercado)
-      const grupo = fn => { const g = {}; linhas.forEach(l => { const k = fn(l.x); g[k] = (g[k] || 0) + l.Vb; });
-        return Object.entries(g).sort((a2, b2) => b2[1] - a2[1]); };
+      // ========== 4) ALOCAÇÃO ==========
+      const grupo = fn => { const g2 = {}; linhas.forEach(l => { const k2 = fn(l.x); g2[k2] = (g2[k2] || 0) + l.Vb; }); return Object.entries(g2).sort((a2, b2) => b2[1] - a2[1]); };
       const rowsA = [];
-      [["Classe", x => classe(x)], ["Moeda", x => moedaPos(x)], ["Estratégia", x => estrategia(x)], ["Mercado", x => x.market]]
-        .forEach(([nome, fn]) => grupo(fn).forEach(([k, v]) => rowsA.push([nome, k, num(v), v / tot])));
-      aba("Alocação", ["Agrupado por", "Grupo", `Valor (${base})`, "% da carteira"], rowsA, { 2: MO, 3: PC });
+      [["Classe", classe], ["Moeda", moedaPos], ["Estratégia", estrategia], ["Mercado", x => x.market]].forEach(([nome, fn]) =>
+        grupo(fn).forEach(([k2, v]) => rowsA.push([nome, k2, num(v), v / tot])));
+      tabela("Alocação", [{ h: "Agrupado por", w: 14 }, { h: "Grupo", w: 22 }, { h: `Valor (${base})`, w: 18, f: MO }, { h: "% da carteira", w: 16, f: "0.0%", barra: XL.marca }], rowsA,
+        { titulo: "Alocação da carteira" });
 
-      // 4) RISCO POR ATIVO (análise quant)
+      // ========== 5) RISCO POR ATIVO ==========
       if (A && A.assets && A.assets.length) {
-        aba("Risco por ativo", ["Ativo", "Classe", "Moeda", `Valor (${base})`, "Peso", "Contribuição ao risco", "Volatilidade anual", "Pior queda (2a)",
-          "Peso HRP", `Ajuste HRP (${base})`, "Peso de mínima variância", "Markov 3 (fora do HRP)"],
+        tabela("Risco por ativo", [{ h: "Ativo", w: 14 }, { h: "Classe", w: 16 }, { h: "Moeda", w: 8 }, { h: `Valor (${base})`, w: 15, f: MO },
+          { h: "Peso no valor", w: 12, f: "0.0%", barra: XL.caneta }, { h: "Peso no risco", w: 12, f: "0.0%", barra: XL.alerta },
+          { h: "Volatilidade anual", w: 12, f: "0.0%" }, { h: "Pior queda (2a)", w: 12, f: "0.0%" }, { h: "Peso HRP", w: 11, f: "0.0%" },
+          { h: `Ajuste HRP (${base})`, w: 15, f: MO, sinal: 1 }, { h: "Peso de mínima variância", w: 13, f: "0.0%" }, { h: `Markov 3, fora do HRP (${base})`, w: 15, f: MO }],
           A.assets.map(a => [a.label, a.cls, a.ccy, num(a.valor), num(a.w), num(a.rc), num(a.vol), num(a.max_dd), num(a.w_hrp), num(a.delta_hrp), num(a.w_minvar), a.m3 ? num(a.m3) : null]),
-          { 3: MO, 4: PC, 5: PC, 6: PC, 7: PC, 8: PC, 9: MO, 10: PC, 11: MO });
+          { titulo: "Risco por ativo (2 anos de preços diários)", aba: XL.alerta });
       }
-      // 5) CORRELAÇÃO
+      // ========== 6) CORRELAÇÃO (mapa de calor) ==========
       if (A && A.corr && A.corr.labels && A.corr.labels.length > 1) {
-        aba("Correlação", ["", ...A.corr.labels], A.corr.labels.map((l, i2) => [l, ...A.corr.m[i2].map(num)]),
-          Object.fromEntries(A.corr.labels.map((_, i2) => [i2 + 1, "0.00"])), false);
+        const lb = A.corr.labels, ws = wb.addWorksheet("Correlação", { views: [{ showGridLines: false }], properties: { tabColor: cor(XL.atencao) } });
+        ws.mergeCells(1, 1, 1, lb.length + 1); const c1 = ws.getCell(1, 1); c1.value = "Correlação entre os ativos (−1 a 1)";
+        c1.font = { name: "Calibri", bold: true, size: 14, color: cor(XL.branco) }; c1.fill = fundo(XL.tinta); c1.alignment = { indent: 1, vertical: "middle" }; ws.getRow(1).height = 30;
+        ws.getColumn(1).width = 14;
+        lb.forEach((l, k2) => { const h1 = ws.getCell(3, k2 + 2); h1.value = l; h1.font = { name: "Calibri", bold: true, size: 9, color: cor(XL.branco) }; h1.fill = fundo(XL.caneta);
+          h1.alignment = { textRotation: 45, horizontal: "center" }; ws.getColumn(k2 + 2).width = 9;
+          const r1c = ws.getCell(4 + k2, 1); r1c.value = l; r1c.font = { name: "Calibri", bold: true, size: 9, color: cor(XL.branco) }; r1c.fill = fundo(XL.caneta); });
+        ws.getRow(3).height = 60;
+        lb.forEach((_, i2) => A.corr.m[i2].forEach((v, k2) => { const c2 = ws.getCell(4 + i2, k2 + 2); c2.value = num(v); c2.numFmt = "0.00";
+          c2.alignment = { horizontal: "center" }; c2.font = { name: "Calibri", size: 9, color: cor(XL.tinta) }; c2.border = { bottom: fino, right: fino }; }));
+        const ultima = ws.getColumn(lb.length + 1).letter;
+        ws.addConditionalFormatting({ ref: `B4:${ultima}${3 + lb.length}`, rules: [{ type: "colorScale",
+          cfvo: [{ type: "num", value: -1 }, { type: "num", value: 0 }, { type: "num", value: 1 }], color: [cor("1D4ED8"), cor("FFFFFF"), cor("C2412D")] }] });
       }
-      // 6) ENCERRADAS (operações das estratégias)
+      // ========== 7) ENCERRADAS ==========
       const fech = posicoes.filter(x => ["won", "lost", "closed"].includes(x.status));
-      if (fech.length) {
-        aba("Encerradas", ["Ativo", "Estratégia", "Mercado", "Entrada em", "Saída em", "Preço de entrada", "Preço de saída", "Resultado %", `Resultado (${base})`, "Situação"],
-          fech.map(x => [x.ticker, estrategia(x), x.market, x.added_at || "", x.exit_at || "", num(x.entry), num(x.exit_price),
-            pct(x.ret_pct), num(deposit * (Number(x.alloc_pct) || 0) / 100 * (Number(x.ret_pct) || 0) / 100),
-            x.status === "won" ? "alvo atingido" : x.status === "lost" ? "stop" : "encerrada"]),
-          { 5: PX, 6: PX, 7: PC, 8: MO });
-      }
-      // 7) AJUSTES (histórico HRP / proteção)
+      if (fech.length) tabela("Encerradas", [{ h: "Ativo", w: 12 }, { h: "Estratégia", w: 16 }, { h: "Mercado", w: 9 }, { h: "Entrada em", w: 12 }, { h: "Saída em", w: 12 },
+        { h: "Preço de entrada", w: 13, f: PX }, { h: "Preço de saída", w: 13, f: PX }, { h: "Resultado %", w: 12, f: PC, sinal: 1 },
+        { h: `Resultado (${base})`, w: 15, f: MO, sinal: 1 }, { h: "Situação", w: 15 }],
+        fech.map(x => [x.ticker, estrategia(x), x.market, x.added_at || "", x.exit_at || "", num(x.entry), num(x.exit_price), pct(x.ret_pct),
+          num(deposit * (Number(x.alloc_pct) || 0) / 100 * (Number(x.ret_pct) || 0) / 100), x.status === "won" ? "alvo atingido" : x.status === "lost" ? "stop" : "encerrada"]),
+        { titulo: "Operações encerradas das estratégias" });
+      // ========== 8) AJUSTES ==========
       try {
         const { data: mv } = await sb.from("portfolio_moves").select("dia,chave,origem,v_antes,v_depois,fator").order("at", { ascending: true });
-        if (mv && mv.length) aba("Ajustes", ["Data", "Ativo", "Origem", `Valor antes (${base})`, `Valor depois (${base})`, "Variação"],
+        if (mv && mv.length) tabela("Ajustes", [{ h: "Data", w: 12 }, { h: "Ativo", w: 14 }, { h: "Origem", w: 12 }, { h: `Valor antes (${base})`, w: 16, f: MO },
+          { h: `Valor depois (${base})`, w: 16, f: MO }, { h: "Variação", w: 12, f: PC, sinal: 1 }],
           mv.map(m => [m.dia, (ativos[m.chave] || {}).label || m.chave, m.origem === "hrp" ? "HRP" : m.origem === "protecao" ? "Proteção" : "Outro",
-            num(m.v_antes), num(m.v_depois), num(m.fator) != null ? Number(m.fator) - 1 : null]), { 3: MO, 4: MO, 5: PC });
+            num(m.v_antes), num(m.v_depois), num(m.fator) != null ? Number(m.fator) - 1 : null]), { titulo: "Histórico de ajustes (HRP e proteção)" });
       } catch (e) { /* sem histórico */ }
-      // 8) EVOLUÇÃO (curva vs índices, base 100)
-      const cv = (d && d.curve) || [];
-      if (cv.length > 1) {
-        aba("Evolução", ["Data", "Carteira (base 100)", "S&P 500 / SPY (base 100)", "Ibovespa / BOVA11 (base 100)"],
-          cv.map(r => [r.d, r.p != null ? r.p * 100 : null, r.spy != null ? r.spy * 100 : null, r.bova != null ? r.bova * 100 : null]),
-          { 1: "0.00", 2: "0.00", 3: "0.00" }, false);
-      }
-      XLSX.writeFile(wb, `seven7-carteira-${hoje}.xlsx`, { compression: true });
+      // ========== 9) EVOLUÇÃO ==========
+      if (cv.length > 1) tabela("Evolução", [{ h: "Data", w: 12 }, { h: "Carteira (base 100)", w: 16, f: "0.00" }, { h: "S&P 500 / SPY (base 100)", w: 18, f: "0.00" },
+        { h: "Ibovespa / BOVA11 (base 100)", w: 18, f: "0.00" }],
+        cv.map(r => [r.d, r.p != null ? r.p * 100 : null, r.spy != null ? r.spy * 100 : null, r.bova != null ? r.bova * 100 : null]), { titulo: "Evolução da carteira e dos índices" });
+
+      const buf = await wb.xlsx.writeBuffer();
+      const blob = new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const url = URL.createObjectURL(blob), a = document.createElement("a");
+      a.href = url; a.download = `seven7-carteira-${hoje}.xlsx`; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
       track("export_planilha", { n: abertas.length });
     } catch (e) {
       console.error(e);
