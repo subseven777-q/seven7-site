@@ -1106,16 +1106,15 @@
       badge: { en: "FULL ACCESS", pt: "ACESSO COMPLETO" },
       cycleFeat: {
         annual: [
-          [true, { en: "Full methodology revealed on subscription (Markov Chain)", pt: "Metodologia completa revelada na assinatura (Markov Chain)" }, "hot"],
           [true, { en: "Automated MT5 robot — trades the signals for you", pt: "Robô automatizado em MT5 — opera os sinais sozinho" }],
         ],
         monthly: [
-          [true, { en: "Full methodology revealed after 6 months (Markov Chain)", pt: "Metodologia completa revelada após 6 meses de plano (Markov Chain)" }, "hot"],
           [false, { en: "Automated MT5 robot — annual plan only", pt: "Robô automatizado em MT5 — só no plano anual" }],
         ],
       },
       feats: [
         [true, { en: "Markov 3 strategy — US (S&P 100) + Brazil (Ibovespa), live", pt: "Estratégia Markov 3 ao vivo — EUA (S&P 100) + Brasil (Ibovespa)" }],
+        [true, { en: "Quantitative day-trade model for the Mini Index (WIN) using interest rates and implied volatility — video + step-by-step PDF", pt: "Modelo Quantitativo Day Trade para o Mini Índice com juros e volatilidade implícita — vídeo + PDF passo a passo" }, "hot"],
         [true, { en: "💰 Both dividend income portfolios (US + Brazil)", pt: "💰 As duas carteiras de renda com dividendos (EUA + Brasil)" }],
         [true, { en: "Exclusive Hedge signal — KMLM (US) and DOLA11 (Brazil) for market stress", pt: "Sinal de Hedge exclusivo — KMLM (EUA) e DOLA11 (Brasil) para o estresse de mercado" }, "hot"],
         [true, { en: "🍒 The cherry on top — an exclusive layer that lifts every metric", pt: "🍒 A cereja do bolo — camada exclusiva que eleva cada métrica" }],
