@@ -175,8 +175,8 @@
   const wireVerifGate = () => { const b = $("#verGateBtn"); if (b) b.onclick = () => reenviaVerif(b, $("#verGateMsg")); };
   let PV_SENT = false;
   const isMember = () => !!PROFILE && ((PROFILE.status === "active" && !pixExpired()) || isTrial());
-  const isElite = () => isMember() && PROFILE.plan === "elite";
-  const hasHedge = () => isMember() && (PROFILE.plan === "elite" || PROFILE.plan === "pro");   // sinal de hedge: Pro e Elite
+  const isElite = () => isMember();                       // plano único: todo assinante tem acesso completo
+  const hasHedge = () => isMember();                      // plano único: o hedge é de todo assinante
 
   let LANG = localStorage.getItem("seven7-lang") || "pt";   // padrão PT-BR (usuário novo entra em português)
   const locale = () => (LANG === "en" ? "en-US" : "pt-BR");
@@ -189,24 +189,20 @@
 
   /* Preencha quando o Stripe estiver pronto: links de checkout hospedado.
      Ex.: STRIPE_LINKS.PRO.monthly = "https://buy.stripe.com/xxxx". Vazio => vai ao registro. */
+  // PLANO ÚNICO desde 25/11/2026: "Seven7 Completo" = acesso completo, pelo preço do antigo Pro (links do Pro no Stripe;
+  // os de Beginner e Elite foram desativados). No banco o acesso completo continua com o código 'elite'.
   const STRIPE_LINKS = {   // USD (site em EN)
-    BEGINNER: { monthly: "https://buy.stripe.com/bJeaEZfcDfWL3Lw3jC8Ra05", annual: "https://buy.stripe.com/4gM3cxe8z5i795Q8DW8Ra02" },
-    PRO:      { monthly: "https://buy.stripe.com/14A3cxfcD11R0zk3jC8Ra04", annual: "https://buy.stripe.com/fZu8wR0hJeSH2HsdYg8Ra06" },
-    ELITE:    { monthly: "https://buy.stripe.com/eVq6oJaWncKzeqadYg8Ra08", annual: "https://buy.stripe.com/3cIfZjd4v7qf3Lw5rK8Ra07" },
+    PRO: { monthly: "https://buy.stripe.com/14A3cxfcD11R0zk3jC8Ra04", annual: "https://buy.stripe.com/fZu8wR0hJeSH2HsdYg8Ra06" },
   };
   const STRIPE_LINKS_BRL = {   // BRL (site em PT)
-    BEGINNER: { monthly: "https://buy.stripe.com/eVqaEZ1lNdODdm6bQ88Ra09", annual: "https://buy.stripe.com/6oU00l6G7bGv5TE9I08Ra0a" },
-    PRO:      { monthly: "https://buy.stripe.com/dRmdRbggHcKz2Hs07q8Ra0c", annual: "https://buy.stripe.com/4gM4gB3tV39Z2Hsf2k8Ra0b" },
-    ELITE:    { monthly: "https://buy.stripe.com/4gM9AVfcDh0Pfue4nG8Ra0e", annual: "https://buy.stripe.com/cNi14pggH39Zdm63jC8Ra0d" },
+    PRO: { monthly: "https://buy.stripe.com/dRmdRbggHcKz2Hs07q8Ra0c", annual: "https://buy.stripe.com/4gM4gB3tV39Z2Hsf2k8Ra0b" },
   };
   /* Preços em R$ p/ o site em PT — PREENCHER com os valores dos links BRL (mensal e
      anual cobrado/ano). Enquanto null, PT continua em US$ (evita mostrar $ e cobrar R$). */
   const BRL_PRICES = {
-    BEGINNER: { monthly: 45, annual: 450 },
-    PRO:      { monthly: 150, annual: 1300 },
-    ELITE:    { monthly: 400, annual: 3500 },
+    PRO: { monthly: 150, annual: 1300 },
   };
-  const brlOn = () => LANG === "pt" && BRL_PRICES.BEGINNER.monthly != null;
+  const brlOn = () => LANG === "pt" && BRL_PRICES.PRO.monthly != null;
   const stripeLinks = () => (brlOn() ? STRIPE_LINKS_BRL : STRIPE_LINKS);
   /* Link "no-code" do Portal do Cliente Stripe (Settings -> Billing -> Customer portal).
      Formato https://billing.stripe.com/p/login/... — deixe vazio p/ cair no suporte por e-mail. */
@@ -361,9 +357,9 @@
     "heatmap.title": { en: "Monthly returns (%)", pt: "Retornos mensais (%)" },
     "heatmap.sub": { en: "Green = positive month · red = negative. YTD column on the right.", pt: "Verde = mês positivo · vermelho = negativo. Coluna do ano à direita." },
     "heatmap.year": { en: "Year", pt: "Ano" },
-    "hedge.kicker": { en: "PROTECTION · TAIL HEDGE · PRO & ELITE", pt: "PROTEÇÃO · HEDGE DE CAUDA · PRO E ELITE" },
+    "hedge.kicker": { en: "PROTECTION · TAIL HEDGE · SEVEN7 COMPLETE", pt: "PROTEÇÃO · HEDGE DE CAUDA · SEVEN7 COMPLETO" },
     "hedge.h2": { en: "Insurance that pays for itself.", pt: "Um seguro que se paga." },
-    "hedge.sub": { en: "Under market stress, the portfolio automatically raises protection in an <em>uncorrelated asset</em>. Which asset? Included in the Pro and Elite plans.", pt: "Em estresse de mercado, a carteira eleva a proteção em um <em>ativo descorrelacionado</em>. Qual é o ativo? Incluso nos planos Pro e Elite." },
+    "hedge.sub": { en: "Under market stress, the portfolio automatically raises protection in an <em>uncorrelated asset</em>. Which asset? Included in Seven7 Complete.", pt: "Em estresse de mercado, a carteira eleva a proteção em um <em>ativo descorrelacionado</em>. Qual é o ativo? Incluso no Seven7 Completo." },
     "radar.kicker": { en: "QUANTITATIVE STRATEGY", pt: "ESTRATÉGIA QUANTITATIVA" },
     "radar.h2": { en: "The strategy, live.", pt: "A estratégia, ao vivo." },
     "radar.subA": { en: "Members-only.", pt: "Exclusivo para membros." },
@@ -393,7 +389,7 @@
     "pricing.sub": { en: "Portfolio quant, Terminal and Tools: free forever. Strategies, hedge and options: paid plans with a 7-day free trial — no card.", pt: "Quantificação, Terminal e Ferramentas: grátis para sempre. Estratégias, hedge e opções: planos pagos com 7 dias grátis — sem cartão." },
     "billing.monthly": { en: "Monthly", pt: "Mensal" },
     "billing.annual": { en: "Annual", pt: "Anual" },
-    "billing.save": { en: "save up to 20%", pt: "economize até 20%" },
+    "billing.save": { en: "save 21%", pt: "economize 28%" },
     "price.cancel": { en: "Cancel anytime", pt: "Cancele quando quiser" },
     "price.billed": { en: "billed", pt: "cobrado" },
     "price.year": { en: "yr", pt: "ano" },
@@ -484,7 +480,7 @@
     "intra.subBR": { en: "Prices of the {n} Brazilian stocks in the strategy's universe · {t} Brasília · {d} · updated every 15 min during the B3 session. No signal or level is shown here.", pt: "Preços das {n} ações brasileiras do universo da estratégia · {t} Brasília · {d} · atualizado a cada 15 min no pregão da B3. Nenhum sinal ou nível aparece aqui." },
     "intra.last": { en: "last session", pt: "último pregão" },
     "intra.chg": { en: "Day", pt: "Dia" },
-    "sig.trailNote": { en: "Enhanced dynamic: when price reaches {old} (the original target), move the stop up to {trail} — this halves your risk — and let it run to the target {tp}. The covered call (Elite) stays written at the original target {old}.", pt: "Dinâmica aprimorada: ao atingir {old} (o alvo original), suba o stop para {trail} — isso corta o risco pela metade — e deixe correr até o alvo {tp}. O covered call (Elite) permanece no alvo original {old}." },
+    "sig.trailNote": { en: "Enhanced dynamic: when price reaches {old} (the original target), move the stop up to {trail} — this halves your risk — and let it run to the target {tp}. The covered call stays written at the original target {old}.", pt: "Dinâmica aprimorada: ao atingir {old} (o alvo original), suba o stop para {trail} — isso corta o risco pela metade — e deixe correr até o alvo {tp}. O covered call permanece no alvo original {old}." },
     "sig.upgradeNote": { en: "Strategy enhanced on 2026-09-02 (extended target + trailing). Historical track record reflects the rules in force at the time — we never rewrite past results.", pt: "Estratégia aprimorada em 02/09/2026 (alvo estendido + trailing). O histórico reflete as regras vigentes à época — nunca reescrevemos resultados passados." },
     "sig.stActive": { en: "ACTIVE", pt: "ATIVO" },
     "sig.stMon": { en: "MONITORING", pt: "MONITORANDO" },
@@ -522,11 +518,11 @@
 
     "div.kicker": { en: "DIVIDENDS · INCOME-FIRST", pt: "DIVIDENDOS · INCOME-FIRST" },
     "div.h1": { en: "Your growing dividend salary", pt: "Seu salário de dividendos crescente" },
-    "div.sub": { en: "A long-term income portfolio built from the most consistent dividend payers — bought only on weakness, <b>never sold</b>, every payout reinvested. Brazil (Beginner) and the US (Pro). Real, auditable data over 10 years.", pt: "Uma carteira de renda de longo prazo com as pagadoras de dividendos mais consistentes — compradas só na queda, <b>nunca vendidas</b>, cada provento reinvestido. Brasil (Beginner) e EUA (Pro). Dados reais e auditáveis de 10 anos." },
+    "div.sub": { en: "A long-term income portfolio built from the most consistent dividend payers — bought only on weakness, <b>never sold</b>, every payout reinvested. Brazil and the US, in Seven7 Complete. Real, auditable data over 10 years.", pt: "Uma carteira de renda de longo prazo com as pagadoras de dividendos mais consistentes — compradas só na queda, <b>nunca vendidas</b>, cada provento reinvestido. Brasil e EUA, no Seven7 Completo. Dados reais e auditáveis de 10 anos." },
     "div.mkt.BR": { en: "Brazil", pt: "Brasil" },
     "div.mkt.US": { en: "United States", pt: "Estados Unidos" },
-    "div.tier.beginner": { en: "Included from Beginner", pt: "Incluído a partir do Beginner" },
-    "div.tier.pro": { en: "Included from Pro", pt: "Incluído a partir do Pro" },
+    "div.tier.beginner": { en: "Included in Seven7 Complete", pt: "Incluído no Seven7 Completo" },
+    "div.tier.pro": { en: "Included in Seven7 Complete", pt: "Incluído no Seven7 Completo" },
     "div.tile.yoc": { en: "Yield on cost", pt: "Yield on cost" },
     "div.tile.yocD": { en: "Annual income today vs. what you originally put in.", pt: "Renda anual hoje sobre o que você aportou." },
     "div.tile.income": { en: "Income per {cur}100k", pt: "Renda por {cur}100 mil" },
@@ -570,7 +566,7 @@
     "div.sigSub": { en: "Which proven payers have dipped into value today — the moment our rule adds to the position. Updated daily.", pt: "Quais pagadoras provadas caíram para região de valor hoje — o momento em que nossa regra reforça a posição. Atualizado diariamente." },
     "div.sig.loginTeaser": { en: "Log in to see which stocks are in the buy zone right now.", pt: "Entre para ver quais ações estão na zona de compra agora." },
     "div.sig.upgradeTeaser": { en: "Subscribe to unlock the live dividend buy-zone signals.", pt: "Assine para liberar os sinais de dividendos na zona de compra ao vivo." },
-    "div.sig.proTeaser": { en: "US dividend signals are a Pro feature. Upgrade to Pro (or Elite) to unlock them.", pt: "Sinais de dividendos dos EUA são um recurso Pro. Faça upgrade para Pro (ou Elite) para liberar." },
+    "div.sig.proTeaser": { en: "US dividend signals are part of Seven7 Complete.", pt: "Sinais de dividendos dos EUA fazem parte do Seven7 Completo." },
     "div.sig.login": { en: "Log in", pt: "Entrar" },
     "div.sig.upgrade": { en: "See plans", pt: "Ver planos" },
     "div.sig.none": { en: "No payer is in the buy zone right now — check back tomorrow.", pt: "Nenhuma pagadora na zona de compra agora — volte amanhã." },
@@ -633,7 +629,7 @@
     "div.how4t": { en: "Reinvest every payout", pt: "Reinveste cada provento" },
     "div.how4d": { en: "Dividends buy more shares automatically (DRIP), compounding your income year after year — or take the cash if you prefer.", pt: "Os dividendos compram mais ações automaticamente (DRIP), compondo sua renda ano após ano — ou receba em caixa, se preferir." },
     "div.ctaH": { en: "Start building your dividend salary", pt: "Comece a construir seu salário de dividendos" },
-    "div.ctaSub": { en: "Brazil from Beginner, the US from Pro, both on Elite. Live dividend signals, updated daily.", pt: "Brasil no Beginner, EUA no Pro, os dois no Elite. Sinais de dividendos ao vivo, atualizados diariamente." },
+    "div.ctaSub": { en: "Brazil and the US in Seven7 Complete. Live dividend signals, updated daily.", pt: "Brasil e EUA no Seven7 Completo. Sinais de dividendos ao vivo, atualizados diariamente." },
     "div.ctaBtn": { en: "See plans", pt: "Ver planos" },
     "div.note": { en: "Illustrative, from real 10-year simulated data with point-in-time selection (no hindsight), a curated blue-chip universe and full dividend + interest-on-equity data. Past results don't guarantee the future.", pt: "Ilustrativo, de dados simulados reais de 10 anos com seleção point-in-time (sem retrovisor), universo curado de blue chips e dados completos de dividendos + JCP. Resultados passados não garantem o futuro." },
     "mem.kicker": { en: "MY DESK", pt: "MINHA MESA" },
@@ -698,7 +694,7 @@
     "mem.vidH": { en: "Weekly videos", pt: "Vídeos semanais" },
     "mem.vidSub": { en: "Market reads, outlook and strategy walkthroughs — new videos every week.", pt: "Leitura de mercado, expectativas e explicações da estratégia — vídeos novos toda semana." },
     "mem.vidSoon": { en: "The first videos are being produced — they'll appear here.", pt: "Os primeiros vídeos estão sendo produzidos — aparecerão aqui." },
-    "mem.hedgeKicker": { en: "TAIL HEDGE · ELITE", pt: "HEDGE DE CAUDA · ELITE" },
+    "mem.hedgeKicker": { en: "TAIL HEDGE", pt: "HEDGE DE CAUDA" },
     "mem.hedgeH": { en: "Protection overlay — live status", pt: "Overlay de proteção — estado ao vivo" },
     "mem.hedgeSub": { en: "How much of the book should sit in the uncorrelated protection asset right now. The asset itself is named in your strategy pack.", pt: "Quanto da carteira deve estar no ativo de proteção descorrelacionado agora. O ativo é revelado no seu material de estratégia." },
     "mem.hedgeNormal": { en: "NORMAL", pt: "NORMAL" },
@@ -725,7 +721,7 @@
     "hg.added": { en: "{q} shares of {tk} added. Score recalculated within 15 minutes. Place the order at your broker.", pt: "{q} cotas de {tk} adicionadas. A nota é recalculada em até 15 minutos. Faça a compra na sua corretora." },
     "hg.semCarteira": { en: "Add your assets to My desk to see how much this should be in dollars and reais.", pt: "Adicione seus ativos em Minha mesa para ver quanto isso dá em dólares e reais." },
     "kmlm.added": { en: "Added to your portfolio.", pt: "Adicionado ao seu portfólio." },
-    "mcc.kicker": { en: "COVERED CALL · ELITE", pt: "COVERED CALL · ELITE" },
+    "mcc.kicker": { en: "COVERED CALL", pt: "COVERED CALL" },
     "mcc.h": { en: "The income layer — covered calls", pt: "A camada de renda — covered calls" },
     "mcc.sub": { en: "The exclusive overlay that turns every take-profit into extra cash. Here's exactly how it works and what it adds.", pt: "O overlay exclusivo que transforma cada realização de lucro em caixa extra. Veja exatamente como funciona e o que ele soma." },
     "mcc.explain": { en: "A covered call means: while you hold the stock, you sell a call option at your take-profit price. You get paid a premium upfront. If the stock reaches the target you were going to sell there anyway — now you also keep the premium. If it doesn't, the premium is pure extra income. You already planned the exit, so there's no added risk.", pt: "Um covered call significa: enquanto você segura a ação, você vende uma opção de compra no seu preço-alvo. Você recebe um prêmio na hora. Se a ação chega no alvo, você ia vender ali de qualquer forma — e agora ainda fica com o prêmio. Se não chega, o prêmio é renda extra pura. Você já tinha planejado a saída, então não há risco a mais." },
@@ -776,13 +772,13 @@
     "add.cancel": { en: "Cancel", pt: "Cancelar" },
     "xl.gerando": { en: "Building the spreadsheet…", pt: "Montando a planilha…" },
     "xl.erro": { en: "Couldn't build the spreadsheet. Try again.", pt: "Não deu para montar a planilha. Tente de novo." },
-    "bf.titulo": { en: "Lifetime access for half the annual price", pt: "Acesso vitalício pela metade do plano anual" },
+    "bf.titulo": { en: "Seven7 Complete for life, for half the annual price", pt: "Seven7 Completo vitalício pela metade do anual" },
     "bf.sub": { en: "Pay once and keep the plan forever: no renewal, no monthly fee. Card or Pix.", pt: "Pague uma vez e fique com o plano para sempre: sem renovação e sem mensalidade. Cartão ou Pix." },
     "bf.faltam": { en: "Ends Nov 30, 11:59 pm (Brasília) · {d}d {h}h {m}min left", pt: "Termina em 30/11 às 23:59 · faltam {d}d {h}h {m}min" },
     "bf.encerrada": { en: "The Black Friday offer has ended.", pt: "A oferta da Black Friday terminou." },
     "bf.de": { en: "annual plan: {v}/year", pt: "plano anual: {v}/ano" },
     "bf.umaVez": { en: "once, for life", pt: "uma vez, para sempre" },
-    "bf.f1": { en: "Everything in {p}, forever", pt: "Tudo do plano {p}, para sempre" },
+    "bf.f1": { en: "Full access: every strategy, hedge and tool, forever", pt: "Acesso completo: todas as estratégias, o hedge e as ferramentas, para sempre" },
     "bf.f2": { en: "No renewal and no automatic charge", pt: "Sem renovação e sem cobrança automática" },
     "bf.f3": { en: "Includes every update to the plan", pt: "Inclui as atualizações do plano" },
     "bf.pix": { en: "Pay with Pix", pt: "Pagar com Pix" },
@@ -911,7 +907,7 @@
     "pf.frozenNote": { en: "Positions cleared — the metrics below are kept from your portfolio history. Use “Reset portfolio” to zero everything.", pt: "Posições zeradas — as métricas abaixo são mantidas do histórico do portfólio. Use “Zerar portfólio” para zerar tudo." },
     "pf.noOpenPos": { en: "No open positions.", pt: "Nenhuma posição aberta." },
     "beta.title": { en: "Portfolio protection", pt: "Proteção da carteira" },
-    "beta.sub": { en: "Reduce how much your portfolio moves with this market using {tk}, the Pro/Elite protection asset.", pt: "Reduza o quanto sua carteira oscila junto com este mercado usando o {tk}, o ativo de proteção dos planos Pro e Elite." },
+    "beta.sub": { en: "Reduce how much your portfolio moves with this market using {tk}, the Seven7 Complete protection asset.", pt: "Reduza o quanto sua carteira oscila junto com este mercado usando o {tk}, o ativo de proteção do Seven7 Completo." },
     "beta.mktUS": { en: "US stocks", pt: "ações americanas" },
     "beta.mktBR": { en: "Brazilian stocks", pt: "ações brasileiras" },
     "beta.net": { en: "Market sensitivity now", pt: "Sensibilidade ao mercado hoje" },
@@ -985,17 +981,17 @@
     "hg.rSharpe": { en: "Sharpe", pt: "Sharpe" },
     "hg.rVol": { en: "Annual volatility", pt: "Volatilidade anual" },
     "hg.rCagr": { en: "CAGR", pt: "CAGR" },
-    "hg.eliteT": { en: "The asset is for Pro and Elite members", pt: "O ativo é dos planos Pro e Elite" },
-    "hg.eliteS": { en: "{base}% of capital in protection at all times, raised to {stress}% under stress. Pro and Elite members get which asset it is and the signal to switch.", pt: "{base}% do capital em proteção sempre, elevado a {stress}% em estresse. Membros Pro e Elite recebem qual é o ativo e o sinal de quando alternar." },
+    "hg.eliteT": { en: "The asset is for Seven7 Complete members", pt: "O ativo é dos assinantes do Seven7 Completo" },
+    "hg.eliteS": { en: "{base}% of capital in protection at all times, raised to {stress}% under stress. Seven7 Complete members get which asset it is and the signal to switch.", pt: "{base}% do capital em proteção sempre, elevado a {stress}% em estresse. Assinantes do Seven7 Completo recebem qual é o ativo e o sinal de quando alternar." },
     "hg.mktUS": { en: "US stocks", pt: "Ações americanas" },
     "hg.mktBR": { en: "Brazilian stocks", pt: "Ações brasileiras" },
     "hg.noteBR": { en: "Measured over {years} year, since the Brazilian protection asset started trading ({desde}). Short window: the numbers get more reliable over time. Correlation to the portfolio: {corr}.", pt: "Avaliado em {years} ano, desde que o ativo de proteção brasileiro começou a ser negociado ({desde}). Janela curta: os números ficam mais confiáveis com o tempo. Correlação com a carteira: {corr}." },
-    "hg.eliteCta": { en: "See Pro and Elite plans", pt: "Ver planos Pro e Elite" },
+    "hg.eliteCta": { en: "See Seven7 Complete", pt: "Ver o Seven7 Completo" },
     "hg.note": { en: "Measured over {years} years — a window that includes the 2022 stress. Correlation to the portfolio: {corr}.", pt: "Avaliado ao longo de {years} anos — janela que inclui o estresse de 2022. Correlação com a carteira: {corr}." },
     // cherry on top (mistério — mecanismo oculto, só métricas)
-    "cc.kicker": { en: "THE CHERRY ON TOP · ELITE", pt: "A CEREJA DO BOLO · ELITE" },
+    "cc.kicker": { en: "THE CHERRY ON TOP", pt: "A CEREJA DO BOLO" },
     "cc.h2": { en: "The cherry on top.", pt: "A cereja do bolo." },
-    "cc.sub": { en: "An exclusive Elite layer lifts every metric that matters — more return, better risk-adjusted — on the very same trades, with no extra risk. What it is stays behind the Elite door. The numbers don't.", pt: "Uma camada exclusiva do Elite eleva cada métrica que importa — mais retorno, melhor risco-retorno — nas mesmas operações, sem risco a mais. O que é fica atrás da porta do Elite. Os números, não." },
+    "cc.sub": { en: "An exclusive subscriber layer lifts every metric that matters — more return, better risk-adjusted — on the very same trades, with no extra risk. What it is stays with subscribers. The numbers don't.", pt: "Uma camada exclusiva dos assinantes eleva cada métrica que importa — mais retorno, melhor risco-retorno — nas mesmas operações, sem risco a mais. O que é fica para os assinantes. Os números, não." },
     "cc.hCagr": { en: "extra CAGR / year", pt: "CAGR extra / ano" },
     "cc.hSharpe": { en: "Sharpe (risk × return)", pt: "Sharpe (risco × retorno)" },
     "cc.hSortino": { en: "Sortino (downside risk)", pt: "Sortino (risco de queda)" },
@@ -1007,13 +1003,13 @@
     "cc.rSharpe": { en: "Sharpe", pt: "Sharpe" },
     "cc.rSortino": { en: "Sortino", pt: "Sortino" },
     "cc.rMaxdd": { en: "Max drawdown", pt: "Max drawdown" },
-    "cc.eliteT": { en: "The cherry is Elite-exclusive", pt: "A cereja é exclusiva do Elite" },
-    "cc.eliteS": { en: "Same trades, no extra risk taken — just a bigger result. Elite members get the full recipe and the live signal.", pt: "As mesmas operações, sem risco a mais — só um resultado maior. Membros Elite recebem a receita completa e o sinal ao vivo." },
-    "cc.eliteCta": { en: "Subscribe to Elite", pt: "Assinar Elite" },
-    "cc.note": { en: "These figures are modeled and conservative, over 10 years of real prices — to be validated live. The recipe is revealed to Elite members.", pt: "Números modelados e conservadores, sobre 10 anos de preços reais — a validar ao vivo. A receita é revelada aos membros Elite." },
+    "cc.eliteT": { en: "The cherry is for subscribers", pt: "A cereja é exclusiva dos assinantes" },
+    "cc.eliteS": { en: "Same trades, no extra risk taken — just a bigger result. Subscribers get the full recipe and the live signal.", pt: "As mesmas operações, sem risco a mais — só um resultado maior. Assinantes recebem a receita completa e o sinal ao vivo." },
+    "cc.eliteCta": { en: "Get Seven7 Complete", pt: "Assinar o Seven7 Completo" },
+    "cc.note": { en: "These figures are modeled and conservative, over 10 years of real prices — to be validated live. The recipe is revealed to subscribers.", pt: "Números modelados e conservadores, sobre 10 anos de preços reais — a validar ao vivo. A receita é revelada aos assinantes." },
     // home teaser
     "cherry.teaserH": { en: "There's a cherry on top.", pt: "Tem uma cereja no bolo." },
-    "cherry.teaserSub": { en: "An Elite-only layer that lifts every number — on the same trades, no extra risk. See the difference.", pt: "Uma camada só do Elite que eleva cada número — nas mesmas operações, sem risco a mais. Veja a diferença." },
+    "cherry.teaserSub": { en: "A subscriber-only layer that lifts every number — on the same trades, no extra risk. See the difference.", pt: "Uma camada só dos assinantes que eleva cada número — nas mesmas operações, sem risco a mais. Veja a diferença." },
     "cherry.teaserCta": { en: "See the cherry →", pt: "Ver a cereja →" },
     "tick.buy": { en: "BUY", pt: "COMPRA" },
     "tick.live": { en: "LIVE", pt: "AO VIVO" },
@@ -1043,7 +1039,7 @@
     "auth.register.have": { en: "Already have an account?", pt: "Já tem conta?" },
     "auth.register.login": { en: "Log in", pt: "Entrar" },
     "auth.soon": { en: "Accounts are launching soon — we saved your interest. We'll email you the moment sign-ups open.", pt: "As contas estão sendo lançadas — registramos seu interesse. Avisaremos por e-mail assim que abrir." },
-    "auth.checkEmail": { en: "Account created! Your 7-day Elite trial is on. Confirm your email, then log in.", pt: "Conta criada! Seu teste Elite de 7 dias já está liberado. Confirme o e-mail e depois é só entrar." },
+    "auth.checkEmail": { en: "Account created! Your 7-day free trial of Seven7 Complete is on. Confirm your email, then log in.", pt: "Conta criada! Seu teste grátis de 7 dias do Seven7 Completo já está liberado. Confirme o e-mail e depois é só entrar." },
     "trial.tag": { en: "TRIAL", pt: "TESTE" },
     "pix.pay": { en: "Pay with Pix", pt: "Pagar com Pix" },
     "pix.subM": { en: "One Pix = 30 days of access. Renew when it's due.", pt: "Um Pix = 30 dias de acesso. Você renova quando vencer." },
@@ -1063,8 +1059,8 @@
     "pix.statusOff": { en: "Pix plan expired on {d}", pt: "Plano Pix vencido em {d}" },
     "pix.waiting": { en: "Payment received! Access is unlocked as soon as the bank confirms the Pix (usually seconds). This page updates by itself.", pt: "Pagamento recebido! O acesso é liberado assim que o banco confirmar o Pix (normalmente em segundos). Esta página se atualiza sozinha." },
     "pix.ended": { en: "Your Pix plan expired. Renew to unlock the members area again.", pt: "Seu plano Pix venceu. Renove para liberar a área de membros de novo." },
-    "trial.bar": { en: "Free Elite trial of the strategies: <b>{n} day(s) left</b>. The quant platform stays free forever.", pt: "Teste Elite grátis das estratégias: <b>faltam {n} dia(s)</b>. A plataforma quant é grátis para sempre." },
-    "trial.barLast": { en: "Your free Elite trial <b>ends today</b>.", pt: "Seu teste Elite grátis <b>termina hoje</b>." },
+    "trial.bar": { en: "Free trial of Seven7 Complete: <b>{n} day(s) left</b>. The quant platform stays free forever.", pt: "Teste grátis do Seven7 Completo: <b>faltam {n} dia(s)</b>. A plataforma quant é grátis para sempre." },
+    "trial.barLast": { en: "Your free trial <b>ends today</b>.", pt: "Seu teste grátis <b>termina hoje</b>." },
     "trial.barEnded": { en: "Your strategies trial has ended — the quant platform is still free. Subscribe to get the signals back.", pt: "Seu teste das estratégias terminou — a plataforma quant continua grátis. Assine para voltar a ver os sinais." },
     "trial.cta": { en: "Subscribe", pt: "Assinar" },
     "trial.statusOn": { en: "Free trial until {d} ({n} day(s) left)", pt: "Teste grátis até {d} (faltam {n} dia(s))" },
@@ -1106,54 +1102,29 @@
   /* ---------------- plans (USD) ---------------- */
   const PLANS = [
     {
-      tier: "BEGINNER", monthly: 9, disc: 0.15, featured: false,
-      feats: [
-        [true, { en: "Brazilian market strategy (Ibovespa)", pt: "Estratégia do mercado brasileiro (Ibovespa)" }],
-        [true, { en: "The Magnificent 7 (US) — AAPL · MSFT · GOOGL · AMZN · NVDA · META · TSLA", pt: "As 7 Magníficas dos EUA — AAPL · MSFT · GOOGL · AMZN · NVDA · META · TSLA" }],
-        [true, { en: "💰 Dividend income portfolio — Brazil (the “dividend salary”)", pt: "💰 Carteira de renda com dividendos — Brasil (o “salário de dividendos”)" }],
-        [true, { en: "10-year performance and history", pt: "Desempenho e histórico de 10 anos" }],
-        [false, { en: "US dividend income portfolio", pt: "Carteira de renda com dividendos — EUA" }],
-        [false, { en: "Full live strategy (US + BR)", pt: "Estratégia completa ao vivo (US + BR)" }],
-        [false, { en: "YouTube members area — videos & community", pt: "Área de membros no YouTube — vídeos e comunidade" }],
-      ],
-      cta: { en: "Get Beginner", pt: "Assinar Beginner" },
-    },
-    {
-      tier: "PRO", monthly: 29, disc: 0.20, featured: true,
-      badge: { en: "MOST POPULAR", pt: "MAIS POPULAR" },
-      feats: [
-        [true, { en: "Full strategy — US (S&P 100) + Brazil (Ibovespa)", pt: "Estratégia completa — EUA (S&P 100) + Brasil (Ibovespa)" }],
-        [true, { en: "💰 Dividend income portfolio — US + Brazil", pt: "💰 Carteira de renda com dividendos — EUA + Brasil" }],
-        [true, { en: "Live positions + watchlist", pt: "Posições ao vivo + watchlist" }],
-        [true, { en: "Complete strategy metrics (per trade, per asset)", pt: "Métricas completas das estratégias (por operação e por ativo)" }],
-        [true, { en: "YouTube members area — weekly videos & community", pt: "Área de membros no YouTube — vídeos semanais e comunidade" }],
-        [true, { en: "Exclusive Hedge signal — an uncorrelated protection asset for market stress", pt: "Sinal de Hedge exclusivo — ativo de proteção descorrelacionado para o estresse de mercado" }, "hot"],
-        [false, { en: "🍒 The cherry — an exclusive income layer", pt: "🍒 A cereja — camada de renda exclusiva" }],
-      ],
-      cta: { en: "Get Pro", pt: "Assinar Pro" },
-    },
-    {
-      tier: "ELITE", monthly: 79, disc: 0.25, featured: false,
+      tier: "PRO", nome: { en: "Seven7 Complete", pt: "Seven7 Completo" }, monthly: 29, disc: 0.20, featured: true,
+      badge: { en: "FULL ACCESS", pt: "ACESSO COMPLETO" },
       cycleFeat: {
         annual: [
-          [true, { en: "Full methodology revealed on subscription (Markov Chain)", pt: "Metodologia Completa revelada na assinatura (Markov Chain)" }, "hot"],
+          [true, { en: "Full methodology revealed on subscription (Markov Chain)", pt: "Metodologia completa revelada na assinatura (Markov Chain)" }, "hot"],
           [true, { en: "Automated MT5 robot — trades the signals for you", pt: "Robô automatizado em MT5 — opera os sinais sozinho" }],
         ],
         monthly: [
-          [true, { en: "Full methodology revealed after 6 months (Markov Chain)", pt: "Metodologia Completa revelada após 6 meses de plano (Markov Chain)" }, "hot"],
+          [true, { en: "Full methodology revealed after 6 months (Markov Chain)", pt: "Metodologia completa revelada após 6 meses de plano (Markov Chain)" }, "hot"],
           [false, { en: "Automated MT5 robot — annual plan only", pt: "Robô automatizado em MT5 — só no plano anual" }],
         ],
       },
       feats: [
-        [true, { en: "Everything in Pro", pt: "Tudo do Pro" }],
+        [true, { en: "Markov 3 strategy — US (S&P 100) + Brazil (Ibovespa), live", pt: "Estratégia Markov 3 ao vivo — EUA (S&P 100) + Brasil (Ibovespa)" }],
         [true, { en: "💰 Both dividend income portfolios (US + Brazil)", pt: "💰 As duas carteiras de renda com dividendos (EUA + Brasil)" }],
-        [true, { en: "🍒 The cherry on top — an exclusive layer that lifts every metric", pt: "🍒 A cereja do bolo — camada exclusiva que eleva cada métrica" }, "hot"],
-        [true, { en: "Exclusive Hedge signal — an uncorrelated protection asset for market stress", pt: "Sinal de Hedge exclusivo — ativo de proteção descorrelacionado para o estresse de mercado" }],
+        [true, { en: "Exclusive Hedge signal — KMLM (US) and DOLA11 (Brazil) for market stress", pt: "Sinal de Hedge exclusivo — KMLM (EUA) e DOLA11 (Brasil) para o estresse de mercado" }, "hot"],
+        [true, { en: "🍒 The cherry on top — an exclusive layer that lifts every metric", pt: "🍒 A cereja do bolo — camada exclusiva que eleva cada métrica" }],
+        [true, { en: "Live positions + watchlist and complete strategy metrics", pt: "Posições ao vivo + watchlist e métricas completas das estratégias" }],
+        [true, { en: "Full portfolio spreadsheet in Excel (charts + risk)", pt: "Planilha completa da carteira em Excel (gráficos + risco)" }],
         [true, { en: "YouTube members area — weekly videos & community", pt: "Área de membros no YouTube — vídeos semanais e comunidade" }],
-        [true, { en: "Export history (CSV)", pt: "Exportar histórico (CSV)" }],
         [true, { en: "Priority support", pt: "Suporte prioritário" }],
       ],
-      cta: { en: "Get Elite", pt: "Assinar Elite" },
+      cta: { en: "Get Seven7 Complete", pt: "Assinar o Seven7 Completo" },
     },
   ];
 
@@ -1870,8 +1841,8 @@
   // O valor e o prazo valem no servidor (função "vitalicio"); aqui é só a vitrine.
   const BF_FIM = Date.parse("2026-12-01T02:59:59Z");
   const bfAtiva = () => Date.now() < BF_FIM;
-  const BF_PRECO = { BRL: { BEGINNER: 225, PRO: 650, ELITE: 1750 }, USD: { BEGINNER: 48, PRO: 138, ELITE: 354 } };
-  const BF_CHEIO = { BRL: { BEGINNER: 450, PRO: 1300, ELITE: 3500 }, USD: { BEGINNER: 96, PRO: 276, ELITE: 708 } };
+  const BF_PRECO = { BRL: { PRO: 650 }, USD: { PRO: 138 } };      // plano único: 50% do anual
+  const BF_CHEIO = { BRL: { PRO: 1300 }, USD: { PRO: 276 } };
   // depois de entrar/criar conta com uma compra pendente: volta para a oferta certa
   const destinoIntent = () => { let i = null; try { i = localStorage.getItem("seven7-intent"); } catch (e) { /* sem storage */ }
     return i ? (/:vitalicio$/.test(i) && bfAtiva() ? "plans.html#black-friday" : "plans.html") : null; };
@@ -1917,15 +1888,15 @@
         <p class="bf-sub">${t("bf.sub")}</p>
         <p class="bf-tempo" id="bfTempo"></p>
       </div>
-      <div class="bf-grid">${["BEGINNER", "PRO", "ELITE"].map(tier => `
-        <div class="bf-card ${tier === "ELITE" ? "bf-top" : ""}" style="--tone:${ui[tier][1]}">
-          <div class="price-tier"><span class="pt-ic">${ic(ui[tier][0])}</span>${tier}</div>
+      <div class="bf-grid bf-uno">${["PRO"].map(tier => `
+        <div class="bf-card bf-top" style="--tone:${ui[tier][1]}">
+          <div class="price-tier"><span class="pt-ic">${ic(ui[tier][0])}</span>${PLANS[0].nome[LANG]}</div>
           <div class="bf-de">${interp(t("bf.de"), { v: num(BF_CHEIO[moeda][tier]) })}</div>
           <div class="bf-por">${num(BF_PRECO[moeda][tier])}</div>
           <div class="bf-uma">${t("bf.umaVez")}</div>
-          <ul class="bf-feats"><li>${interp(t("bf.f1"), { p: tier.charAt(0) + tier.slice(1).toLowerCase() })}</li><li>${t("bf.f2")}</li><li>${t("bf.f3")}</li></ul>
+          <ul class="bf-feats"><li>${t("bf.f1")}</li><li>${t("bf.f2")}</li><li>${t("bf.f3")}</li></ul>
           ${moeda === "BRL" ? `<button class="btn btn-pix btn-block" data-bf="${tier}" data-m="pix">${PIX_SVG}${t("bf.pix")}</button>` : ""}
-          <button class="btn ${tier === "ELITE" ? "btn-primary" : "btn-ghost"} btn-block" data-bf="${tier}" data-m="card">${t("bf.cartao")}</button>
+          <button class="btn btn-primary btn-block" data-bf="${tier}" data-m="card">${t("bf.cartao")}</button>
         </div>`).join("")}</div>
       <p class="bf-nota">${t("bf.nota")}</p>`;
     host.querySelectorAll("button[data-bf]").forEach(b => b.onclick = () => payVitalicio(b.dataset.bf, b.dataset.m, b));
@@ -1984,7 +1955,7 @@
       const tierUi = { BEGINNER: ["sprout", "var(--c-green)"], PRO: ["rocket", "var(--c-cyan)"], ELITE: ["crown", "var(--c-amber)"] }[p.tier] || ["star", "var(--accent)"];
       return `<div class="price-card ${p.featured ? "featured" : ""}" style="--tone:${tierUi[1]}">
         ${p.badge ? `<div class="price-badge">${p.badge[LANG]}</div>` : ""}${save}
-        <div class="price-tier"><span class="pt-ic">${ic(tierUi[0])}</span>${p.tier}</div>
+        <div class="price-tier"><span class="pt-ic">${ic(tierUi[0])}</span>${p.nome ? p.nome[LANG] : p.tier}</div>
         <div class="price-amt">${cur}${price} <span>${t("price.perMonth")}</span></div>
         <div class="price-sub">${sub}</div>
         <ul class="price-feats"><li class="all-free">${t("plan.allFree")}</li>${feats}</ul>
@@ -2075,7 +2046,7 @@
     const host = $("#navAuth"); if (!host) return;
     if (USER) {
       const name = USER.user_metadata?.name || USER.email;
-      const badge = isMember() ? `<span class="nav-plan">${(PROFILE.plan || "").toUpperCase()}${isTrial() ? " · " + t("trial.tag") : ""}</span>` : "";
+      const badge = isMember() ? `<span class="nav-plan">${LANG === "pt" ? "COMPLETO" : "COMPLETE"}${isTrial() ? " · " + t("trial.tag") : ""}</span>` : "";
       const desk = `<a class="btn btn-desk" href="members.html">${ic("desk")}${t("nav.desk")}</a>`;
       host.innerHTML = `${desk}<a class="nav-user" href="account.html" title="${esc(USER.email)}">${ic("user")}<span class="nav-name">${esc(name)}</span>${badge}</a><button class="btn btn-ghost" id="logoutBtn">${t("auth.logout")}</button>`;
       const lb = $("#logoutBtn"); if (lb) lb.onclick = async () => { if (sb) await sb.auth.signOut(); location.href = "index.html"; };
@@ -3298,7 +3269,7 @@
       } else {
         html += `<p class="hedge-note">${t("pf.curveSoon")}</p>`;
       }
-      if (!frozen && hasHedge()) html += `<div id="betaCtrlHost"></div>`;   // ativo de proteção = Pro e Elite
+      if (!frozen && hasHedge()) html += `<div id="betaCtrlHost"></div>`;   // ativo de proteção = assinantes
       // positions table (ou nota quando as posições foram zeradas mas as métricas ficaram)
       if (frozen) {
         html += `<p class="hedge-note" style="margin-top:16px">${t("pf.noOpenPos")}</p>`;
@@ -3751,7 +3722,7 @@
         : a.status === "past_due" || a.status === "unpaid" ? t("sub.atraso")
         : interp(t("sub.proxima"), { d: dt(a.proxima) });
       return `<div class="sub-item" data-id="${esc(a.id)}">
-        <div class="sub-top"><b>${esc((a.plano || "").toUpperCase())}</b><span>${preco(a)}</span></div>
+        <div class="sub-top"><b>${LANG === "pt" ? "Seven7 Completo" : "Seven7 Complete"}</b><span>${preco(a)}</span></div>
         <p class="sub-linha ${a.cancela_no_fim ? "sub-cancelada" : ""}">${linha}</p>
         ${a.cancela_no_fim
           ? `<button class="btn btn-ghost sub-reativa">${t("sub.reativar")}</button>`
@@ -3793,7 +3764,7 @@
       return;
     }
     const p = PROFILE || {}, member = isMember();
-    const planName = member ? (p.plan || "—").toUpperCase() + (isTrial() ? " · " + t("trial.tag") : "") : t("acct.free");
+    const planName = member ? (LANG === "pt" ? "Seven7 Completo" : "Seven7 Complete") + (isTrial() ? " · " + t("trial.tag") : "") + (p.billing === "vitalicio" ? (LANG === "pt" ? " · vitalício" : " · lifetime") : "") : t("acct.free");
     const endTxt = trialEnd() ? trialEnd().toLocaleDateString(locale()) : "";
     const pu = pixUntil(), pdl = pixDaysLeft();
     const statusTxt = p.billing === "vitalicio" ? t("bf.statusConta") : pu ? (pixExpired() ? interp(t("pix.statusOff"), { d: pu.toLocaleDateString(locale()) })

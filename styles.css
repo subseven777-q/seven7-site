@@ -1813,3 +1813,5 @@ iframe{color-scheme:normal}
 .bf-ok{border-color:var(--pos)}
 .bf-card .btn-pix{background:#32bcad;border-color:#32bcad;color:#062b27;opacity:1}
 .bf-card .btn-pix:hover{background:#3fd1c1}.bf-card .btn-pix svg{fill:currentColor;color:#062b27}
+
+.bf-grid.bf-uno{grid-template-columns:minmax(260px,420px);justify-content:center}
