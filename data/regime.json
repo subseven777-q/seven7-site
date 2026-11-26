@@ -1,1 +1,1 @@
-{"asof": "2026-11-25", "US": {"stress": true, "index": "SPY", "vol20": 31.6, "vol252": 14.9, "ret20": -7.2}, "BR": {"stress": true, "index": "BOVA11", "vol20": 20.5, "vol252": 25.4, "ret20": -4.9}}
+{"asof": "2026-11-25", "US": {"stress": true, "index": "SPY", "vol20": 31.7, "vol252": 14.9, "ret20": -6.8, "hora": "15:55", "dia": "2026-11-26"}, "BR": {"stress": true, "index": "BOVA11", "vol20": 24.8, "vol252": 25.6, "ret20": -1.7, "hora": "12:15", "dia": "2026-11-26"}, "vivo": "2026-11-26T15:31:49+00:00"}
