@@ -466,6 +466,10 @@
     "sig.stop": { en: "Stop", pt: "Stop" },
     "sig.tp": { en: "Target", pt: "Alvo" },
     "sig.cc": { en: "Covered call", pt: "Covered call" },
+    "sig.ccExp": { en: "exp.", pt: "venc." },
+    "sig.ccBal": { en: "earnings before expiry", pt: "balanço antes do vencimento" },
+    "sig.ccCap": { en: "1 contract (100 shares) from a {c} portfolio at 0.5% risk", pt: "1 contrato (100 ações) a partir de uma carteira de {c} com risco de 0,5%" },
+    "sig.ccNo": { en: "no call now", pt: "sem call agora" },
     "sig.trail": { en: "Trail stop", pt: "Stop do trailing" },
     "sig.dEntry": { en: "To entry", pt: "Até entrada" },
     "sig.dStop": { en: "To stop", pt: "Até stop" },
@@ -480,7 +484,7 @@
     "intra.subBR": { en: "Prices of the {n} Brazilian stocks in the strategy's universe · {t} Brasília · {d} · updated every 15 min during the B3 session. No signal or level is shown here.", pt: "Preços das {n} ações brasileiras do universo da estratégia · {t} Brasília · {d} · atualizado a cada 15 min no pregão da B3. Nenhum sinal ou nível aparece aqui." },
     "intra.last": { en: "last session", pt: "último pregão" },
     "intra.chg": { en: "Day", pt: "Dia" },
-    "sig.trailNote": { en: "Enhanced dynamic: when price reaches {old} (the original target), move the stop up to {trail} — this halves your risk — and let it run to the target {tp}. The covered call stays written at the original target {old}.", pt: "Dinâmica aprimorada: ao atingir {old} (o alvo original), suba o stop para {trail} — isso corta o risco pela metade — e deixe correr até o alvo {tp}. O covered call permanece no alvo original {old}." },
+    "sig.trailNote": { en: "Enhanced dynamic: when price reaches {old} (the original target), move the stop up to {trail} — this halves your risk — and let it run to the target {tp}. ", pt: "Dinâmica aprimorada: ao atingir {old} (o alvo original), suba o stop para {trail} — isso corta o risco pela metade — e deixe correr até o alvo {tp}." },
     "sig.upgradeNote": { en: "Strategy enhanced on 2026-09-02 (extended target + trailing). Historical track record reflects the rules in force at the time — we never rewrite past results.", pt: "Estratégia aprimorada em 02/09/2026 (alvo estendido + trailing). O histórico reflete as regras vigentes à época — nunca reescrevemos resultados passados." },
     "sig.stActive": { en: "ACTIVE", pt: "ATIVO" },
     "sig.stMon": { en: "MONITORING", pt: "MONITORANDO" },
@@ -723,12 +727,14 @@
     "kmlm.added": { en: "Added to your portfolio.", pt: "Adicionado ao seu portfólio." },
     "mcc.kicker": { en: "COVERED CALL", pt: "COVERED CALL" },
     "mcc.h": { en: "The income layer — covered calls", pt: "A camada de renda — covered calls" },
-    "mcc.sub": { en: "The exclusive overlay that turns every take-profit into extra cash. Here's exactly how it works and what it adds.", pt: "O overlay exclusivo que transforma cada realização de lucro em caixa extra. Veja exatamente como funciona e o que ele soma." },
-    "mcc.explain": { en: "A covered call means: while you hold the stock, you sell a call option at your take-profit price. You get paid a premium upfront. If the stock reaches the target you were going to sell there anyway — now you also keep the premium. If it doesn't, the premium is pure extra income. You already planned the exit, so there's no added risk.", pt: "Um covered call significa: enquanto você segura a ação, você vende uma opção de compra no seu preço-alvo. Você recebe um prêmio na hora. Se a ação chega no alvo, você ia vender ali de qualquer forma — e agora ainda fica com o prêmio. Se não chega, o prêmio é renda extra pura. Você já tinha planejado a saída, então não há risco a mais." },
-    "mcc.how1": { en: "You buy the stock on the signal (entry, stop, target — as usual).", pt: "Você compra a ação no sinal (entrada, stop, alvo — como sempre)." },
-    "mcc.how2": { en: "You sell a call at the target strike and pocket the premium immediately.", pt: "Você vende uma call no strike do alvo e embolsa o prêmio na hora." },
-    "mcc.how3": { en: "Win or lose the trade, the premium stays with you — pure added income.", pt: "Ganhando ou perdendo o trade, o prêmio fica com você — renda extra pura." },
-    "mcc.premium": { en: "Typical premium: {lo}–{hi}% of the position, collected on every trade.", pt: "Prêmio típico: {lo}–{hi}% da posição, coletado em cada operação." },
+    "mcc.sub": { en: "An optional tool. Here's how it works, what it really added over 10 years and when it's worth using.", pt: "Uma ferramenta opcional. Veja como funciona, o que ela somou de verdade em 10 anos e quando vale usar." },
+    "mcc.explain": { en: "A covered call means: while you hold the stock, you sell a call option above the price and get paid a premium. You keep all of the stock's downside; the premium only cushions it. In exchange, the gain above the strike goes to the option buyer. When the stock leaves the trade (stop or target), you buy the call back, and that buyback can cost more than the premium.", pt: "Um covered call significa: enquanto você segura a ação, você vende uma opção de compra acima do preço e recebe um prêmio. Todo o risco de queda da ação continua com você; o prêmio só amortece. Em troca, a alta acima do strike fica com quem comprou a opção. Quando a ação sai da operação (stop ou alvo), você recompra a call, e essa recompra pode custar mais que o prêmio." },
+    "mcc.how1": { en: "Buy the stock on the signal as usual. Only use the call if you have at least 100 shares (1 contract).", pt: "Compre a ação no sinal, como sempre. Só use a call se tiver pelo menos 100 ações (1 contrato)." },
+    "mcc.how2": { en: "Sell the call shown on the signal: listed strike, monthly expiry 25–45 days out, delta between 0.15 and 0.40. Never a strike below your cost.", pt: "Venda a call que aparece no sinal: strike listado, vencimento mensal de 25 a 45 dias, delta entre 0,15 e 0,40. Nunca strike abaixo do seu custo." },
+    "mcc.how3": { en: "If the stock hits the stop or the target, buy the call back the same day. If it expires with the position still open, sell the next month. If the call's delta goes above 0.70 with more than 10 days left, roll up and out only for a credit.", pt: "Se a ação bater o stop ou o alvo, recompre a call no mesmo dia. Se vencer com a posição aberta, venda a do mês seguinte. Se o delta passar de 0,70 com mais de 10 dias para vencer, role para cima e para frente só se der crédito." },
+    "mcc.premium": { en: "Typical premium: 0.7–1.9% of the position per month (US) and 1.0–2.6% (Brazil), before the buyback.", pt: "Prêmio típico: 0,7–1,9% da posição por mês (EUA) e 1,0–2,6% (Brasil), antes da recompra." },
+    "mcc.real": { en: "What it really added (10 years, priced daily with Black-Scholes, buyback on every exit, option spreads included): US 16.3% → 16.9% a year; Brazil 9.1% → 8.9%. The result depends almost entirely on trading costs: with wide spreads it subtracts. That's why the site's main numbers do NOT include it.", pt: "O que ela somou de verdade (10 anos, preço calculado todo dia pelo Black-Scholes, recompra em toda saída, spread das opções incluído): EUA 16,3% → 16,9% ao ano; Brasil 9,1% → 8,9%. O resultado depende quase só do custo de negociar: com spread largo, ela tira retorno. Por isso os números principais do site NÃO a incluem." },
+    "mcc.when": { en: "When it's worth it: liquid options (US large caps; in Brazil only PETR4, VALE3, BOVA11 and a few others), tight spreads and a portfolio big enough for 100 shares at 0.5% risk. Each signal shows the minimum capital.", pt: "Quando vale: opções líquidas (grandes empresas dos EUA; no Brasil só PETR4, VALE3, BOVA11 e poucas outras), spread apertado e carteira grande o bastante para 100 ações com risco de 0,5%. Cada sinal mostra o capital mínimo." },
     "mcc.colStocks": { en: "Stocks only", pt: "Só ações" },
     "mcc.colWith": { en: "With covered call", pt: "Com covered call" },
     "mcc.note": { en: "10 years of simulated data on the same trades, with the covered-call premium modelled on each position.", pt: "Dados simulados de 10 anos das mesmas operações, com o prêmio do covered call modelado em cada posição." },
@@ -1081,7 +1087,7 @@
     "acct.free": { en: "Free", pt: "Grátis" },
     "acct.active": { en: "Active subscriber", pt: "Assinante ativo" },
     "acct.inactive": { en: "No active subscription", pt: "Sem assinatura ativa" },
-    "acct.upsell": { en: "Unlock the live signal levels, the hedge asset and the cherry recipe.", pt: "Libere os níveis dos sinais ao vivo, o ativo do hedge e a receita da cereja." },
+    "acct.upsell": { en: "Unlock the live signal levels, the hedge asset and the optional income layer.", pt: "Libere os níveis dos sinais ao vivo, o ativo do hedge e a camada de renda opcional." },
     "acct.subscribe": { en: "See plans", pt: "Ver planos" },
     "acct.manage": { en: "Manage subscription", pt: "Gerenciar assinatura" },
     "acct.needLogin": { en: "You're not logged in", pt: "Você não está logado" },
@@ -1117,7 +1123,7 @@
         [true, { en: "Quantitative day-trade model for the Mini Index (WIN) using interest rates and implied volatility — video + step-by-step PDF", pt: "Modelo Quantitativo Day Trade para o Mini Índice com juros e volatilidade implícita — vídeo + PDF passo a passo" }, "hot"],
         [true, { en: "💰 Both dividend income portfolios (US + Brazil)", pt: "💰 As duas carteiras de renda com dividendos (EUA + Brasil)" }],
         [true, { en: "Exclusive Hedge signal — KMLM (US) and DOLA11 (Brazil) for market stress", pt: "Sinal de Hedge exclusivo — KMLM (EUA) e DOLA11 (Brasil) para o estresse de mercado" }, "hot"],
-        [true, { en: "🍒 The cherry on top — an exclusive layer that lifts every metric", pt: "🍒 A cereja do bolo — camada exclusiva que eleva cada métrica" }],
+        [true, { en: "🍒 Optional income layer on the signals, for larger portfolios", pt: "🍒 Camada de renda opcional nos sinais, para carteiras maiores" }],
         [true, { en: "Live positions + watchlist and complete strategy metrics", pt: "Posições ao vivo + watchlist e métricas completas das estratégias" }],
         [true, { en: "Full portfolio spreadsheet in Excel (charts + risk)", pt: "Planilha completa da carteira em Excel (gráficos + risco)" }],
         [true, { en: "YouTube members area — weekly videos & community", pt: "Área de membros no YouTube — vídeos semanais e comunidade" }],
@@ -2270,7 +2276,7 @@
         <td class="num neg">${fmtNum(s.stop)}</td>
         <td class="num pos">${fmtNum(s.tp)}</td>
         <td class="num">${s.rr != null ? nf(s.rr, 2) : "—"}</td>
-        ${elite ? `<td class="num">@${fmtNum(s.cc_strike)} · ${nf(s.cc_premium_pct, 1)}%</td>` : ""}
+        ${elite ? `<td class="num">${ccTxt(s)}</td>` : ""}
       </tr>`).join("");
     const cols = elite ? 10 : 9;
     const tbl = $("#sigTable");
@@ -2283,6 +2289,15 @@
     else selectSignal(SIG_SEL);
   }
 
+  // cereja (covered call) de um sinal: strike · venc. dd/mm · Δ · prêmio (bid) [· ⚠ balanço]
+  function ccTxt(s, longo) {
+    if (s.cc_strike == null) return `<span class="muted">${t("sig.ccNo")}</span>`;
+    const ven = s.cc_expiry ? s.cc_expiry.slice(8, 10) + "/" + s.cc_expiry.slice(5, 7) : "—";
+    let x = `@${fmtNum(s.cc_strike)} · ${t("sig.ccExp")} ${ven} · Δ${nf(s.cc_delta, 2)} · ${nf(s.cc_premium_pct, 1)}%`;
+    if (s.cc_earnings) x += ` · <span title="${t("sig.ccBal")}">⚠</span>`;
+    if (longo && s.cc_capital_min) x += `<br><small class="muted">${interp(t("sig.ccCap"), { c: (s.market === "BR" ? "R$ " : "US$ ") + fmtNum(Math.round(s.cc_capital_min)) })}</small>`;
+    return x;
+  }
   function selectSignal(ticker) {
     const s = SIGNALS.find(x => x.ticker === ticker); if (!s) return;
     SIG_SEL = ticker;
@@ -2293,7 +2308,7 @@
       <a class="sig-tv" href="https://www.tradingview.com/chart/?symbol=${encodeURIComponent(s.tv_symbol)}" target="_blank" rel="noopener">${t("sig.openTV")} ↗</a>`;
     // NOVA dinamica: TP estendido + trailing. TP antigo (+1R) = gatilho do trail e strike do covered call.
     const r2 = v => v == null ? null : Math.round(v * 100) / 100;
-    const tpOld = (s.cc_strike != null) ? s.cc_strike : (s.entry != null && s.stop != null ? r2(2 * s.entry - s.stop) : null);
+    const tpOld = (s.entry != null && s.stop != null) ? r2(2 * s.entry - s.stop) : null;   // alvo original (+1R)
     const trailStop = (s.entry != null && s.stop != null) ? r2((s.entry + s.stop) / 2) : null;
     const lv = $("#sigLevels");
     if (lv) lv.innerHTML = `
@@ -2302,7 +2317,7 @@
       <div class="lvl"><span class="lk">${t("sig.tp")}</span><span class="lv-v pos">${fmtNum(s.tp)}</span></div>
       <div class="lvl"><span class="lk">R:R</span><span class="lv-v">${s.rr != null ? nf(s.rr, 2) : "—"}</span></div>
       ${trailStop != null ? `<div class="lvl trail"><span class="lk">↗ ${t("sig.trail")}</span><span class="lv-v">${fmtNum(trailStop)}</span></div>` : ""}
-      ${elite ? `<div class="lvl cc"><span class="lk">🍒 ${t("sig.cc")}</span><span class="lv-v">@${fmtNum(s.cc_strike)} · ${nf(s.cc_premium_pct, 1)}%</span></div>` : ""}`;
+      ${elite ? `<div class="lvl cc"><span class="lk">🍒 ${t("sig.cc")}</span><span class="lv-v">${ccTxt(s, true)}</span></div>` : ""}`;
     const tn = $("#sigTrailNote");
     if (tn && trailStop != null && tpOld != null) tn.innerHTML = interp(t("sig.trailNote"), { old: fmtNum(tpOld), trail: fmtNum(trailStop), tp: fmtNum(s.tp) });
     const add = $("#sigAdd");
@@ -4040,7 +4055,8 @@
     // localhost preview only — sinais sinteticos com a NOVA dinamica (tp=+1.5R, cc_strike=+1R)
     const mk = (ticker, tv, price, entry, stop, tp, ccstrike, rr, state) =>
       ({ ticker, tv_symbol: tv, market: "US", state, dir: "BUY", price, entry, stop, tp,
-         cc_strike: ccstrike, cc_premium_pct: 0.8, rr, pct_in_range: 12.5 });
+         cc_strike: ccstrike, cc_premium_pct: 0.9, cc_expiry: "2027-01-15", cc_delta: 0.24, cc_earnings: false,
+         cc_capital_min: Math.round(100 * (entry - stop) / 0.005), rr, pct_in_range: 12.5 });
     return [
       mk("TMO", "TMO", 615, 607.5, 546.75, 698.62, 668.25, 1.5, "ACTIVE"),
       mk("NVDA", "NVDA", 140, 136.5, 121.5, 159, 151.5, 1.5, "ACTIVE"),
@@ -4420,29 +4436,17 @@
   }
   function renderCoveredCallMembers() {
     const sec = $("#ccMembersSection"), host = $("#ccMembersHost"); if (!host) return;
-    const elite = isElite();
-    const cc = DATA && DATA.cherry;
-    if (!elite || !cc || !cc.stocks_only || !cc.with) { if (sec) sec.hidden = true; return; }
+    if (!isElite()) { if (sec) sec.hidden = true; return; }
     if (sec) sec.hidden = false;
-    const so = cc.stocks_only, w = cc.with;
-    const pct = v => (v > 0 ? "+" : "") + nf(v) + "%";
-    const rows = [
-      ["CAGR", pct(so.cagr), pct(w.cagr), w.cagr > so.cagr],
-      ["Sharpe", nf(so.sharpe, 2), nf(w.sharpe, 2), w.sharpe > so.sharpe],
-      ["Sortino", nf(so.sortino, 2), nf(w.sortino, 2), w.sortino > so.sortino],
-      [t("m.maxDD"), "-" + nf(Math.abs(so.max_dd)) + "%", "-" + nf(Math.abs(w.max_dd)) + "%", w.max_dd < so.max_dd],
-    ];
-    const how = [["1"], ["2"], ["3"]];
     host.innerHTML = `<div class="cc-mem-grid">
       <div class="cc-mem-explain">
         <p>${t("mcc.explain")}</p>
-        <ol class="cc-steps">${how.map(x => `<li>${t("mcc.how" + x[0])}</li>`).join("")}</ol>
-        <p class="cc-prem">${interp(t("mcc.premium"), { lo: cc.extra_lo, hi: cc.extra_hi })}</p>
+        <ol class="cc-steps">${["1", "2", "3"].map(x => `<li>${t("mcc.how" + x)}</li>`).join("")}</ol>
+        <p class="cc-prem">${t("mcc.premium")}</p>
       </div>
       <div class="chart-card cc-mem-table">
-        <table class="cmp-table"><thead><tr><th></th><th>${t("mcc.colStocks")}</th><th>${t("mcc.colWith")}</th></tr></thead>
-        <tbody>${rows.map(r => `<tr><td class="cmp-k">${r[0]}</td><td class="num">${r[1]}</td><td class="num ${r[3] ? "pos" : ""}"><b>${r[2]}</b></td></tr>`).join("")}</tbody></table>
-        <div class="cc-mem-note">${t("mcc.note")}</div>
+        <p>${t("mcc.real")}</p>
+        <p class="cc-mem-note">${t("mcc.when")}</p>
       </div>
     </div>`;
   }
